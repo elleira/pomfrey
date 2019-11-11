@@ -4,7 +4,7 @@ rule multiqc:
     output:
         "reports/{sample}/{sample}.html"
     params:
-        "-c /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle/somaticpipeline/src/multiqc_config.yaml"  # Optional: extra parameters for multiqc.
+        "-c ../multiqc_config.yaml"  # Optional: extra parameters for multiqc.
     log:
         "logs/multiqc/{sample}.log"
     singularity:

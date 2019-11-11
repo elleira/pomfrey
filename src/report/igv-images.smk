@@ -44,7 +44,7 @@ rule fixBatFile:
     output:
         bat = "reports/{sample}/{sample}-igv.bat"
     params:
-        ref = "hg19", ## where does it get the genomefile from, could you specify? Could run with fasta?,
+        ref = "hg19", ## Specify path to cache instead!
         bamfile = get_bam,
         bedfile = get_bed
     log:

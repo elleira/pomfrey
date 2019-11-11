@@ -1,4 +1,4 @@
-configfile: "/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/samples.yaml"
+#configfile: "/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/samples.yaml"
 ##Specify configfile and singularity folder in snakemake command.
 
 rule all:
