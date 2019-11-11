@@ -6,56 +6,26 @@ rule makePassVCF:
     log:
         "logs/report/{sample}.PASS.vcf.log"
     shell:
-        "( zcat {input} | grep '^#' >{output} && zcat {input} | grep -v '^#' | grep PASS >> {output} ) &>{log}"
+        "( zcat {input} | grep -v '^#' | grep PASS >> {output} ) &>{log}"  #( zcat {input} | grep '^#' >{output} &&
 
-rule makeBatFile:
+rule createBatFile:
     input:
-        vcf = "reports/{sample}/{sample}.PASS.vcf"##Needs to be PASS only vcf!
-    output:
-        temp("reports/{sample}/igv.temp")
-    params:
-        outdir = "reports/{sample}/",
-        padding = "60",
-        sort = "base", #ort: base, position, strand, quality, sample, and readGroup ## Hava to add pos after?? Why not always working?
-        view = "-clps", # Need to manually change all collaps to squshi after bedtools,
-        format = "svg" #svg, png, eps
-    log:
-        "logs/report/{sample}.batFile.log"
-    singularity:
-        "bedtools-2.29.0--3.simg"
-    shell:
-        "( bedtools igv -path {params.outdir} -slop {params.padding} -sort {params.sort} {params.view} -i {input.vcf} -img {params.format} >> {output}) &> {log}"
-
-def get_bed(wildcards):
-    bedFil=config["bed"]["cartool"]
-    bed="\/".join(bedFil.split('/'))
-    return bed
-
-def get_bam(wildcards):
-    bamFil="mapped/"+wildcards.sample+".bam"
-    bam="\/".join(bamFil.split('/'))
-    return bam
-
-rule fixBatFile:
-    input:
+        vcf = "reports/{sample}/{sample}.PASS.vcf",
         bam = "mapped/{sample}.bam",
-        batTmp = "reports/{sample}/igv.temp",
-        bedfile =  config["bed"]["cartool"]
+        bed = lambda wildcards: config["bed"]["cartool"],
+        ref = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/igv/genomes/hg19.genome"
     output:
-        bat = "reports/{sample}/{sample}-igv.bat"
+        "reports/{sample}/{sample}-igv.bat"
     params:
-        ref = "hg19", ## Specify path to cache instead!
-        bamfile = get_bam,
-        bedfile = get_bed
+        outfolder = "reports/{sample}/",
+        padding = "60",
+        sort = "base", #Type of sorting: base, position, strand, quality, sample or readgroup. Could add pos after, but always uses middle.
+        view = "squish",  #Type of view, collaps, squished...
+        format = "svg" #svg, jpg
     log:
-        log = "logs/report/{sample}-fixbat.log"
+        "logs/report/{sample}-makeBat.log"
     shell:
-        "( sed '1s/^/new\\ngenome {params.ref}\\nload {params.bedfile}\\nload {params.bamfile}\\n/ ; s/collapse/squish/ ; $aexit' {input.batTmp} >> {output.bat}) &> {log}"
-    # run:
-    #     import subprocess
-    #     bam = "\/".join(input.bam.split('/'))
-    #     bedA = "\/".join(input.bedfile.split('/'))
-    #     subprocess.call("( sed '1s/^/new\\ngenome "+params.ref+"\\nload "+bedA+"\\nload "+bam+"\\n/ ; s/collapse/squish/ ; $aexit' "+input.batTmp+" >> "+output.bat+") &> "+log.log, shell=True)
+        "(python src/report/makeBatfile.py {output} {input.vcf} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
 
 rule igv:
     input:
