@@ -1,0 +1,27 @@
+samples:
+  "10859-17-normal": "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/fastq/twist_hemato/10859-17_S4_R1_001.fastq.gz"
+  "1120217-normal": "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/fastq/twist_hemato/11202_17_S8_R1_001.fastq.gz"
+  "239618-normal": "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/fastq/twist_hemato/2396_18_S6_R1_001.fastq.gz"
+  "53276-normal": "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/fastq/twist_hemato/53276_S15_R1_001.fastq.gz"
+  "55686-normal": "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/fastq/twist_hemato/55686_S4_R1_001.fastq.gz"
+  "60751-normal": "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/fastq/twist_hemato/60751_S13_R1_001.fastq.gz"
+  "62419-normal": "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/fastq/twist_hemato/62419_S2_R1_001.fastq.gz"
+  "65294-normal": "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/fastq/twist_hemato/65294_S11_R1_001.fastq.gz"
+  "7421-18-normal": "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/fastq/twist_hemato/7421-18_S6_R1_001.fastq.gz"
+  "9672-17-normal": "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/fastq/twist_hemato/9672-17_S2_R1_001.fastq.gz"
+  # "SampleA": "SampleA_R1_001.fastq.gz"
+
+methods:   ##Should we have it here or skip and put in snakemake-file
+  vardict: "vardict"
+  pisces: "pisces"
+  freebayes: "freebayes"
+  # lofreq: "lofreq"
+  snver: "snver" #manta: "manta"
+
+bed:
+  bedfile: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle/somaticpipeline/src/bedfiles/twist_annotated_padded6.bed" ##Need to be padded +-6bp and annotated. Gene.Exon/IntronX right now +-15
+  pindel: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle/somaticpipeline/src/bedfiles/twist_annotated_pindel.bed"
+  cartool: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle/somaticpipeline/src/bedfiles/twist_annotated_cartool.bed" #Need a better, with less genes!
+
+cartool:
+  cov: "100 500 1000"

@@ -1,0 +1,6 @@
+extra_fn_clean_exts: ##from this until end
+    - type: regex
+      pattern: '_S[0-9]_R[12]_001'
+    - type: regex
+      pattern: '_R[12]_trimmed'
+# extra_fn_clean_trim:   #if found in beginning or end
