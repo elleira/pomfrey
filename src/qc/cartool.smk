@@ -22,7 +22,7 @@ rule cartool:
 
 rule fixoutput:
     input:
-        header = "../multiqc-header.txt",
+        header = "src/report/multiqc-header.txt",
         stat = "qc/{sample}/{sample}_Stat_table.csv"
     output:
         "qc/{sample}/{sample}_cartool_mqc.csv"

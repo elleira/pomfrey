@@ -11,7 +11,7 @@ rule recall:
     log:
         "logs/recall/{sample}.3.log"
     singularity:
-        "/gluster-storage-volume/projects/wp4/nobackup/workspace/singularity/bcbio-variation-recall.simg"
+        "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/singularity/bcbio-variation-recall.simg"
         # "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle/somaticpipeline/src/singularity/bcbio-variation-recall-0.2.6-0.simg" Fungerar inte beh;ver bcftool!!
         # "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/bcbio-variation-recall.simg" #Dev
     shell: ##Remove filtered?? if so --nofiltered

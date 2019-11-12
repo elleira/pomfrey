@@ -4,7 +4,7 @@ rule multiqc:
     output:
         "reports/{sample}/{sample}.html"
     params:
-        "-c ../multiqc_config.yaml"  # Optional: extra parameters for multiqc.
+        "-c src/report/multiqc_config.yaml"  # Optional: extra parameters for multiqc.
     log:
         "logs/multiqc/{sample}.log"
     singularity:

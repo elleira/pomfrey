@@ -37,4 +37,4 @@ rule filterVep:
     singularity:
         "python3.6.0-pysam-xlsxwriter.simg"
     shell:
-        "(python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/filter_vcf.py {input.vcf} {output}) 2> {log}"
+        "(python src/variantCalling/filter_vcf.py {input.vcf} {output}) 2> {log}"

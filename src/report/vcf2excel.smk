@@ -32,4 +32,4 @@ rule vcf2excel:
     singularity:
         "python3.6.0-pysam-xlsxwriter.simg"
     shell:
-        "(python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {output} ) &> {log}"
+        "(python src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {output} ) &> {log}"
