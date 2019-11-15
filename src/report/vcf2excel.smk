@@ -22,7 +22,8 @@ rule vcf2excel:
         indel = "variantCalls/pindel/{sample}.pindel.vcf.gz",
         cart =  "qc/{sample}/{sample}_MeanCoverageShortList.csv",
         sing = "containers.txt",
-        bed = lambda wildcards: config["bed"]["pindel"]
+        bed = lambda wildcards: config["bed"]["pindel"],
+        hotspot = lambda wildcards: config["bed"]["hotspot"]
     output:
         "reports/{sample}/{sample}.xlsx"
     params:
@@ -32,4 +33,4 @@ rule vcf2excel:
     singularity:
         "python3.6.0-pysam-xlsxwriter.simg"
     shell:
-        "(python src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {output} ) &> {log}"
+        "(python src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {input.hotspot} {output} ) &> {log}"
