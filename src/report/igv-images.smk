@@ -1,25 +1,25 @@
 rule makePassVCF:
     input:
-        snv = "variantCalls/annotation/{sample}.3.filt.vcf.gz",
+        snv = "Results/{sample}/Data/{sample}.3.filt.vcf.gz",
         pindel = "variantCalls/pindel/{sample}.pindel.ann.vcf"
     output:
-        temp("reports/{sample}/{sample}.PASS.vcf")
+        temp("Results/{sample}/Reports/{sample}.PASS.vcf")
     log:
         "logs/report/{sample}.PASS.vcf.log"
     shell:
-        """( zcat {input.snv} | grep -v '^#' | grep PASS >> {output}  && cat {input.pindel} | grep -v '^#' | grep PASS || true >> {output} ) &>{log}"""
+        """( zcat {input.snv} | grep -v '^#' | grep PASS >> {output}  && cat {input.pindel} | grep -v '^#' | grep PASS  >> {output} || true ) &>{log}"""
 
 rule createBatFile:
     input:
-        vcf = "reports/{sample}/{sample}.PASS.vcf",
+        vcf = "Results/{sample}/Reports/{sample}.PASS.vcf",
         indel = "variantCalls/pindel/{sample}.pindel.ann.vcf",
-        bam = "mapped/{sample}.bam",
+        bam = "Results/{sample}/Data/{sample}.bam",
         bed = lambda wildcards: config["bed"]["cartool"],
         ref = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/igv/genomes/hg19.genome"
     output:
-        "reports/{sample}/{sample}-igv.bat"
+        "Results/{sample}/Reports/{sample}-igv.bat"
     params:
-        outfolder = "reports/{sample}/",
+        outfolder = "Results/{sample}/Reports/",
         padding = "60",
         sort = "base", #Type of sorting: base, position, strand, quality, sample or readgroup. Could add pos after, but always uses middle.
         view = "squish",  #Type of view, collaps, squished...
@@ -31,9 +31,9 @@ rule createBatFile:
 
 rule igv:
     input:
-        bat = "reports/{sample}/{sample}-igv.bat"
+        bat = "Results/{sample}/Reports/{sample}-igv.bat"
     output:
-        "reports/{sample}/done.txt"##Several files, add a done?
+        "Results/{sample}/Reports/done-igv.txt"##Several files, add a done?
     log:
         "logs/report/{sample}.igv.log"
     threads:

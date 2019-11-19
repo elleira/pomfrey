@@ -2,7 +2,7 @@ rule multiqc:
     input: #Add bcl2fastq folder?
         ["qc/{sample}/{sample}.samtools-stats.txt", "qc/{sample}/{sample}_fastqc.zip", "fastq/trimmed/{sample}/{sample}.qc.txt","qc/{sample}/{sample}_cartool_mqc.csv"]
     output:
-        "reports/{sample}/{sample}.html"
+        "Results/{sample}/Reports/{sample}.html"
     params:
         "-c src/report/multiqc_config.yaml"  # Optional: extra parameters for multiqc.
     log:

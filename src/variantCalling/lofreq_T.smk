@@ -1,6 +1,6 @@
 rule lofreq:
     input:
-        "mapped/{sample}.bam"
+        "Results/{sample}/Data/{sample}.bam"
     output:
         temp("variantCalls/callers/lofreq/{sample}.lofreq.vcf")
     log:

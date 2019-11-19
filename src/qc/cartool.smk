@@ -1,8 +1,8 @@
 rule cartool:
     input:
-        bam = "mapped/{sample}.bam",
+        bam = "Results/{sample}/Data/{sample}.bam",
         bed = lambda wilcards: config["bed"]["cartool"],
-        bai = "mapped/{sample}.bam.bai"
+        bai = "Results/{sample}/Data/{sample}.bam.bai"
     output:
         statstable = "qc/{sample}/{sample}_Stat_table.csv",
         cartoollog =  "qc/{sample}/{sample}_Log.csv",

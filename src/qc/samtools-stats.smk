@@ -1,6 +1,6 @@
 rule samtools_stats:
     input:
-        "mapped/{sample}.bam"
+        "Results/{sample}/Data/{sample}.bam"
     output:
         "qc/{sample}/{sample}.samtools-stats.txt"
     params:

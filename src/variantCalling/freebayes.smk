@@ -1,8 +1,8 @@
 rule freebayes:
     input:
         ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
-        samples = "mapped/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
-        index = "mapped/{sample}.bam.bai"
+        samples = "Results/{sample}/Data/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
+        index = "Results/{sample}/Data/{sample}.bam.bai"
     output:
         temp("variantCalls/callers/freebayes/{sample}.freebayes.unsort.vcf")  # either .vcf or .bcf
     log:
