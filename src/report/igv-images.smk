@@ -1,16 +1,18 @@
 rule makePassVCF:
     input:
-        "variantCalls/annotation/{sample}.3.filt.vcf.gz"
+        snv = "variantCalls/annotation/{sample}.3.filt.vcf.gz",
+        pindel = "variantCalls/pindel/{sample}.pindel.ann.vcf"
     output:
         temp("reports/{sample}/{sample}.PASS.vcf")
     log:
         "logs/report/{sample}.PASS.vcf.log"
     shell:
-        "( zcat {input} | grep -v '^#' | grep PASS >> {output} ) &>{log}"  #( zcat {input} | grep '^#' >{output} &&
+        """( zcat {input.snv} | grep -v '^#' | grep PASS >> {output}  && cat {input.pindel} | grep -v '^#' | grep PASS || true >> {output} ) &>{log}"""
 
 rule createBatFile:
     input:
         vcf = "reports/{sample}/{sample}.PASS.vcf",
+        indel = "variantCalls/pindel/{sample}.pindel.ann.vcf",
         bam = "mapped/{sample}.bam",
         bed = lambda wildcards: config["bed"]["cartool"],
         ref = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/igv/genomes/hg19.genome"
@@ -25,7 +27,7 @@ rule createBatFile:
     log:
         "logs/report/{sample}-makeBat.log"
     shell:
-        "(python src/report/makeBatfile.py {output} {input.vcf} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
+        "(python src/report/makeBatfile.py {output} {input.vcf} {input.indel} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
 
 rule igv:
     input:

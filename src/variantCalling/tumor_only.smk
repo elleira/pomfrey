@@ -9,7 +9,7 @@ include:    "vardict_T.smk"
 
 include:    "pisces.smk"
 
-#include:    "manta_T.smk"  #no depth, weird filtering
+#include:    "manta_T.smk"  
 rule fixAF:
     input:
         "variantCalls/callers/{method}/{sample}.{method}.weirdAF.vcf"

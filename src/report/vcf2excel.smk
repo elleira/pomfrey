@@ -8,13 +8,26 @@ rule makeContainersList:  ##Depends on not removing any slurms!
         expand("reports/{sample}/{sample}.html", sample=config["samples"]),
         expand("variantCalls/pindel/{sample}.pindel.vcf.gz", sample=config["samples"]),
         expand("variantCalls/annotation/{sample}.3.filt.vcf.gz", sample=config["samples"]),
-	expand("reports/{sample}/done.txt", sample=config["samples"])
+	    expand("reports/{sample}/done.txt", sample=config["samples"])
     output:
         temp("containers.txt")
     log:
         "logs/report/containersLog.log"
     shell:
         "(cat slurm-*out | grep singularity | sort | uniq | cut -d' ' -f4 > {output}) &> {log}"
+
+
+rule fixCoverageHotspot:
+    input:
+        tsv = "qc/{sample}/{sample}_coverage.tsv",
+        bed = lambda wildcards: config["bed"]["hotspot"]
+    output:
+        "qc/{sample}/{sample}_coverageShort.tsv"
+    log:
+        "logs/report/{sample}.covShort.log"
+    shell:
+        """ ( while read line; do chr=$(echo $line | awk '{{print $1}}');pos=$(echo $line | awk '{{print $2}}');cat {input.tsv} | grep ${{chr}} | grep ${{pos}} >>{output} ; done < {input.bed} ) &> {log} """
+
 
 rule vcf2excel:
     input:
@@ -23,7 +36,8 @@ rule vcf2excel:
         cart =  "qc/{sample}/{sample}_MeanCoverageShortList.csv",
         sing = "containers.txt",
         bed = lambda wildcards: config["bed"]["pindel"],
-        hotspot = lambda wildcards: config["bed"]["hotspot"]
+        hotspot = lambda wildcards: config["bed"]["hotspot"],
+        shortCov = "qc/{sample}/{sample}_coverageShort.tsv"
     output:
         "reports/{sample}/{sample}.xlsx"
     params:

@@ -85,11 +85,6 @@ with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShort.tsv"),'r
 
 ######### Overview sheet (1) #################
 
-#SampleA
-#Type of sample?
-#Seq date
-#Processed by?
-#Positions in hotspotlist under 500x
 worksheetOver.write(0,0, sample, headingFormat)
 worksheetOver.write(1,0, "Processing date: "+today.strftime("%B %d, %Y"))
 worksheetOver.write_row(2,0, emptyList,lineFormat)
@@ -218,7 +213,7 @@ for record in vcf_snv.fetch():
         maxPop = record.info["CSQ"][0].split("|")[61]
 
         # Should pos be shifted if del??
-        snv = [gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], cosmic, cosmicN ,clinical, rs, maxPopAf, maxPop] #Add cosmic nr hits.
+        snv = [gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], cosmic, cosmicN ,clinical, rs, maxPopAf, maxPop]
         if int(record.info["DP"]) < 500:
             worksheetSNV.write_row(row, col, snv, yellowFormat)
         else:
@@ -262,7 +257,8 @@ for indel in vcf_indel.fetch():
         svlen = indel.info["SVLEN"]
 
         ads = indel.samples[sample]["AD"]
-        ad = ', '.join([str(i) for i in ads])
+        af = int(ads[1])/(int(ads[0]) + int(ads[1]))
+        # ad = ', '.join([str(i) for i in ads])
 
         if len(indel.alts) == 1:
             alt=indel.alts[0]
@@ -270,7 +266,11 @@ for indel in vcf_indel.fetch():
             print(indel.alts)
             sys.exit() ##Fix!!
 
-        indelRow = ['',indel.contig,indel.pos, indel.stop, svlen, ad, indel.ref, alt] ##Add gene, how? Annotera med vep, f[r ut gene?
+        csqIndel = indel.info["CSQ"][0] #VEP annotation
+
+        indelGene = csqIndel.split("|")[3]
+
+        indelRow = [indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt]
         worksheetIndel.write_row(row,col,indelRow)
         row += 1
 

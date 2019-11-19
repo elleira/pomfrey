@@ -4,7 +4,7 @@ rule pisces:
       reffolder = "/data/ref_genomes/hg19/genome_fasta/",
       index = "mapped/{sample}.bam.bai"
     output:
-        vcf = "variantCalls/callers/pisces/{sample}/{sample}.vcf"
+        vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf"
     params:
         outfolder = "variantCalls/callers/pisces/{sample}",
         bed = lambda wildcards: config["bed"]["bedfile"]
@@ -13,13 +13,13 @@ rule pisces:
         "logs/pisces/{sample}.log"
     singularity:
         "Pisces-5.2.11.simg"
-    shell:
-        "(dotnet /app/Pisces/Pisces.dll -b {input.bam} -g {input.reffolder} -i {params.bed} -gVCF FALSE -t 1 --filterduplicates TRUE --outfolder {params.outfolder} ) 2> {log}"
+    shell:  #Remove gVCF False for genome vcf and save for db, and artifacts? -gVCF FALSE
+        "(dotnet /app/Pisces/Pisces.dll -b {input.bam} -g {input.reffolder} -i {params.bed} -t 1 --filterduplicates TRUE --outfolder {params.outfolder} ) 2> {log}"
 ##Bed file?
 
 rule piscesFix: ##Might not be needed with -gVCF FALSE
     input:
-        "variantCalls/callers/pisces/{sample}/{sample}.vcf"
+        "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf"
     output:
         "variantCalls/callers/pisces/{sample}.pisces.unsorted.vcf"
     log:

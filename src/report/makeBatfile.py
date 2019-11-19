@@ -3,14 +3,15 @@ import sys
 
 batfile = open(sys.argv[1], 'w')
 # vcf_in=sys.argv[2]
-bamfile=sys.argv[3]
-reffile = sys.argv[4]
-bedfile = sys.argv[5]
-outfolder = sys.argv[6]
-padding = int(sys.argv[7])
-sort = sys.argv[8]
-view = sys.argv[9]
-format = sys.argv[10]
+#indel_in=sys.argv[3]
+bamfile=sys.argv[4]
+reffile = sys.argv[5]
+bedfile = sys.argv[6]
+outfolder = sys.argv[7]
+padding = int(sys.argv[8])
+sort = sys.argv[9]
+view = sys.argv[10]
+format = sys.argv[11]
 
 batfile.write("new")
 batfile.write("\ngenome "+reffile)
@@ -26,7 +27,11 @@ with open(sys.argv[2], 'r') as vcfPASS:
         high = pos+len(vcfRow[3])+padding
 
         batfile.write("\ngoto "+chr+":"+str(low)+"-"+str(high))
-        batfile.write("\nsort "+sort+"\n"+view+" "+bamfile)
+        if len(vcfRow[3]) > len(vcfRow[4]):  #Deletions
+            sortPos = int(vcfRow[1])+1
+        else:
+            sortPos = int(vcfRow[1])
+        batfile.write("\nsort "+sort+" "+str(sortPos)+"\n"+view+" "+bamfile.split("/")[-1])
         batfile.write("\nsnapshot "+chr+"_"+str(pos)+"_"+str(pos+len(vcfRow[3]))+"."+format)
 
 batfile.write("\nexit")

@@ -63,15 +63,32 @@ rule pindel2vcf:
     shell:
         "(pindel2vcf -P variantCalls/pindel/{wildcards.sample}/{wildcards.sample} -r {input.ref} -R {params.refname} -d {params.refdate} -v {output} -e {params.e} -mc {params.mc} -G -is {params.minsize} ) &> {log}"
 
+rule annotatePindel:
+    input:
+        vcf = "variantCalls/pindel/{sample}.pindel.vcf",
+        fasta = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
+        cache = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/vep"
+    output:
+        "variantCalls/pindel/{sample}.pindel.ann.vcf"
+    params:
+        "--everything --check_existing --pick"
+    log:
+        "logs/pindel/{sample}.ann.log"
+    threads:    8
+    singularity:
+        "ensembl-vep-96.3.simg"
+    shell:
+        """(if [[ $(cat {input.vcf} | grep -v '^#' | wc -l) -eq 0 ]]; then mv {input.vcf} {output}
+        else vep --vcf --no_stats -o {output} -i {input.vcf} --dir_cache {input.cache} --fork {threads} --cache --merged --offline --fasta {input.fasta} {params} ; fi) &> {log}"""
+
 rule pindelIndex:
     input:
-        "variantCalls/pindel/{sample}.pindel.vcf"
+        "variantCalls/pindel/{sample}.pindel.ann.vcf"
     output:
-        gz = "variantCalls/pindel/{sample}.pindel.vcf.gz",
-        tbi = "variantCalls/pindel/{sample}.pindel.vcf.gz.tbi"
+        tbi = "variantCalls/pindel/{sample}.pindel.ann.vcf.tbi"
     log:
         "logs/pindel/{sample}.index.log"
     singularity:
         "bcftools-1.9--8.simg"
     shell:
-        "( bgzip {input} && tabix {input}.gz ) &> {log}"
+        "( tabix {input}.gz ) &> {log}"

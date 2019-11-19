@@ -8,6 +8,6 @@ vcf_out=VariantFile(sys.argv[2],'w', header=vcf_in.header)
 
 for record in vcf_in.fetch():
     if record.filter.keys()==["PASS"]:
-        if len(record.ref) > len(record.alts[0]):
-            record.pos = record.pos-1 ##Blir inte ratt
+        # if len(record.ref) > len(record.alts[0]): Deletion but need to remove first base as well
+        #     record.pos = record.pos-1
         vcf_out.write(record)

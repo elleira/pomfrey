@@ -6,7 +6,7 @@ rule all:
         expand("reports/{sample}/{sample}.html", sample=config["samples"]), ##Borde vi addera which run?
         expand("reports/{sample}/{sample}.xlsx", sample=config["samples"]),
         expand("reports/{sample}/done.txt", sample=config["samples"]),  ## For the igv images
-        expand("variantCalls/pindel/{sample}.pindel.vcf.gz", sample=config["samples"]),
+        expand("variantCalls/pindel/{sample}.pindel.ann.vcf", sample=config["samples"]),
         expand("variantCalls/annotation/{sample}.3.filt.vcf.gz", sample=config["samples"]),
         expand("variantCalls/recall/{sample}.3.vcf.gz", sample=config["samples"]) ## Reports, final vcf, bam, fastqs..
 

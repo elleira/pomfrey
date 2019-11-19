@@ -8,7 +8,7 @@ consequences = ['transcript_ablation', 'splice_acceptor_variant','splice_donor_v
 # Add new filter descriptions to new header
 new_header=vcf_in.header
 new_header.filters.add("PopAF",None,None,"Population AF over two percent")
-new_header.filters.add("LowDP",None,None,"DP is lower than 100x")
+new_header.filters.add("DP100",None,None,"DP is lower than 100x")
 new_header.filters.add("ProtCode",None,None,"Biotype is not protein coding")
 new_header.filters.add("Conseq",None,None,"Consequence is not deemed relevant (See XX for more info)")
 # new_header.filters.add("Syno",None,None,"Consequence is synonymous variant")
@@ -21,7 +21,7 @@ for record in vcf_in.fetch():
     # import pdb; pdb.set_trace()
     #Filter based on coverage in DP field in INFO.
     if record.info["DP"] <= 100:
-        record.filter.add("LowDP")
+        record.filter.add("DP100")
 
     # For every transcript?? Seperated with , not all differs, popfreq is the same on all.
     #Filter on known population freq (KGP phase3 and gnomAD r2.1 exomes only )
