@@ -1,6 +1,6 @@
 rule makePassVCF:
     input:
-        snv = "Results/{sample}/Data/{sample}.3.filt.vcf.gz",
+        snv = "Results/{sample}/Data/{sample}.3.filt.vcf",
         pindel = "variantCalls/pindel/{sample}.pindel.ann.vcf"
     output:
         temp("Results/{sample}/Reports/{sample}.PASS.vcf")

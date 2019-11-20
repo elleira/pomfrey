@@ -1,7 +1,7 @@
 rule snver:
     input:
-        bam = "mapped/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
-        index = "mapped/{sample}.bam.bai",
+        bam = "Results/{sample}/Data/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
+        index = "Results/{sample}/Data/{sample}.bam.bai",
         ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
         bed = lambda wildcards: config["bed"]["bedfile"]
     output:

@@ -7,8 +7,8 @@ rule cutadapt:
     input:
         getFastqs
     output:
-        fastq1="fastq/trimmed/{sample}_R1_trimmed.fastq",
-        fastq2="fastq/trimmed/{sample}_R2_trimmed.fastq",
+        fastq1="fastq/trimmed/{sample}/{sample}_R1_trimmed.fastq",
+        fastq2="fastq/trimmed/{sample}/{sample}_R2_trimmed.fastq",
         qc="fastq/trimmed/{sample}/{sample}.qc.txt"
     params:
         # https://cutadapt.readthedocs.io/en/stable/guide.html#adapter-types
@@ -20,6 +20,6 @@ rule cutadapt:
         "logs/cutadapt/{sample}.log"
     threads:    8
     singularity:
-        "cutadaptv2.5-0.simg"
+        config["singularitys"]["cutadapt"]
     wrapper:
         "0.38.0/bio/cutadapt/pe"

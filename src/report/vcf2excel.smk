@@ -6,8 +6,8 @@ def get_minCov(wildcards):
 rule makeContainersList:  ##Depends on not removing any slurms! And expects all using the same pipeline
     input:
         expand("Results/{sample}/Reports/{sample}.html", sample=config["samples"]),
-        expand("variantCalls/pindel/{sample}.pindel.vcf.gz", sample=config["samples"]),
-        expand("Results/{sample}/Data/{sample}.3.filt.vcf.gz", sample=config["samples"]),
+        expand("variantCalls/pindel/{sample}.pindel.ann.vcf", sample=config["samples"]),
+        expand("Results/{sample}/Data/{sample}.3.filt.vcf", sample=config["samples"]),
 	    expand("Results/{sample}/Reports/done-igv.txt", sample=config["samples"])
     output:
         temp("containers.txt")
@@ -31,8 +31,8 @@ rule fixCoverageHotspot:
 
 rule vcf2excel:
     input:
-        snv =  "Results/{sample}/Data/{sample}.3.filt.vcf.gz",
-        indel = "variantCalls/pindel/{sample}.pindel.vcf.gz",
+        snv =  "Results/{sample}/Data/{sample}.3.filt.vcf",
+        indel = "variantCalls/pindel/{sample}.pindel.vcf",
         cart =  "qc/{sample}/{sample}_MeanCoverageShortList.csv",
         sing = "containers.txt",
         bed = lambda wildcards: config["bed"]["pindel"],

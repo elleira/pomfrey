@@ -1,10 +1,10 @@
 rule pisces:
     input:
-      bam = "mapped/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
+      bam = "Results/{sample}/Data/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
       reffolder = "/data/ref_genomes/hg19/genome_fasta/",
-      index = "mapped/{sample}.bam.bai"
+      index = "Results/{sample}/Data/{sample}.bam.bai"
     output:
-        vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf"
+        vcf = temp("variantCalls/callers/pisces/{sample}.genome.vcf")
     params:
         outfolder = "variantCalls/callers/pisces/{sample}",
         bed = lambda wildcards: config["bed"]["bedfile"]
@@ -19,9 +19,9 @@ rule pisces:
 
 rule piscesFix: ##Might not be needed with -gVCF FALSE
     input:
-        "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf"
+        "variantCalls/callers/pisces/{sample}.genome.vcf"
     output:
-        "variantCalls/callers/pisces/{sample}.pisces.unsorted.vcf"
+        temp("variantCalls/callers/pisces/{sample}.pisces.unsorted.vcf")
     log:
         "logs/pisces/{sample}.2.log"
     shell:
@@ -38,3 +38,18 @@ rule sortPisces:
         "logs/pisces/{sample}.sort.log"
     shell:
         "(bcftools sort -o {output} -O v {input}) &> {log}"
+
+
+rule compressGenomeVcf:
+    input:
+        vcf = "variantCalls/callers/pisces/{sample}.genome.vcf",
+        wait = "variantCalls/callers/pisces/{sample}.pisces.unsorted.vcf"
+    output:
+        vcf = "Results/{sample}/Data/{sample}.genome.vcf.gz",
+        tbi = "Results/{sample}/Data/{sample}.genome.vcf.gz.tbi"
+    singularity:
+        "bcftools-1.9--8.simg"
+    log:
+        "logs/pisces/{sample}.gz.log"
+    shell:
+        "(bgzip -c {input.vcf} >> {output.vcf} && tabix {output.vcf}) 2> {log}"

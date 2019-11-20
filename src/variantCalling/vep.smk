@@ -31,7 +31,7 @@ rule filterVep:
     input:
         vcf="variantCalls/annotation/raw/{sample}.{support}.raw.vcf.gz"
     output:
-        "variantCalls/annotation/{sample}.{support,[0-9]}.filt.vcf"
+        "Results/{sample}/Data/{sample}.{support,[0-9]}.filt.vcf"
     log:
         "logs/vep/filter/{sample}.{support}.log"
     singularity:

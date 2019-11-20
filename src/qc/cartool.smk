@@ -6,6 +6,7 @@ rule cartool:
     output:
         statstable = "qc/{sample}/{sample}_Stat_table.csv",
         cartoollog =  "qc/{sample}/{sample}_Log.csv",
+        coverage = "qc/{sample}/{sample}_coverage.tsv",
         full = "qc/{sample}/{sample}_MeanCoverageFullList.csv",
         short = "qc/{sample}/{sample}_MeanCoverageShortList.csv"
     params:
@@ -22,7 +23,7 @@ rule cartool:
 
 rule fixoutput:
     input:
-        header = "src/report/multiqc-header.txt",
+        header = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/multiqc-header.txt", #Always change to correct full path
         stat = "qc/{sample}/{sample}_Stat_table.csv"
     output:
         "qc/{sample}/{sample}_cartool_mqc.csv"
