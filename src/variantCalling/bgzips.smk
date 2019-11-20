@@ -8,6 +8,6 @@ rule bgzipCallers:
     log:
         "logs/bgzip/{method}/{sample}.log"
     singularity:
-        "bcftools-1.9--8.simg"
+        config["singularitys"]["bcftools"]
     shell:
         "(bgzip {input.vcf} && tabix {output.vcf}) 2> {log}"

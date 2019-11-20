@@ -30,7 +30,7 @@ rule pindel:
     log:
         "logs/pindel/{sample}.pindel.log"
     singularity:
-        "pindel-0.2.5b8.simg"
+        config["singularitys"]["pindel"]
     threads:    4
     shell:
         " (pindel -f {input.ref} -i {input.bamconfig} -T {threads} -x {params.x} -B {params.B} -j {input.bed} -o variantCalls/pindel/{wildcards.sample}/{wildcards.sample} ) &> {log}"
@@ -58,7 +58,7 @@ rule pindel2vcf:
     log:
         "logs/pindel/{sample}.pindel2vcf.log"
     singularity:
-        "pindel-0.2.5b8.simg"
+        config["singularitys"]["pindel"]
     threads:    1
     shell:
         "(pindel2vcf -P variantCalls/pindel/{wildcards.sample}/{wildcards.sample} -r {input.ref} -R {params.refname} -d {params.refdate} -v {output} -e {params.e} -mc {params.mc} -G -is {params.minsize} ) &> {log}"
@@ -76,7 +76,7 @@ rule annotatePindel:
         "logs/pindel/{sample}.ann.log"
     threads:    8
     singularity:
-        "ensembl-vep-96.3.simg"
+        config["singularitys"]["vep"]
     shell:
         """(if [[ $(cat {input.vcf} | grep -v '^#' | wc -l) -eq 0 ]]; then mv {input.vcf} {output}
         else vep --vcf --no_stats -o {output} -i {input.vcf} --dir_cache {input.cache} --fork {threads} --cache --merged --offline --fasta {input.fasta} {params} ; fi) &> {log}"""
@@ -89,6 +89,6 @@ rule pindelIndex:
     log:
         "logs/pindel/{sample}.index.log"
     singularity:
-        "bcftools-1.9--8.simg"
+        config["singularitys"]["bcftools"]
     shell:
         "( tabix {input}.gz ) &> {log}"

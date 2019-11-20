@@ -11,7 +11,7 @@ rule recall:
     log:
         "logs/recall/{sample}.3.log"
     singularity:
-        "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/singularity/bcbio-variation-recall.simg"
+        config["singularitys"]["recall"]
         # "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle/somaticpipeline/src/singularity/bcbio-variation-recall-0.2.6-0.simg" Fungerar inte beh;ver bcftool!!
         # "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/bcbio-variation-recall.simg" #Dev
     shell: ##Remove filtered?? if so --nofiltered
@@ -37,6 +37,6 @@ rule sort_recall:
     log:
         "logs/recall/{sample}.sort.log"
     singularity:
-        "bcftools-1.9--8.simg"
+        config["singularitys"]["bcftools"]
     shell:
         "( bcftools sort -o {output} -O z {input} )&> {log}"

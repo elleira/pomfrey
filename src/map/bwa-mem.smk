@@ -1,7 +1,7 @@
 
 rule bwa_mem:
     input:
-        reads=["fastq/trimmed/{sample}_R1_trimmed.fastq", "fastq/trimmed/{sample}_R2_trimmed.fastq"]
+        reads=["fastq/trimmed/{sample}/{sample}_R1_trimmed.fastq", "fastq/trimmed/{sample}/{sample}_R2_trimmed.fastq"]
     output:
         "Results/{sample}/Data/{sample}.bam"
     log:
@@ -14,7 +14,7 @@ rule bwa_mem:
         sort_extra=""            # Extra args for samtools/picard.
     threads: 8
     singularity:
-        "bwa0.7.17-samtools-1.9.simg" #bwa 0.7.17, samtools 1.9, picard 2.20.11
+        config["singularitys"]["bwa"] #bwa 0.7.17, samtools 1.9, picard 2.20.11
     wrapper:
         "0.38.0/bio/bwa/mem"
 
@@ -28,6 +28,6 @@ rule samtools_index:
     log:
         "logs/map/samtools_index/{sample}.log" # optional params string
     singularity:
-        "bwa0.7.17-samtools-1.9.simg"
+        config["singularitys"]["bwa"]
     wrapper:
         "0.38.0/bio/samtools/index"

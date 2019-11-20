@@ -9,7 +9,7 @@ include:    "vardict_T.smk"
 
 include:    "pisces.smk"
 
-#include:    "manta_T.smk"  
+#include:    "manta_T.smk"
 rule fixAF:
     input:
         "variantCalls/callers/{method}/{sample}.{method}.weirdAF.vcf"
@@ -18,7 +18,7 @@ rule fixAF:
     log:
         "logs/fixAF/{method}/{sample}.log"
     singularity:
-        "python3.6.0-pysam-xlsxwriter.simg"
+        config["singularitys"]["python"]
     shell:
         "(python src/variantCalling/fix_af.py {input} {output}) &> {log}"
 

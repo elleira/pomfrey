@@ -39,6 +39,6 @@ rule igv:
     threads:
         2
     singularity:
-        "igv-2.4.10-0.simg"
+        config["singularitys"]["igv"]
     shell:
         "(xvfb-run --server-args='-screen 0 3200x2400x24' --auto-servernum --server-num=1 igv.sh -b {input.bat} && touch {output}) &> {log}"

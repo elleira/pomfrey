@@ -8,6 +8,6 @@ rule multiqc:
     log:
         "logs/multiqc/{sample}.log"
     singularity:
-        "multiqc-1.7.simg"
+        config["singularitys"]["multiqc"]
     wrapper:
         "0.38.0/bio/multiqc"

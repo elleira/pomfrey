@@ -9,6 +9,6 @@ rule samtools_stats:
     log:
         "logs/samtools_stats/{sample}.log"
     singularity:
-        "bwa0.7.17-samtools-1.9.simg"
+        config["singularitys"]["bwa"]
     wrapper:
         "0.38.0/bio/samtools/stats"

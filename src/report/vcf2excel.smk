@@ -6,15 +6,15 @@ def get_minCov(wildcards):
 rule makeContainersList:  ##Depends on not removing any slurms! And expects all using the same pipeline
     input:
         expand("Results/{sample}/Reports/{sample}.html", sample=config["samples"]),
-        expand("variantCalls/pindel/{sample}.pindel.ann.vcf", sample=config["samples"]),
-        expand("Results/{sample}/Data/{sample}.3.filt.vcf", sample=config["samples"]),
-	    expand("Results/{sample}/Reports/done-igv.txt", sample=config["samples"])
+
     output:
         temp("containers.txt")
     log:
         "logs/report/containersLog.log"
-    shell:
-        "(cat slurm-*out | grep singularity | sort | uniq | cut -d' ' -f4 > {output}) &> {log}"
+    run:
+        for k,v in config["singularitys"].items():
+            shell("echo {v} >> containers.txt")
+        # "(cat slurm-*out | grep singularity | sort | uniq | cut -d' ' -f4 > {output}) &> {log}"
 
 
 rule fixCoverageHotspot:
@@ -32,11 +32,11 @@ rule fixCoverageHotspot:
 rule vcf2excel:
     input:
         snv =  "Results/{sample}/Data/{sample}.3.filt.vcf",
-        indel = "variantCalls/pindel/{sample}.pindel.vcf",
+        indel = "variantCalls/pindel/{sample}.pindel.ann.vcf",
         cart =  "qc/{sample}/{sample}_MeanCoverageShortList.csv",
         sing = "containers.txt",
-        bed = lambda wildcards: config["bed"]["pindel"],
-        hotspot = lambda wildcards: config["bed"]["hotspot"],
+        bed = config["bed"]["pindel"],
+        hotspot = config["bed"]["hotspot"],
         shortCov = "qc/{sample}/{sample}_coverageShort.tsv"
     output:
         "Results/{sample}/Reports/{sample}.xlsx"
@@ -45,6 +45,6 @@ rule vcf2excel:
     log:
         "logs/report/{sample}.vcf2excel.log"
     singularity:
-        "python3.6.0-pysam-xlsxwriter.simg"
+        config["singularitys"]["python"]
     shell:
-        "(python src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {input.hotspot} {output} ) &> {log}"
+        "(python src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {input.hotspot} {output}) &> {log}"

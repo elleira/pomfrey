@@ -8,6 +8,6 @@ rule fastqc:
     log:
         "logs/fastqc/{sample}.log"
     singularity:
-        "fastqc0.11.8.simg"
+        config["singularitys"]["fastqc"]
     wrapper:
         "0.38.0/bio/fastqc"

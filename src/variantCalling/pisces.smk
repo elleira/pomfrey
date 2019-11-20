@@ -12,7 +12,7 @@ rule pisces:
     log:
         "logs/pisces/{sample}.log"
     singularity:
-        "Pisces-5.2.11.simg"
+        config["singularitys"]["pisces"]
     shell:  #Remove gVCF False for genome vcf and save for db, and artifacts? -gVCF FALSE
         "(dotnet /app/Pisces/Pisces.dll -b {input.bam} -g {input.reffolder} -i {params.bed} -t 1 --filterduplicates TRUE --outfolder {params.outfolder} ) 2> {log}"
 ##Bed file?
@@ -33,7 +33,7 @@ rule sortPisces:
     output:
         temp("variantCalls/callers/pisces/{sample}.pisces.weirdAF.vcf")
     singularity:
-        "bcftools-1.9--8.simg"
+        config["singularitys"]["bcftools"]
     log:
         "logs/pisces/{sample}.sort.log"
     shell:
@@ -48,7 +48,7 @@ rule compressGenomeVcf:
         vcf = "Results/{sample}/Data/{sample}.genome.vcf.gz",
         tbi = "Results/{sample}/Data/{sample}.genome.vcf.gz.tbi"
     singularity:
-        "bcftools-1.9--8.simg"
+        config["singularitys"]["bcftools"]
     log:
         "logs/pisces/{sample}.gz.log"
     shell:

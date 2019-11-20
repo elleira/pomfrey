@@ -1,21 +1,8 @@
-samples:
-  "SampleA": "SampleA_R1_001.fastq.gz"
-
-methods:   ##Should we have it here or skip and put in snakemake-file
-  vardict: "vardict"
-  pisces: "pisces"
-  freebayes: "freebayes"
-  # lofreq: "lofreq"
-  snver: "snver" #manta: "manta"
-
 bed:
   bedfile: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/bedfiles/twist_annotated_padded6.bed"
   pindel: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/bedfiles/twist_annotated_pindel.bed"
   cartool: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/bedfiles/twist_annotated_cartool.bed" #Need a better, with less genes! Only important genes and areas
   hotspot: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/bedfiles/Hitlist_Sept2016_final_onePOS.bed"
-
-cartool:
-  cov: "100 500 1000"
 
 singularitys:
   cutadapt: "cutadaptv2.5-0.simg"
@@ -30,8 +17,20 @@ singularitys:
   vardict: "vardict-java-1.7.0-0.simg"
   pindel: "pindel-0.2.5b8.simg"
   vep: "ensembl-vep-96.3.simg"
-  recall: "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/singularity/bcbio-variation-recall.simg" #Need one with bcftools and recall!
+  recall: "/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/singularity/bcbio-variation-recall.simg" #Need one with bcftools and recall
   python: "python3.6.0-pysam-xlsxwriter.simg"
   vt: "vt-0.57721-2.simg"
   igv: "igv-2.4.10-0.simg"
   multiqc: "multiqc-1.7.simg"
+
+cartool:
+  cov: "100 500 1000"
+
+methods:   ##Should we have it here or skip and put in snakemake-file
+  vardict: "vardict"
+  pisces: "pisces"
+  freebayes: "freebayes"
+  # lofreq: "lofreq"
+  snver: "snver" #manta: "manta"
+
+samples:

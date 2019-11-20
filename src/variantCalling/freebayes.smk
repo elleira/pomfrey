@@ -8,7 +8,7 @@ rule freebayes:
     log:
         "logs/freebayes/{sample}.log"
     singularity:
-        "freebayes-1.3.1-0.simg"  ##Not including bcftools and parallel
+        config["singularitys"]["freebayes"]  ##Not including bcftools and parallel
     params:
         extra = " --min-alternate-fraction 0.01 --allele-balance-priors-off --pooled-discrete --pooled-continuous --report-genotype-likelihood-max -t " +config["bed"]["bedfile"],         # optional parameters. Add regions file, bed-format.
         chunksize = 100000  # reference genome chunk size for parallelization (default: 100000)
@@ -22,7 +22,7 @@ rule sortFreebayes:
     output:
         temp("variantCalls/callers/freebayes/{sample}.freebayes.weirdAF.vcf")
     singularity:
-        "bcftools-1.9--8.simg"
+        config["singularitys"]["bcftools"]
     log:
         "logs/freebayes/{sample}.sort.log"
     shell:

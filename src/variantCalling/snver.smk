@@ -14,7 +14,7 @@ rule snver:
     log:
         "logs/snver/{sample}.log"
     singularity:
-        "snver-0.5.3-0.simg"
+        config["singularitys"]["snver"]
     shell:
         "(snver -i {input.bam} -r {input.ref} -l {input.bed} -o {params.outfolder}) &> {log}"
 
@@ -27,7 +27,7 @@ rule indexSnver:
     log:
         "logs/snver/{sample}.index.log"
     singularity:
-        "bcftools-1.9--8.simg"
+        config["singularitys"]["bcftools"]
     shell:
         "(bgzip {input} && tabix {input}.gz) &> {log}"
 
@@ -42,6 +42,6 @@ rule concatSnver:
     log:
         "logs/snver/concat_{sample}.log"
     singularity:
-        "bcftools-1.9--8.simg"
+        config["singularitys"]["bcftools"]
     shell:
         "(bcftools concat -a -Ou {input.snver} {input.indel} | bcftools sort -Ov -o {output} -) &> {log}"

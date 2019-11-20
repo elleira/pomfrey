@@ -8,7 +8,7 @@ rule normalizeAll:
     log:
         "logs/vt/{sample}.{method}.normalized.log"
     singularity:
-        "vt-0.57721-2.simg"
+        config["singularitys"]["vt"]
     shell:
         "(vt normalize -n -r {input.fasta} -o {output} {input.vcf} ) &> {log}"
 
@@ -20,7 +20,7 @@ rule decompose: #Do we need decompose as well, maybe for all but vardict??
     log:
         "logs/vt/{sample}.{method}.decomposed.log"
     singularity:
-        "vt-0.57721-2.simg"
+        config["singularitys"]["vt"]
     shell:
         "(vt decompose {input.vcf} | vt decompose_blocksub -o {output} -) &> {log}"
 
@@ -32,6 +32,6 @@ rule indexDecomp:
     log:
         "logs/vt/{sample}.{method}.index.log"
     singularity:
-        "bcftools-1.9--8.simg"
+        config["singularitys"]["bcftools"]
     shell:
         "(tabix {input.vcf}) 2> {log}"

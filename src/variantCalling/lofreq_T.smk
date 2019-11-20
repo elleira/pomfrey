@@ -9,7 +9,7 @@ rule lofreq:
         ref="/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
         extra="-l "+ config["bed"]["bedfile"]
     singularity:
-        "lofreq-2.1.3.1-0.simg"
+        config["singularitys"]["lofreq"]
     threads: 8
     wrapper:
         "0.38.0/bio/lofreq/call" ##When version 40, add .bai file

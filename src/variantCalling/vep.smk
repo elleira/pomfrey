@@ -10,7 +10,7 @@ rule vep:
     log:
         "logs/vep/{sample}.{support,[0-9]}.log"
     singularity:
-        "ensembl-vep-96.3.simg"
+        config["singularitys"]["vep"]
     threads:    8
     shell:
         "(vep --vcf --no_stats -o {output.vcf} -i {input.vcf} --dir_cache {input.cache} --fork {threads} --cache --merged --offline --fasta {input.fasta} {params} ) 2> {log}"
@@ -23,7 +23,7 @@ rule bgzipVep:
     log:
         "logs/vep/{sample}.{support,[0-9]}.bgzip.log"
     singularity:
-        "bcftools-1.9--8.simg"
+        config["singularitys"]["bcftools"]
     shell:
         "(bgzip {input}) 2> {log}"
 
@@ -35,6 +35,6 @@ rule filterVep:
     log:
         "logs/vep/filter/{sample}.{support}.log"
     singularity:
-        "python3.6.0-pysam-xlsxwriter.simg"
+        config["singularitys"]["python"]
     shell:
         "(python src/variantCalling/filter_vcf.py {input.vcf} {output}) 2> {log}"
