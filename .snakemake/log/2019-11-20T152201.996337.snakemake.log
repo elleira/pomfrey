@@ -1,7 +1,0 @@
-Building DAG of jobs...
-MissingInputException in line 6 of /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.smk:
-Missing input files for rule makeContainersList:
-Results/SampleA/Reports/SampleA.html
-Results/SampleA/Data/SampleA.3.filt.vcf
-Results/SampleA/Reports/done-igv.txt
-variantCalls/pindel/SampleA.pindel.ann.vcf
