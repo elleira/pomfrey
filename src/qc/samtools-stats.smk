@@ -7,7 +7,7 @@ rule samtools_stats:
         extra="-t "+config["bed"]["bedfile"],                       # Optional: extra arguments.
         # region="1:1000000-2000000"      # Optional: region string.
     log:
-        "logs/samtools_stats/{sample}.log"
+        "logs/qc/samtools_stats/{sample}.log"
     singularity:
         config["singularitys"]["bwa"]
     wrapper:

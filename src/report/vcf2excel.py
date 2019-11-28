@@ -109,7 +109,7 @@ if lowPos == 0:
 else:
     worksheetOver.write(16,0,'Number of positions from the hotspot list not covered by at least 500x: ')
     worksheetOver.write(17,0, str(lowPos), redFormat)
-    worksheetOver.write_row(18,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
+    worksheetOver.write_url(18,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
 worksheetOver.write(19,0,'Hotspotlist: '+hotspotFile)
 
 ######################################
@@ -246,7 +246,7 @@ for gene in genes:
     row+=1
 
 row+=1
-tableheading = ['Gene','Chr','Start','End','SV length','AD','Ref','Alt']
+tableheading = ['Gene','Chr','Start','End','SV length','Af','Ref','Alt']
 worksheetIndel.write_row('A'+str(row),tableheading, tableHeadFormat) #1 index
 # row = 7 #0 index
 col=0

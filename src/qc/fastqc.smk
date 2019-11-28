@@ -6,7 +6,7 @@ rule fastqc:
         zip="qc/{sample}/{sample}_fastqc.zip" # the suffix _fastqc.zip is necessary for multiqc to find the file. If not using multiqc, you are free to choose an arbitrary filename
     params: ""
     log:
-        "logs/fastqc/{sample}.log"
+        "logs/qc/fastqc/{sample}.log"
     singularity:
         config["singularitys"]["fastqc"]
     wrapper:

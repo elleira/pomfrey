@@ -20,7 +20,7 @@ rule fixAF:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python src/variantCalling/fix_af.py {input} {output}) &> {log}"
+        "(python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/fix_af.py {input} {output}) &> {log}"
 
 
 include:    "bgzips.smk"

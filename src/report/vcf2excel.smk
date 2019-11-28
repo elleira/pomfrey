@@ -3,7 +3,7 @@ def get_minCov(wildcards):
     minCov = allCov.split(' ')[0]
     return minCov
 
-rule makeContainersList:  ##Depends on not removing any slurms! And expects all using the same pipeline
+rule makeContainersList:  ##From bedfile, not really dependent on sample
     input:
         expand("Results/{sample}/Reports/{sample}.html", sample=config["samples"]),
 
@@ -31,7 +31,7 @@ rule fixCoverageHotspot:
 
 rule vcf2excel:
     input:
-        snv =  "Results/{sample}/Data/{sample}.3.filt.vcf",
+        snv =  "Results/{sample}/Data/{sample}.{support}.filt.vcf",
         indel = "variantCalls/pindel/{sample}.pindel.ann.vcf",
         cart =  "qc/{sample}/{sample}_MeanCoverageShortList.csv",
         sing = "containers.txt",
@@ -39,12 +39,12 @@ rule vcf2excel:
         hotspot = config["bed"]["hotspot"],
         shortCov = "qc/{sample}/{sample}_coverageShort.tsv"
     output:
-        "Results/{sample}/Reports/{sample}.xlsx"
+        "Results/{sample}/Reports/{sample}.{support}.xlsx"
     params:
         get_minCov
     log:
-        "logs/report/{sample}.vcf2excel.log"
+        "logs/report/{sample}.{support}.vcf2excel.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {input.hotspot} {output}) &> {log}"
+        "(python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {input.hotspot} {output}) &> {log}"

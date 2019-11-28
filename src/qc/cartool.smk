@@ -28,6 +28,6 @@ rule fixoutput:
     output:
         "qc/{sample}/{sample}_cartool_mqc.csv"
     log:
-        "logs/qc/cartool/{sample}.fix.log"
+        "logs/qc/CARTool/{sample}.fix.log"
     shell:
         """ (cat {input.header} > {output} && cut -d ',' -f2- {input.stat} | tr -d "\15\32" >>{output} ) &> {log}"""

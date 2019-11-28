@@ -4,7 +4,7 @@ rule pisces:
       reffolder = "/data/ref_genomes/hg19/genome_fasta/",
       index = "Results/{sample}/Data/{sample}.bam.bai"
     output:
-        vcf = temp("variantCalls/callers/pisces/{sample}.genome.vcf")
+        vcf = temp("variantCalls/callers/pisces/{sample}/{sample}.genome.vcf")
     params:
         outfolder = "variantCalls/callers/pisces/{sample}",
         bed = lambda wildcards: config["bed"]["bedfile"]
@@ -19,9 +19,9 @@ rule pisces:
 
 rule piscesFix: ##Might not be needed with -gVCF FALSE
     input:
-        "variantCalls/callers/pisces/{sample}.genome.vcf"
+        "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf"
     output:
-        temp("variantCalls/callers/pisces/{sample}.pisces.unsorted.vcf")
+        temp("variantCalls/callers/pisces/{sample}/{sample}.pisces.unsorted.vcf")
     log:
         "logs/pisces/{sample}.2.log"
     shell:
@@ -29,7 +29,7 @@ rule piscesFix: ##Might not be needed with -gVCF FALSE
 
 rule sortPisces:
     input:
-        "variantCalls/callers/pisces/{sample}.pisces.unsorted.vcf"
+        "variantCalls/callers/pisces/{sample}/{sample}.pisces.unsorted.vcf"
     output:
         temp("variantCalls/callers/pisces/{sample}.pisces.weirdAF.vcf")
     singularity:
@@ -42,8 +42,8 @@ rule sortPisces:
 
 rule compressGenomeVcf:
     input:
-        vcf = "variantCalls/callers/pisces/{sample}.genome.vcf",
-        wait = "variantCalls/callers/pisces/{sample}.pisces.unsorted.vcf"
+        vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf",
+        wait = "variantCalls/callers/pisces/{sample}/{sample}.pisces.unsorted.vcf"
     output:
         vcf = "Results/{sample}/Data/{sample}.genome.vcf.gz",
         tbi = "Results/{sample}/Data/{sample}.genome.vcf.gz.tbi"

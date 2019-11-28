@@ -4,19 +4,19 @@
 rule all:
     input:
         expand("Results/{sample}/Reports/{sample}.html", sample=config["samples"]), ##Borde vi addera which run?
-        expand("Results/{sample}/Reports/{sample}.xlsx", sample=config["samples"]),
-        expand("Results/{sample}/Reports/done-igv.txt", sample=config["samples"]),  ## For the igv images
+        expand("Results/{sample}/Reports/{sample}.3.xlsx", sample=config["samples"]),
+        expand("Results/{sample}/Reports/done.3-igv.txt", sample=config["samples"]),  ## For the igv images
         expand("Results/{sample}/Data/{sample}.3.filt.vcf", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.genome.vcf.gz", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.bam", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.bam.bai", sample=config["samples"]),
         expand("variantCalls/pindel/{sample}.pindel.ann.vcf", sample=config["samples"]),
-        ## GENOME VCF!
         # expand("variantCalls/annotation/{sample}.3.filt.vcf", sample=config["samples"]),
         # expand("variantCalls/recall/{sample}.3.vcf.gz", sample=config["samples"]) ## Reports, final vcf, bam, fastqs..
 
 wildcard_constraints:
-    sample = "[a-zA-Z0-9-_\.]+"
+    sample = "[a-zA-Z0-9-_\.]+",
+    support = "3" #"\.[0-9]+\."
 
 ### QC modules
 include:    "qc/fastqc.smk" #fastq in html/text out
