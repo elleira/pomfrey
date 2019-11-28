@@ -6,7 +6,7 @@ rule normalizeAll:
     output:
         temp("variantCalls/callers/{method}/{sample}.{method}.normalized.vcf.gz")
     log:
-        "logs/vt/{sample}.{method}.normalized.log"
+        "logs/variantCalling/vt/{sample}.{method}.normalized.log"
     singularity:
         config["singularitys"]["vt"]
     shell:
@@ -18,7 +18,7 @@ rule decompose: #Do we need decompose as well, maybe for all but vardict??
     output:
         "variantCalls/callers/{method}/{sample}.{method}.decomposed.vcf.gz"
     log:
-        "logs/vt/{sample}.{method}.decomposed.log"
+        "logs/variantCalling/vt/{sample}.{method}.decomposed.log"
     singularity:
         config["singularitys"]["vt"]
     shell:
@@ -30,7 +30,7 @@ rule indexDecomp:
     output:
         tbi = "variantCalls/callers/{method}/{sample}.{method}.decomposed.vcf.gz.tbi"
     log:
-        "logs/vt/{sample}.{method}.index.log"
+        "logs/variantCalling/vt/{sample}.{method}.index.log"
     singularity:
         config["singularitys"]["bcftools"]
     shell:

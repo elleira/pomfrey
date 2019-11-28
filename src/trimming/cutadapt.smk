@@ -17,7 +17,7 @@ rule cutadapt:
         # https://cutadapt.readthedocs.io/en/stable/guide.html#
         others = "--minimum-length 2 -q 20"
     log:
-        "logs/cutadapt/{sample}.log"
+        "logs/trim/cutadapt/{sample}.log"
     threads:    8
     singularity:
         config["singularitys"]["cutadapt"]

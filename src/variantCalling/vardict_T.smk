@@ -10,7 +10,7 @@ rule vardict:
     params:
         af = "0.01"
     log:
-        "logs/vardict/{sample}.log"
+        "logs/variantCalling/vardict/{sample}.log"
     threads:
         4
     singularity:

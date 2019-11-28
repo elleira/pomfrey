@@ -8,7 +8,7 @@ rule vep:
     params:
         "--everything --check_existing --pick"  #--exclude_null_alleles
     log:
-        "logs/vep/{sample}.{support}.log"
+        "logs/variantCalling/vep/{sample}.{support}.log"
     singularity:
         config["singularitys"]["vep"]
     threads:    8
@@ -21,7 +21,7 @@ rule bgzipVep:
     output:
         "variantCalls/annotation/raw/{sample}.{support}.raw.vcf.gz"
     log:
-        "logs/vep/{sample}.{support}.bgzip.log"
+        "logs/variantCalling/vep/{sample}.{support}.bgzip.log"
     singularity:
         config["singularitys"]["bcftools"]
     shell:
@@ -33,7 +33,7 @@ rule filterVep:
     output:
         "Results/{sample}/Data/{sample}.{support}.filt.vcf"
     log:
-        "logs/vep/filter/{sample}.{support}.log"
+        "logs/variantCalling/vep/filter/{sample}.{support}.log"
     singularity:
         config["singularitys"]["python"]
     shell:

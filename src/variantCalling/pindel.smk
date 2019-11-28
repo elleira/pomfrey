@@ -5,7 +5,7 @@ rule pindelConf: ##Add in excel file what genes were used.
     output:
         "variantCalls/pindel/{sample}/{sample}-config.txt"
     log:
-        "logs/pindel/{sample}.config.log"
+        "logs/variantCalling/pindel/{sample}.config.log"
     shell:
         "( echo -e '{input.bam}\t250\t{wildcards.sample}'>{output} ) &> {log}"
 
@@ -28,7 +28,7 @@ rule pindel:
         x = 2,
         B = 60
     log:
-        "logs/pindel/{sample}.pindel.log"
+        "logs/variantCalling/pindel/{sample}.pindel.log"
     singularity:
         config["singularitys"]["pindel"]
     threads:    4
@@ -56,7 +56,7 @@ rule pindel2vcf:
         refname = "hg19",
         refdate = 000000
     log:
-        "logs/pindel/{sample}.pindel2vcf.log"
+        "logs/variantCalling/pindel/{sample}.pindel2vcf.log"
     singularity:
         config["singularitys"]["pindel"]
     threads:    1
@@ -73,7 +73,7 @@ rule annotatePindel:
     params:
         "--everything --check_existing --pick"
     log:
-        "logs/pindel/{sample}.ann.log"
+        "logs/variantCalling/pindel/{sample}.ann.log"
     threads:    8
     singularity:
         config["singularitys"]["vep"]
@@ -87,7 +87,7 @@ rule pindelIndex:
     output:
         tbi = "variantCalls/pindel/{sample}.pindel.ann.vcf.tbi"
     log:
-        "logs/pindel/{sample}.index.log"
+        "logs/variantCalling/pindel/{sample}.index.log"
     singularity:
         config["singularitys"]["bcftools"]
     shell:

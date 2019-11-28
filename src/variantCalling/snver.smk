@@ -12,7 +12,7 @@ rule snver:
     params:
         outfolder = "variantCalls/callers/snver/{sample}.snver"
     log:
-        "logs/snver/{sample}.log"
+        "logs/variantCalling/snver/{sample}.log"
     singularity:
         config["singularitys"]["snver"]
     shell:
@@ -25,7 +25,7 @@ rule indexSnver:
         temp("variantCalls/callers/snver/{sample}.filter.vcf.gz.tbi"),
         "variantCalls/callers/snver/{sample}.filter.vcf.gz"
     log:
-        "logs/snver/{sample}.index.log"
+        "logs/variantCalling/snver/{sample}.index.log"
     singularity:
         config["singularitys"]["bcftools"]
     shell:
@@ -40,7 +40,7 @@ rule concatSnver:
     output:
         temp("variantCalls/callers/snver/{sample}.snver.weirdAF.vcf")
     log:
-        "logs/snver/concat_{sample}.log"
+        "logs/variantCalling/snver/concat_{sample}.log"
     singularity:
         config["singularitys"]["bcftools"]
     shell:

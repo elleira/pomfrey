@@ -6,7 +6,7 @@ rule freebayes:
     output:
         temp("variantCalls/callers/freebayes/{sample}.freebayes.unsort.vcf")  # either .vcf or .bcf
     log:
-        "logs/freebayes/{sample}.log"
+        "logs/variantCalling/freebayes/{sample}.log"
     singularity:
         config["singularitys"]["freebayes"]  ##Not including bcftools and parallel
     params:
@@ -24,6 +24,6 @@ rule sortFreebayes:
     singularity:
         config["singularitys"]["bcftools"]
     log:
-        "logs/freebayes/{sample}.sort.log"
+        "logs/variantCalling/freebayes/{sample}.sort.log"
     shell:
         "(bcftools sort -o {output} -O v {input}) &> {log}"

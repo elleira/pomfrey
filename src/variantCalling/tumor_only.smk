@@ -16,7 +16,7 @@ rule fixAF:
     output:
         temp("variantCalls/callers/{method}/{sample}.{method}.vcf")
     log:
-        "logs/fixAF/{method}/{sample}.log"
+        "logs/variantCalling/fixAF/{method}/{sample}.log"
     singularity:
         config["singularitys"]["python"]
     shell:

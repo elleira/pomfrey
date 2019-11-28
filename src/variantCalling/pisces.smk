@@ -10,7 +10,7 @@ rule pisces:
         bed = lambda wildcards: config["bed"]["bedfile"]
     threads: 1
     log:
-        "logs/pisces/{sample}.log"
+        "logs/variantCalling/pisces/{sample}.log"
     singularity:
         config["singularitys"]["pisces"]
     shell:  #Remove gVCF False for genome vcf and save for db, and artifacts? -gVCF FALSE
@@ -23,7 +23,7 @@ rule piscesFix: ##Might not be needed with -gVCF FALSE
     output:
         temp("variantCalls/callers/pisces/{sample}/{sample}.pisces.unsorted.vcf")
     log:
-        "logs/pisces/{sample}.2.log"
+        "logs/variantCalling/pisces/{sample}.2.log"
     shell:
         """( awk '{{if($5 != "." || $1 ~ /^"#"/)print $0}}' {input} >{output} ) 2> {log}"""
 
@@ -35,7 +35,7 @@ rule sortPisces:
     singularity:
         config["singularitys"]["bcftools"]
     log:
-        "logs/pisces/{sample}.sort.log"
+        "logs/variantCalling/pisces/{sample}.sort.log"
     shell:
         "(bcftools sort -o {output} -O v {input}) &> {log}"
 
@@ -50,6 +50,6 @@ rule compressGenomeVcf:
     singularity:
         config["singularitys"]["bcftools"]
     log:
-        "logs/pisces/{sample}.gz.log"
+        "logs/variantCalling/pisces/{sample}.gz.log"
     shell:
         "(bgzip -c {input.vcf} >> {output.vcf} && tabix {output.vcf}) 2> {log}"
