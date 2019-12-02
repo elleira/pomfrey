@@ -40,17 +40,17 @@ sample = list(vcf_snv.header.samples)[0]
 today=date.today()
 emptyList=['','','','','','']
 ######## Create low cov dict #########
-
-with open(cartool,'r') as csvfile:
-    readCSV = csv.reader(csvfile, delimiter=',')
-    next(readCSV) ##Skip header
-    lowCovDict={}
-    for line in readCSV:
-        posList=list(range(int(line[2]),int(line[3])))
-        if line[1] in lowCovDict.keys():
-            lowCovDict[line[1]] = lowCovDict[line[1]] + posList
-        else:
-            lowCovDict[line[1]]=posList
+#
+# with open(cartool,'r') as csvfile:
+#     readCSV = csv.reader(csvfile, delimiter=',')
+#     next(readCSV) ##Skip header
+#     lowCovDict={}
+#     for line in readCSV:
+#         posList=list(range(int(line[2]),int(line[3])))
+#         if line[1] in lowCovDict.keys():
+#             lowCovDict[line[1]] = lowCovDict[line[1]] + posList
+#         else:
+#             lowCovDict[line[1]]=posList
 ######################################
 
 ########## Hotspot sheet (5)#############
@@ -111,6 +111,10 @@ else:
     worksheetOver.write(17,0, str(lowPos), redFormat)
     worksheetOver.write_url(18,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
 worksheetOver.write(19,0,'Hotspotlist: '+hotspotFile)
+
+##Added after CARTools sheet done
+# worksheetOver.write(22,0,'Number of regions not covered by at least 100x: ')
+# worksheetOver.write(23,0, str(lowRegions))
 
 ######################################
 
@@ -302,6 +306,10 @@ with open(cartool) as csvfile:
             end = 1+5*i
             worksheetCov.write_row(row,col,[line[0]]+line[start:end])
             row += 1
+# Number of low cov regions for the Overview sheet.
+lowRegions = row - 6
+worksheetOver.write(22,0,'Number of regions not covered by at least 100x: ')
+worksheetOver.write(23,0, str(lowRegions))
 
 ##############################################
 
