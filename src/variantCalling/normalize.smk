@@ -22,7 +22,7 @@ rule decompose: #Do we need decompose as well, maybe for all but vardict??
     singularity:
         config["singularitys"]["vt"]
     shell:
-        "(vt decompose {input.vcf} | vt decompose_blocksub -o {output} -) &> {log}"
+        "(vt decompose -s {input.vcf} | vt decompose_blocksub -o {output} -) &> {log}"
 
 rule indexDecomp:
     input:
