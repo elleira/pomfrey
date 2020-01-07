@@ -7,13 +7,15 @@ from datetime import date
 import subprocess
 
 ## Define sys.argvs
-vcf_snv=VariantFile(sys.argv[1])
-vcf_indel=VariantFile(sys.argv[2])
-cartool=sys.argv[3]
-minCov=sys.argv[4]  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
-bedfile=sys.argv[5]
+vcf_snv = VariantFile(sys.argv[1])
+vcf_indel = VariantFile(sys.argv[2])
+cartool = sys.argv[3]
+minCov = sys.argv[4]  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
+bedfile = sys.argv[5]
 hotspotFile = sys.argv[6]
-output = sys.argv[7]
+artefactFile = sys.argv[7]
+germlineFile = sys.argv[8]
+output = sys.argv[9]
 
 
  ## Create execl file and sheets.
@@ -33,7 +35,8 @@ textwrapFormat = workbook.add_format({'text_wrap': True})
 italicFormat = workbook.add_format({'italic': True})
 redFormat = workbook.add_format({'font_color': 'red'})
 yellowFormat = workbook.add_format({'bg_color': 'yellow'})
-# headerFormat = workbook.add_format()
+greenFormat = workbook.add_format({'bg_color': '#85e085', 'font_color': '#b3b3b3'})
+orangeFormat = workbook.add_format({'bg_color': '#ffd280', 'font_color': '#b3b3b3'}) #font color gray 70%
 
 ## Define sample based on annotated vcf
 sample = list(vcf_snv.header.samples)[0]
@@ -110,11 +113,13 @@ else:
     worksheetOver.write(16,0,'Number of positions from the hotspot list not covered by at least 500x: ')
     worksheetOver.write(17,0, str(lowPos), redFormat)
     worksheetOver.write_url(18,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
-worksheetOver.write(19,0,'Hotspotlist: '+hotspotFile)
 
 ##Added after CARTools sheet done
-# worksheetOver.write(22,0,'Number of regions not covered by at least 100x: ')
-# worksheetOver.write(23,0, str(lowRegions))
+# worksheetOver.write(19,0,'Number of regions not covered by at least 100x: ')
+# worksheetOver.write(20,0, str(lowRegions))
+worksheetOver.write(22,0,'Hotspotlist: '+hotspotFile)
+worksheetOver.write(23,0,'Artefact file: '+artefactFile)
+worksheetOver.write(24,0,'Germline file: '+germlineFile)
 
 ######################################
 
@@ -130,23 +135,25 @@ for x in vcf_snv.header.records:
         vepline = x.value
 
 ## Headers before variants
-worksheetSNV.write('A1', 'Variants found', headingFormat)  #headerFormat)
+worksheetSNV.write('A1', 'Variants found', headingFormat)
 worksheetSNV.write('A3', 'Sample: '+str(sample))
 worksheetSNV.write('A4', 'Reference used: '+str(refV))
 # worksheetSNV.write('A4', 'Callers used: VardictJava v.1,6 ? Dubbelkolla!, Pisces 5.2.11, Freebayes v1.1.0, LoFreq v.2.1.3.1, SNVer v.2.1.3.1')
-worksheetSNV.write('A6', 'VEP: '+vepline, textwrapFormat)
+worksheetSNV.write('A6', 'VEP: '+vepline ) #, textwrapFormat)
 worksheetSNV.write('A8', 'The following filters were applied: ')
 worksheetSNV.write('B9','Coverage >= 100x')
 worksheetSNV.write('B10','Population freq (KGP, gnomAD, NHLBI_ESP ) <= 2%')
 worksheetSNV.write('B11','Biotype is protein coding')
 worksheetSNV.write('B12','Consequence not deemed relevant')
 
-worksheetSNV.write('A14','Coverage below 500x', yellowFormat)
+worksheetSNV.write('A14','Variant in artefact list ', orangeFormat)
+worksheetSNV.write('A15','Variant likely germline', greenFormat)
+worksheetSNV.write('A16','Coverage below 500x', yellowFormat)
 
 ## Variant table
 tableheading = ['Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'COSMIC ids','N COSMIC Hemato hits', 'Clinical significance', 'dbSNP','Max popAF','Max Pop']
-worksheetSNV.write_row('A16', tableheading, tableHeadFormat) #1 index
-row = 16 #0 index
+worksheetSNV.write_row('A18', tableheading, tableHeadFormat) #1 index
+row = 18 #0 index
 col=0
 
 for record in vcf_snv.fetch():
@@ -192,12 +199,13 @@ for record in vcf_snv.fetch():
         clinical = csq.split("|")[62]
         existing = csq.split("|")[17].split("&")
 
+        #rs IDs
         rsList = [rs for rs in existing if rs.startswith('rs')]
         if len(rsList) == 0:
             rs=''
         else:
             rs = rsList[0]
-        # import pdb; pdb.set_trace()
+        #COSMIC IDs
         cosmicList = [cosm for cosm in existing if cosm.startswith('COSM')]
         if len(cosmicList) == 0:
             cosmic = ''
@@ -211,6 +219,7 @@ for record in vcf_snv.fetch():
             else:
                 cosmicN = int(cosmicN)
 
+        #Population allel freq
         maxPopAf = record.info["CSQ"][0].split("|")[60]
         if len(maxPopAf) > 1:
             maxPopAf = round(float(maxPopAf),4)
@@ -218,10 +227,27 @@ for record in vcf_snv.fetch():
 
         # Should pos be shifted if del??
         snv = [gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], cosmic, cosmicN ,clinical, rs, maxPopAf, maxPop]
-        if int(record.info["DP"]) < 500:
-            worksheetSNV.write_row(row, col, snv, yellowFormat)
+        ## Add artifact and germline
+        #Artefact_files
+        cmdArt = 'grep -w '+str(record.pos)+' '+artefactFile
+        artLine = subprocess.run(cmdArt, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip() ##What happens if two hits?
+        if artLine and record.ref == artLine.split()[2] and alt == artLine.split()[3]: #if pos exists in arteface file.
+            # artefact=artLine.split()
+            # if record.ref == artefact[2] and alt == artefact[3]:
+            worksheetSNV.write_row(row, col, snv, orangeFormat)
         else:
-            worksheetSNV.write_row(row, col, snv)
+            # Germline /gluster-storage-volume/projects/wp2/nobackup/Twist_Myeloid/Artefact_files/Low_VAF_SNVs.txt
+            cmdGerm = 'grep -w '+str(record.pos)+' '+germlineFile
+            germLine = subprocess.run(cmdGerm, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
+
+            if germLine and record.ref == germLine.split()[2] and alt == germLine.split()[3]: #if exists in germline file
+                # germ = germLine.split()
+                # if record.ref == germ[2] and alt == germ[3]:
+                worksheetSNV.write_row(row, col, snv, greenFormat)
+            elif int(record.info["DP"]) < 500:
+                worksheetSNV.write_row(row, col, snv, yellowFormat)
+            else:
+                worksheetSNV.write_row(row, col, snv)
         row += 1
 
 ########################################
@@ -243,7 +269,7 @@ for x in vcf_indel.header.records:
         refI = x.value
 worksheetIndel.write('A3', 'Sample: '+str(sample))
 worksheetIndel.write('A4', 'Reference used: '+str(refI))
-worksheetIndel.write('A5','Genes looked at: ')
+worksheetIndel.write('A5','Genes included: ')
 row=5
 for gene in genes:
     worksheetIndel.write('B'+str(row),gene)
@@ -257,7 +283,6 @@ col=0
 
 for indel in vcf_indel.fetch():
     if indel.filter.keys()==["PASS"]:
-        # import pdb; pdb.set_trace()
         svlen = indel.info["SVLEN"]
 
         ads = indel.samples[sample]["AD"]
@@ -308,8 +333,9 @@ with open(cartool) as csvfile:
             row += 1
 # Number of low cov regions for the Overview sheet.
 lowRegions = row - 6
-worksheetOver.write(22,0,'Number of regions not covered by at least 100x: ')
-worksheetOver.write(23,0, str(lowRegions))
+
+worksheetOver.write(19,0,'Number of regions not covered by at least 100x: ')
+worksheetOver.write(20,0, str(lowRegions))
 
 ##############################################
 
@@ -336,7 +362,7 @@ worksheetVersions.write('A7', 'Containers used: ', tableHeadFormat)
 
 with open('containers.txt') as file:
     singularitys = [line.strip() for line in file]
-    singularitys.pop() ##Last slurm is always the makeContainersList rule.
+    # singularitys.pop() ##Last slurm is always the makeContainersList rule.
     row = 7
     col = 0
     for singularity in singularitys:

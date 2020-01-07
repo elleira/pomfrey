@@ -5,8 +5,7 @@ def get_minCov(wildcards):
 
 rule makeContainersList:  ##From bedfile, not really dependent on sample
     input:
-        expand("Results/{sample}/Reports/{sample}.html", sample=config["samples"]),
-
+        expand("Results/{sample}/Reports/{sample}.html", sample=config["samples"])
     output:
         temp("containers.txt")
     log:
@@ -20,11 +19,11 @@ rule makeContainersList:  ##From bedfile, not really dependent on sample
 rule fixCoverageHotspot:
     input:
         tsv = "qc/{sample}/{sample}_coverage.tsv",
-        bed = lambda wildcards: config["bed"]["hotspot"]
+        bed = config["bed"]["hotspot"]
     output:
-        "qc/{sample}/{sample}_coverageShort.tsv"
+        "qc/{sample}/{sample}_coverageShortHotspot.tsv"
     log:
-        "logs/report/{sample}.covShort.log"
+        "logs/report/{sample}.covShortHotspot.log"
     shell:
         """ ( while read line; do chr=$(echo $line | awk '{{print $1}}');pos=$(echo $line | awk '{{print $2}}');cat {input.tsv} | grep ${{chr}} | grep ${{pos}} >>{output} ; done < {input.bed} ) &> {log} """
 
@@ -37,7 +36,9 @@ rule vcf2excel:
         sing = "containers.txt",
         bed = config["bed"]["pindel"],
         hotspot = config["bed"]["hotspot"],
-        shortCov = "qc/{sample}/{sample}_coverageShort.tsv"
+        artefact = config["bed"]["artefact"],
+        germline = config["bed"]["germline"],
+        shortCov = "qc/{sample}/{sample}_coverageShortHotspot.tsv"
     output:
         "Results/{sample}/Reports/{sample}.{support}.xlsx"
     params:
@@ -47,4 +48,4 @@ rule vcf2excel:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {input.hotspot} {output}) &> {log}"
+        "(python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"
