@@ -1,26 +1,28 @@
 rule makePassVCF:
     input:
         snv = "Results/{sample}/Data/{sample}.{support}.filt.vcf",
-        pindel = "variantCalls/pindel/{sample}.pindel.ann.vcf"
+        pindel = "variantCalls/pindel/{sample}.pindel.ann.vcf",
+        artefact = config["bed"]["artefact"],
+        germline = config["bed"]["germline"]
     output:
         "Results/{sample}/Reports/{sample}.{support}.PASS.vcf"
     log:
         "logs/report/{sample}.{support}.PASS.vcf.log"
     shell:
-        """( grep -v '^#' {input.snv} | grep PASS >> {output}  && cat {input.pindel} | grep -v '^#' | grep PASS  >> {output} || true ) &>{log}"""
+        """( python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makePASSvcf.py {input.snv} {input.artefact} {input.germline} {output}  && cat {input.pindel} | grep -v '^#' | grep PASS  >> {output} || true ) &>{log}"""
 
 rule createBatFile:
     input:
         vcf = "Results/{sample}/Reports/{sample}.{support}.PASS.vcf",
         indel = "variantCalls/pindel/{sample}.pindel.ann.vcf",
         bam = "Results/{sample}/Data/{sample}.bam",
-        bed = lambda wildcards: config["bed"]["cartool"],
+        bed = config["bed"]["cartool"],
         ref = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/igv/genomes/hg19.genome"
     output:
         "Results/{sample}/Reports/{sample}.{support}-igv.bat"
     params:
         outfolder = "Results/{sample}/Reports/",
-        padding = "60",
+        padding = "40",
         sort = "base", #Type of sorting: base, position, strand, quality, sample or readgroup. Could add pos after, but always uses middle.
         view = "squish",  #Type of view, collaps, squished...
         format = "svg" #svg, jpg
@@ -33,7 +35,7 @@ rule igv:
     input:
         bat = "Results/{sample}/Reports/{sample}.{support}-igv.bat"
     output:
-        touch("Results/{sample}/Reports/done.{support}-igv.txt")##Several files, add a done?
+        touch("Results/{sample}/Reports/done.{support}-igv.txt")##Several files, add a done.txt
     log:
         "logs/report/{sample}.{support}.igv.log"
     threads:
