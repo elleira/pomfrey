@@ -1,7 +1,7 @@
 rule cartool:
     input:
         bam = "Results/{sample}/Data/{sample}.bam",
-        bed = lambda wilcards: config["bed"]["cartool"],
+        bed = config["bed"]["cartool"],
         bai = "Results/{sample}/Data/{sample}.bam.bai"
     output:
         statstable = "qc/{sample}/{sample}_Stat_table.csv",
@@ -11,7 +11,7 @@ rule cartool:
         short = "qc/{sample}/{sample}_MeanCoverageShortList.csv"
     params:
         user = "arielle",
-        coverage = lambda wildcards: config["cartool"]["cov"],
+        coverage = config["cartool"]["cov"],
         extra = "-k" #k = combine, p= mapQ
     log:
         "logs/qc/CARTool/{sample}.cartool.log"
