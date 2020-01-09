@@ -34,9 +34,11 @@ tableHeadFormat = workbook.add_format({'bold': True, 'text_wrap': True})
 textwrapFormat = workbook.add_format({'text_wrap': True})
 italicFormat = workbook.add_format({'italic': True})
 redFormat = workbook.add_format({'font_color': 'red'})
-yellowFormat = workbook.add_format({'bg_color': 'yellow'})
+
 greenFormat = workbook.add_format({'bg_color': '#85e085', 'font_color': '#b3b3b3'})
 orangeFormat = workbook.add_format({'bg_color': '#ffd280', 'font_color': '#b3b3b3'}) #font color gray 70%
+green_italicFormat = workbook.add_format({'bg_color': '#85e085', 'font_color': '#b3b3b3', 'italic': 'True'})
+orange_italicFormat = workbook.add_format({'bg_color': '#ffd280', 'font_color': '#b3b3b3', 'italic': 'True'}) #font color gray 70%
 
 ## Define sample based on annotated vcf
 sample = list(vcf_snv.header.samples)[0]
@@ -146,15 +148,18 @@ worksheetSNV.write('B10','Population freq (KGP, gnomAD, NHLBI_ESP ) <= 2%')
 worksheetSNV.write('B11','Biotype is protein coding')
 worksheetSNV.write('B12','Consequence not deemed relevant')
 
-worksheetSNV.write('A14','Variant in artefact list ', orangeFormat)
-worksheetSNV.write('A15','Variant likely germline', greenFormat)
-worksheetSNV.write('A16','Coverage below 500x', yellowFormat)
+worksheetSNV.write('A14','Coverage below 500x', italicFormat)
+worksheetSNV.write('A15','Variant in artefact list ', orangeFormat)
+worksheetSNV.write('A16','Variant likely germline', greenFormat)
 
 ## Variant table
-tableheading = ['Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'COSMIC ids','N COSMIC Hemato hits', 'Clinical significance', 'dbSNP','Max popAF','Max Pop']
+tableheading = ['Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Canonical Transcript','Mutation cds', 'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop']
 worksheetSNV.write_row('A18', tableheading, tableHeadFormat) #1 index
 row = 18 #0 index
 col=0
+white=[]
+green=[]
+orange=[]
 
 for record in vcf_snv.fetch():
     if record.filter.keys()==["PASS"]:
@@ -199,25 +204,36 @@ for record in vcf_snv.fetch():
         clinical = csq.split("|")[62]
         existing = csq.split("|")[17].split("&")
 
-        #rs IDs
+        #rs IDs use more than just the first!
         rsList = [rs for rs in existing if rs.startswith('rs')]
         if len(rsList) == 0:
             rs=''
         else:
-            rs = rsList[0]
-        #COSMIC IDs
-        cosmicList = [cosm for cosm in existing if cosm.startswith('COSM')]
-        if len(cosmicList) == 0:
-            cosmic = ''
+            rs = ', '.join(rsList)
+            # rs = rsList[0]
+
+        # Total number of cosmic hemato hits on the position. Vep reports all cosmicId for that position.
+        cosmicVepList = [cosmic for cosmic in existing if cosmic.startswith('CO')]
+        if len(cosmicVepList) == 0:
+            cosmicVep=''
+        else:
+            cosmicVep=', '.join(cosmicVepList)
+
+        if len(cosmicVepList) == 0:
             cosmicN = ''
         else:
-            cosmic = cosmicList[0]
-            cmd = 'grep -w '+cosmic+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f16 '
-            cosmicN = subprocess.run(cmd, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
-            if not cosmicN:
-                cosmicN = 0
-            else:
-                cosmicN = int(cosmicN)
+            cosmicN = 0
+            for cosmicId in cosmicVepList:
+                cmdCosmic = 'grep -w '+cosmicId+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f 16 '
+                cosmicNew = subprocess.run(cmdCosmic, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
+                if len(cosmicNew) == 0:
+                    cosmicNew = 0
+                cosmicN += int(cosmicNew)
+
+        transcript = csq.split("|")[10].split(":")[0]
+        codingName = csq.split("|")[10].split(":")[1]
+        consequence = csq.split("|")[1]
+
 
         #Population allel freq
         maxPopAf = record.info["CSQ"][0].split("|")[60]
@@ -226,29 +242,45 @@ for record in vcf_snv.fetch():
         maxPop = record.info["CSQ"][0].split("|")[61]
 
         # Should pos be shifted if del??
-        snv = [gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], cosmic, cosmicN ,clinical, rs, maxPopAf, maxPop]
-        ## Add artifact and germline
-        #Artefact_files
+        snv = [gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
+
+        #Artefact_file
         cmdArt = 'grep -w '+str(record.pos)+' '+artefactFile
         artLine = subprocess.run(cmdArt, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip() ##What happens if two hits?
-        if artLine and record.ref == artLine.split()[2] and alt == artLine.split()[3]: #if pos exists in arteface file.
-            # artefact=artLine.split()
-            # if record.ref == artefact[2] and alt == artefact[3]:
-            worksheetSNV.write_row(row, col, snv, orangeFormat)
+        if artLine and record.ref == artLine.split()[2] and alt == artLine.split()[3]: #if pos exists and match in artefact file.
+            orange.append(snv)
         else:
             # Germline /gluster-storage-volume/projects/wp2/nobackup/Twist_Myeloid/Artefact_files/Low_VAF_SNVs.txt
             cmdGerm = 'grep -w '+str(record.pos)+' '+germlineFile
             germLine = subprocess.run(cmdGerm, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
 
             if germLine and record.ref == germLine.split()[2] and alt == germLine.split()[3]: #if exists in germline file
-                # germ = germLine.split()
-                # if record.ref == germ[2] and alt == germ[3]:
-                worksheetSNV.write_row(row, col, snv, greenFormat)
-            elif int(record.info["DP"]) < 500:
-                worksheetSNV.write_row(row, col, snv, yellowFormat)
+                green.append(snv)
             else:
-                worksheetSNV.write_row(row, col, snv)
-        row += 1
+                white.append(snv)
+
+        # row += 1
+
+### Actually writing to the excelsheet
+for line in white:
+    if line[6] < 500:
+        worksheetSNV.write_row(row,col,line, italicFormat)
+    else:
+        worksheetSNV.write_row(row,col,line)
+    row +=1
+for line in green:
+    if line[6] < 500:
+        worksheetSNV.write_row(row,col,line, green_italicFormat)
+    else:
+        worksheetSNV.write_row(row,col,line, greenFormat)
+    row +=1
+for line in orange:
+    if line[6] < 500:
+        worksheetSNV.write_row(row,col,line, orange_italicFormat)
+    else:
+        worksheetSNV.write_row(row,col,line, orangeFormat)
+    row +=1
+
 
 ########################################
 
