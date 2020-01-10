@@ -18,7 +18,7 @@ rule cartool:
     singularity:
         config["singularitys"]["cartool"]
     shell: #Need to fix -o so no space is needed.
-        "( python /opt/CARtool/ProgramLancher.py -a {input.bed} -b {input.bam} -c {params.coverage} -e {params.user} -o qc/{wildcards.sample}/ {wildcards.sample} {params.extra} )&> {log}"
+        "( python3.6 /opt/CARtool/ProgramLancher.py -a {input.bed} -b {input.bam} -c {params.coverage} -e {params.user} -o qc/{wildcards.sample}/ {wildcards.sample} {params.extra} )&> {log}"
 
 
 rule fixoutput:

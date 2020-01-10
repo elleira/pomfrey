@@ -8,8 +8,10 @@ rule makePassVCF:
         "Results/{sample}/Reports/{sample}.{support}.PASS.vcf"
     log:
         "logs/report/{sample}.{support}.PASS.vcf.log"
+    singularity:
+        config["singularitys"]["python"]
     shell:
-        """( python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makePASSvcf.py {input.snv} {input.artefact} {input.germline} {output}  && cat {input.pindel} | grep -v '^#' | grep PASS  >> {output} || true ) &>{log}"""
+        """( python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makePASSvcf.py {input.snv} {input.artefact} {input.germline} {output}  && cat {input.pindel} | grep -v '^#' | grep PASS  >> {output} || true ) &>{log}"""
 
 rule createBatFile:
     input:
@@ -28,8 +30,10 @@ rule createBatFile:
         format = "svg" #svg, jpg
     log:
         "logs/report/{sample}.{support}-makeBat.log"
+    singularity:
+        config["singularitys"]["python"]
     shell:
-        "(python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makeBatfile.py {output} {input.vcf} {input.indel} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
+        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makeBatfile.py {output} {input.vcf} {input.indel} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
 
 rule igv:
     input:

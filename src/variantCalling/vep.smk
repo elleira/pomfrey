@@ -37,4 +37,4 @@ rule filterVep:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/filter_vcf.py {input.vcf} {output}) 2> {log}"
+        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/filter_vcf.py {input.vcf} {output}) 2> {log}"

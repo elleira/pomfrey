@@ -48,4 +48,4 @@ rule vcf2excel:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"
+        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"
