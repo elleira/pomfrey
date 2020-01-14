@@ -66,7 +66,7 @@ worksheetHotspot.write_row('A5',['Chr', 'Pos', 'Depth', 'Gene'], tableHeadFormat
 
 lowPos = 0
 row=5
-with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShort.tsv"),'r') as covFile:
+with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShortHotspot.tsv"),'r') as covFile:
     for dpLine in covFile:
         cov = dpLine.split("\t")
         chrCov = cov[0]
