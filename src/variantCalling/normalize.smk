@@ -1,7 +1,8 @@
 
 rule decompose: #Do we need decompose as well, maybe for all but vardict??
     input:
-        vcf = "variantCalls/callers/{method}/{sample}.{method}.vcf.gz"  #"variantCalls/callers/{method}/{sample}.{method}.normalized.vcf.gz"     #[m+"/{sample}."+m+".normalized.vcf.gz" for m in config["methods"]] ##inte normalized.vcf filer! Hur?!
+        vcf = "variantCalls/callers/{method}/{sample}.{method}.vcf.gz",  #[m+"/{sample}."+m+".normalized.vcf.gz" for m in config["methods"]] ##inte normalized.vcf filer! Hur?!
+        tbi = "variantCalls/callers/{method}/{sample}.{method}.vcf.gz.tbi"
     output:
         "variantCalls/callers/{method}/{sample}.{method}.decomposed.vcf.gz"
     log:

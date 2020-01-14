@@ -1,7 +1,7 @@
 
 rule bwa_mem:
     input:
-        reads=["fastq/trimmed/{sample}/{sample}_R1_trimmed.fastq", "fastq/trimmed/{sample}/{sample}_R2_trimmed.fastq"]
+        reads=["fastq_trimmed/{sample}/{sample}_R1_trimmed.fastq", "fastq_trimmed/{sample}/{sample}_R2_trimmed.fastq"]
     output:
         "Results/{sample}/Data/{sample}.bam"
     log:

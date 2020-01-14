@@ -6,7 +6,7 @@ rawdatafolder=$1  #Always with the last /
 somaticFolder=/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline
 date=$(date +'%y%m%d') #Until runfolder or should it always be rundate? And then have the runfolder with seq date
 cp ${somaticFolder}/src/configfileSetup/configdefaults191120.yaml ${date}.config.yaml ## Copy configfile default to runfolder
-for i in $(ls ${rawdatafolder}*R1_001.fastq.gz); do ##Add each sample in seq run to the config yaml file
+for i in $(ls ${rawdatafolder}*R1_001.fastq.gz); do ##Add each sample in seq run to the config yaml file What happens to undet.?
   filename=$(echo $i | awk -F/ '{print $NF}')
   sample=${filename%%_R1*}
   echo -e "  \"${sample}\": \"${i}\"" >> ${date}.config.yaml
