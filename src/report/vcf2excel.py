@@ -323,7 +323,7 @@ for gene in genes:
     row+=1
 
 row+=1
-tableheading = ['Gene','Chr','Start','End','SV length','Af','Ref','Alt']
+tableheading = ['Gene','Chr','Start','End','SV length','Af','Ref','Alt','Max popAF','Max Pop']
 worksheetIndel.write_row('A'+str(row),tableheading, tableHeadFormat) #1 index
 # row = 7 #0 index
 col=0
@@ -346,7 +346,12 @@ for indel in vcf_indel.fetch():
 
         indelGene = csqIndel.split("|")[3]
 
-        indelRow = [indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt]
+        maxPopAfIndel = indel.info["CSQ"][0].split("|")[60]
+        if len(maxPopAfIndel) > 1:
+            maxPopAfIndel = round(float(maxPopAfIndel),4)
+        maxPopIndel = record.info["CSQ"][0].split("|")[61]
+
+        indelRow = [indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt, maxPopAfIndel, maxPopIndel]
         worksheetIndel.write_row(row,col,indelRow)
         row += 1
 

@@ -18,6 +18,9 @@ batfile.write("new")
 batfile.write("\ngenome "+reffile)
 batfile.write("\nload "+bedfile+"\nload "+bamfile)
 batfile.write("\nsnapshotDirectory "+outfolder)
+batfile.write("\npreference SAM.SHOW_SOFT_CLIPPED false")
+batfile.write("\npreference SAM.DOWNSAMPLE false")  #should we keep? goes outside picture usually
+
 
 for record in vcf_in.fetch():
         # vcfRow = line.split()
