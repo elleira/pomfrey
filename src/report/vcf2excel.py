@@ -9,13 +9,14 @@ import subprocess
 ## Define sys.argvs
 vcf_snv = VariantFile(sys.argv[1])
 vcf_indel = VariantFile(sys.argv[2])
-cartool = sys.argv[3]
-minCov = sys.argv[4]  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
-bedfile = sys.argv[5]
-hotspotFile = sys.argv[6]
-artefactFile = sys.argv[7]
-germlineFile = sys.argv[8]
-output = sys.argv[9]
+seqID = sys.argv[3]
+cartool = sys.argv[4]
+minCov = sys.argv[5]  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
+bedfile = sys.argv[6]
+hotspotFile = sys.argv[7]
+artefactFile = sys.argv[8]
+germlineFile = sys.argv[9]
+output = sys.argv[10]
 
 
  ## Create execl file and sheets.
@@ -91,37 +92,38 @@ with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShortHotspot.t
 ######### Overview sheet (1) #################
 
 worksheetOver.write(0,0, sample, headingFormat)
-worksheetOver.write(1,0, "Processing date: "+today.strftime("%B %d, %Y"))
-worksheetOver.write_row(2,0, emptyList,lineFormat)
+worksheetOver.write(1,0, "SeqID: "+seqID)
+worksheetOver.write(2,0, "Processing date: "+today.strftime("%B %d, %Y"))
+worksheetOver.write_row(3,0, emptyList,lineFormat)
 
-worksheetOver.write(3,0, "Created by: ")
-worksheetOver.write(3,4, "Valid from: ")
-worksheetOver.write(4,0, "Signed by: ")
-worksheetOver.write(4,4, "Document nr: ")
-worksheetOver.write_row(5,0,emptyList,lineFormat)
+worksheetOver.write(4,0, "Created by: ")
+worksheetOver.write(4,4, "Valid from: ")
+worksheetOver.write(5,0, "Signed by: ")
+worksheetOver.write(5,4, "Document nr: ")
+worksheetOver.write_row(6,0,emptyList,lineFormat)
 
-worksheetOver.write(6,0,"Sheets:", tableHeadFormat)
-worksheetOver.write_url(7,0,"internal:'SNVs'!A1", string='Variants analysis')
-worksheetOver.write_url(8,0,"internal:'Indel'!A1", string = 'Indel variants')
-worksheetOver.write_url(9,0,"internal:'Coverage'!A1", string = 'Positions with coverage lower than 100x')
-worksheetOver.write_url(10,0,"internal:'Hotspot'!A1", string = 'Coverage of hotspot positions')
-worksheetOver.write_url(11,0,"internal:'Version'!A1", string = 'Version Log')
-worksheetOver.write_row(13,0,emptyList,lineFormat)
+worksheetOver.write(7,0,"Sheets:", tableHeadFormat)
+worksheetOver.write_url(8,0,"internal:'SNVs'!A1", string='Variants analysis')
+worksheetOver.write_url(9,0,"internal:'Indel'!A1", string = 'Indel variants')
+worksheetOver.write_url(10,0,"internal:'Coverage'!A1", string = 'Positions with coverage lower than 100x')
+worksheetOver.write_url(11,0,"internal:'Hotspot'!A1", string = 'Coverage of hotspot positions')
+worksheetOver.write_url(12,0,"internal:'Version'!A1", string = 'Version Log')
+worksheetOver.write_row(14,0,emptyList,lineFormat)
 
 if lowPos == 0:
-    worksheetOver.write(16,0,'Number of positions from the hotspot list not covered by at least 500x: ')
-    worksheetOver.write(17,0, str(lowPos))
+    worksheetOver.write(17,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(18,0, str(lowPos))
 else:
-    worksheetOver.write(16,0,'Number of positions from the hotspot list not covered by at least 500x: ')
-    worksheetOver.write(17,0, str(lowPos), redFormat)
-    worksheetOver.write_url(18,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
+    worksheetOver.write(17,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(18,0, str(lowPos), redFormat)
+    worksheetOver.write_url(19,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
 
 ##Added after CARTools sheet done
 # worksheetOver.write(19,0,'Number of regions not covered by at least 100x: ')
 # worksheetOver.write(20,0, str(lowRegions))
-worksheetOver.write(22,0,'Hotspotlist: '+hotspotFile)
-worksheetOver.write(23,0,'Artefact file: '+artefactFile)
-worksheetOver.write(24,0,'Germline file: '+germlineFile)
+worksheetOver.write(23,0,'Hotspotlist: '+hotspotFile)
+worksheetOver.write(24,0,'Artefact file: '+artefactFile)
+worksheetOver.write(25,0,'Germline file: '+germlineFile)
 
 ######################################
 
@@ -162,7 +164,19 @@ green=[]
 orange=[]
 
 for record in vcf_snv.fetch():
-    if record.filter.keys()==["PASS"]:
+    synoCosmicN = 0
+    if   record.filter.keys()==["Syno"]: #Only if Syno not and popAF.   any(x in "Syno" for x in record.filter.keys()):
+        csq = record.info["CSQ"][0]
+        synoCosmicVepList = [cosmic for cosmic in csq.split("|")[17].split("&") if cosmic.startswith('CO')] #Get all cosmicID in list
+        if len(synoCosmicVepList) != 0:
+            for synoCosmicId in synoCosmicVepList:
+                cmdCosmic = 'grep -w '+synoCosmicId+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f 16 '
+                synoCosmicNew = subprocess.run(cmdCosmic, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
+                if len(synoCosmicNew) == 0:
+                    synoCosmicNew = 0
+                synoCosmicN += int(synoCosmicNew)
+
+    if record.filter.keys()==["PASS"] or synoCosmicN != 0 :
 
         if len(record.info["AF"]) == 1:
             af=record.info["AF"][0]
@@ -234,7 +248,6 @@ for record in vcf_snv.fetch():
         codingName = csq.split("|")[10].split(":")[1]
         consequence = csq.split("|")[1]
 
-
         #Population allel freq
         maxPopAf = record.info["CSQ"][0].split("|")[60]
         if len(maxPopAf) > 1:
@@ -243,6 +256,10 @@ for record in vcf_snv.fetch():
 
         # Should pos be shifted if del??
         snv = [gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
+        #Append line with sample and rundate to rolling list of artefacts..
+        with open("/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt", "a") as appendfile:
+            variants=[seqID]+[sample]+snv+["\n"]
+            appendfile.write('\t'.join(str(e) for e in variants))
 
         #Artefact_file
         cmdArt = 'grep -w '+str(record.pos)+' '+artefactFile
@@ -258,8 +275,6 @@ for record in vcf_snv.fetch():
                 green.append(snv)
             else:
                 white.append(snv)
-
-        # row += 1
 
 ### Actually writing to the excelsheet
 for line in white:

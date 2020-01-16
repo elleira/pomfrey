@@ -11,7 +11,7 @@ new_header.filters.add("PopAF",None,None,"Population AF over two percent")
 new_header.filters.add("DP100",None,None,"DP is lower than 100x")
 new_header.filters.add("ProtCode",None,None,"Biotype is not protein coding")
 new_header.filters.add("Conseq",None,None,"Consequence is not deemed relevant (See XX for more info)")
-# new_header.filters.add("Syno",None,None,"Consequence is synonymous variant")
+new_header.filters.add("Syno",None,None,"Consequence is synonymous variant")
 
 #start new vcf with the new_header
 vcf_out = VariantFile(sys.argv[2], 'w', header=new_header)
@@ -37,13 +37,14 @@ for record in vcf_in.fetch():
         #Filter out not protein_coding
         if vep[7] == 'protein_coding': #What if protein_coding&...?
             bioType=1
-            if any(x in vep[1] for x in consequences):
+            if 'synonymous_variant' in vep[1]:
+                record.filter.add("Syno")
+            elif any(x in vep[1] for x in consequences):
                 conseq=1
-            # if 'synonymous_variant' in vep[1]:
-            #     record.filter.add("Syno")
-    if bioType == 0:
+
+    if bioType == 0: #if not protein coding
         record.filter.add("ProtCode")
-    if conseq == 0:
+    if conseq == 0: #if not wanted consequences
         record.filter.add("Conseq")
 
 

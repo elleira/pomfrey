@@ -10,7 +10,19 @@ germlineFile = sys.argv[3]
 vcf_out = VariantFile(sys.argv[4],'w', header=vcf_in.header)
 
 for record in vcf_in.fetch():
-    if record.filter.keys()==["PASS"]:
+    synoCosmicN = 0
+    if record.filter.keys()==["Syno"]: #If only syno! No popAF.    any(x in "Syno" for x in record.filter.keys()):
+        csq = record.info["CSQ"][0]
+        synoCosmicVepList = [cosmic for cosmic in csq.split("|")[17].split("&") if cosmic.startswith('CO')] #Get all cosmicID in list
+        if len(synoCosmicVepList) != 0:
+            for synoCosmicId in synoCosmicVepList:
+                cmdCosmic = 'grep -w '+synoCosmicId+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f 16 '
+                synoCosmicNew = subprocess.run(cmdCosmic, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
+                if len(synoCosmicNew) == 0:
+                    synoCosmicNew = 0
+                synoCosmicN += int(synoCosmicNew)
+
+    if record.filter.keys()==["PASS"] or synoCosmicN != 0 :
         # if len(record.ref) > len(record.alts[0]): Deletion but need to remove first base as well
         #     record.pos = record.pos-1
         cmdArt = 'grep -w '+str(record.pos)+' '+artefactFile

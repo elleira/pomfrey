@@ -32,6 +32,7 @@ rule vcf2excel:
     input:
         snv =  "Results/{sample}/Data/{sample}.{support}.filt.vcf",
         indel = "variantCalls/pindel/{sample}.pindel.ann.vcf",
+
         cart =  "qc/{sample}/{sample}_MeanCoverageShortList.csv",
         sing = "containers.txt",
         bed = config["bed"]["pindel"],
@@ -42,10 +43,11 @@ rule vcf2excel:
     output:
         "Results/{sample}/Reports/{sample}.{support}.xlsx"
     params:
-        get_minCov
+        minCov = get_minCov,
+        seqdate = config["dates"]["sequencerun"]
     log:
         "logs/report/{sample}.{support}.vcf2excel.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {input.cart} {params} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"
+        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqdate} {input.cart} {params.minCov} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"
