@@ -5,13 +5,13 @@ rule all:
     input:
         expand("Results/{sample}/Reports/{sample}.html", sample=config["samples"]), ##Borde vi addera which run?
         expand("Results/{sample}/Reports/{sample}.3.xlsx", sample=config["samples"]),
-        expand("Results/{sample}/Reports/done.3-igv.txt", sample=config["samples"]),  ## For the igv images
-        expand("Results/{sample}/Data/{sample}.3.filt.vcf", sample=config["samples"]),
+        expand("Results/{sample}/Reports/done-igv.txt", sample=config["samples"]),  ## For the igv images
+        expand("Results/{sample}/Data/{sample}.SNV-pindel.vcf", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.genome.vcf.gz", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.bam", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.bam.bai", sample=config["samples"]),
-        expand("variantCalls/pindel/{sample}.pindel.ann.vcf", sample=config["samples"]),
-        # expand("variantCalls/annotation/{sample}.3.filt.vcf", sample=config["samples"]),
+        expand("variantCalls/pindel/{sample}.pindel.filt.vcf.gz", sample=config["samples"]),
+        expand("variantCalls/annotation/{sample}.3.filt.vcf.gz", sample=config["samples"])
         # expand("variantCalls/recall/{sample}.3.vcf.gz", sample=config["samples"]) ## Reports, final vcf, bam, fastqs..
 
 wildcard_constraints:

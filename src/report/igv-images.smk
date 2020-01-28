@@ -1,27 +1,40 @@
+rule mergeSNVPindel:
+    input:
+        snv = "variantCalls/annotation/{sample}.3.filt.vcf.gz",
+        pindel = "variantCalls/pindel/{sample}.pindel.filt.vcf.gz"
+    output:
+        "Results/{sample}/Data/{sample}.SNV-pindel.vcf"
+    params:
+        "-a -D -O v" #Allow overlap, Remove duplicates, output format vcf
+    log:
+        "logs/report/{sample}.mergeVcf.log"
+    singularity:
+        config["singularitys"]["bcftools"]
+    shell:
+        "(bcftools concat {params} -o {output} {input.snv} {input.pindel} ) &> {log}"
+
 rule makePassVCF:
     input:
-        snv = "Results/{sample}/Data/{sample}.{support}.filt.vcf",
-        pindel = "variantCalls/pindel/{sample}.pindel.ann.vcf",
+        vcf = "Results/{sample}/Data/{sample}.SNV-pindel.vcf",
         artefact = config["bed"]["artefact"],
         germline = config["bed"]["germline"]
     output:
-        "Results/{sample}/Reports/{sample}.{support}.PASS.vcf"
+        temp("Results/{sample}/Reports/{sample}.PASS.vcf")
     log:
-        "logs/report/{sample}.{support}.PASS.vcf.log"
+        "logs/report/{sample}.PASS.vcf.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        """( python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makePASSvcf.py {input.snv} {input.artefact} {input.germline} {output}  && cat {input.pindel} | grep -v '^#' | grep PASS  >> {output} || true ) &>{log}"""
+        "( python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makePASSvcf.py {input.vcf} {input.artefact} {input.germline} {output} ) &>{log}"
 
 rule createBatFile:
     input:
-        vcf = "Results/{sample}/Reports/{sample}.{support}.PASS.vcf",
-        indel = "variantCalls/pindel/{sample}.pindel.ann.vcf",
+        vcf = "Results/{sample}/Reports/{sample}.PASS.vcf",
         bam = "Results/{sample}/Data/{sample}.bam",
         bed = config["bed"]["cartool"],
         ref = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/igv/genomes/hg19.genome"
     output:
-        "Results/{sample}/Reports/{sample}.{support}-igv.bat"
+        "Results/{sample}/Reports/{sample}-igv.bat"
     params:
         outfolder = "Results/{sample}/Reports/",
         padding = "40",
@@ -29,19 +42,19 @@ rule createBatFile:
         view = "squish",  #Type of view, collaps, squished...
         format = "svg" #svg, jpg
     log:
-        "logs/report/{sample}.{support}-makeBat.log"
+        "logs/report/{sample}-makeBat.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makeBatfile.py {output} {input.vcf} {input.indel} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
+        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makeBatfile.py {output} {input.vcf} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
 
 rule igv:
     input:
-        bat = "Results/{sample}/Reports/{sample}.{support}-igv.bat"
+        bat = "Results/{sample}/Reports/{sample}-igv.bat"
     output:
-        touch("Results/{sample}/Reports/done.{support}-igv.txt")##Several files, add a done.txt
+        touch("Results/{sample}/Reports/done-igv.txt")##Several files, add a done.txt
     log:
-        "logs/report/{sample}.{support}.igv.log"
+        "logs/report/{sample}.igv.log"
     threads:
         2
     singularity:
