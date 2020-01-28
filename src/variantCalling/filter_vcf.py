@@ -26,7 +26,7 @@ for record in vcf_in.fetch():
     # For every transcript?? Seperated with , not all differs, popfreq is the same on all.
     #Filter on known population freq (KGP phase3 and gnomAD r2.1 exomes only )
     vep=record.info["CSQ"][0].split("|")
-    if not vep[60] == '' and float(vep[60]) >= 0.02 :
+    if not vep[57] == '' and float(vep[57]) >= 0.02 : #vep[60]
          record.filter.add("PopAF")
 
     bioType=0
@@ -39,8 +39,8 @@ for record in vcf_in.fetch():
             bioType=1
             if 'synonymous_variant' in vep[1]:
                 record.filter.add("Syno")
-            elif any(x in vep[1] for x in consequences):
-                conseq=1
+            if any(x in vep[1] for x in consequences):
+                conseq=1 ## Ok consequnce, no filter
 
     if bioType == 0: #if not protein coding
         record.filter.add("ProtCode")

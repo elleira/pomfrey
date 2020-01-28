@@ -30,9 +30,8 @@ rule fixCoverageHotspot:
 
 rule vcf2excel:
     input:
-        snv =  "Results/{sample}/Data/{sample}.{support}.filt.vcf",
-        indel = "variantCalls/pindel/{sample}.pindel.ann.vcf",
-
+        snv =  "variantCalls/annotation/{sample}.{support}.filt.vcf.gz",
+        indel = "variantCalls/pindel/{sample}.pindel.filt.vcf.gz",
         cart =  "qc/{sample}/{sample}_MeanCoverageShortList.csv",
         sing = "containers.txt",
         bed = config["bed"]["pindel"],
@@ -43,11 +42,11 @@ rule vcf2excel:
     output:
         "Results/{sample}/Reports/{sample}.{support}.xlsx"
     params:
-        minCov = get_minCov,
-        seqdate = config["dates"]["sequencerun"]
+        coverage = config["cartool"]["cov"], #All coverage, goes in as three sys.argv[], get_minCov,
+        seqID = config["dates"]["sequencerun"]
     log:
         "logs/report/{sample}.{support}.vcf2excel.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqdate} {input.cart} {params.minCov} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"
+        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"

@@ -11,13 +11,14 @@ vcf_snv = VariantFile(sys.argv[1])
 vcf_indel = VariantFile(sys.argv[2])
 seqID = sys.argv[3]
 cartool = sys.argv[4]
-minCov = sys.argv[5]  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
-bedfile = sys.argv[6]
-hotspotFile = sys.argv[7]
-artefactFile = sys.argv[8]
-germlineFile = sys.argv[9]
-output = sys.argv[10]
-
+minCov = int(sys.argv[5])  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
+medCov = int(sys.argv[6])
+maxCov = int(sys.argv[7])
+bedfile = sys.argv[8]
+hotspotFile = sys.argv[9]
+artefactFile = sys.argv[10]
+germlineFile = sys.argv[11]
+output = sys.argv[12]
 
  ## Create execl file and sheets.
 workbook = xlsxwriter.Workbook(output)
@@ -45,19 +46,38 @@ orange_italicFormat = workbook.add_format({'bg_color': '#ffd280', 'font_color': 
 sample = list(vcf_snv.header.samples)[0]
 today=date.today()
 emptyList=['','','','','','']
-######## Create low cov dict #########
-#
-# with open(cartool,'r') as csvfile:
-#     readCSV = csv.reader(csvfile, delimiter=',')
-#     next(readCSV) ##Skip header
-#     lowCovDict={}
-#     for line in readCSV:
-#         posList=list(range(int(line[2]),int(line[3])))
-#         if line[1] in lowCovDict.keys():
-#             lowCovDict[line[1]] = lowCovDict[line[1]] + posList
-#         else:
-#             lowCovDict[line[1]]=posList
-######################################
+
+
+######### Prog Version sheet (7)###########
+worksheetVersions.write('A1', 'Version Log', headingFormat)
+worksheetVersions.write_row(1,0,emptyList,lineFormat)
+worksheetVersions.write('A3','Sample: '+str(sample))
+# worksheetVersions.write('A5', 'Variant calling reference used: '+str(refV))
+# worksheetVersions.write('A6', 'Pindel reference used: '+str(refI))
+worksheetVersions.write('A7', 'Containers used: ', tableHeadFormat)
+
+
+with open('containers.txt') as file:
+    singularitys = [line.strip() for line in file]
+    # singularitys.pop() ##Last slurm is always the makeContainersList rule.
+    row = 7
+    col = 0
+    for singularity in singularitys:
+        worksheetVersions.write_row(row,col,[singularity])
+        row += 1
+########################################
+
+######### IVA sheet (6)#################
+worksheetIVA.write('A1', 'Results from Variant Analysis ', headingFormat)
+worksheetIVA.write_row('A2',emptyList,lineFormat)
+
+worksheetIVA.write('A5', "Analysen utfördes i enlighet med dokumentationen.")
+worksheetIVA.write('A6', "Eventuella avikelser:")
+iva = ['DNA nr', 'Chromosome', 'Position', 'Gene Region', 'Gene Symbol', 'Transcript ID', 'Transcript Variant', 'Protein Variant', 'Variant Findings', 'Sample Genotype Quality', 'Read Depth', 'Allele Fraction', 'Translation Impact', 'dbSNP ID','1000 Genomes Frequency', 'ExAC Frequency', 'HGMD', 'COSMIC ID', 'Artefacts_without_ASXL1','ASXL1_variant_filter']
+worksheetIVA.write_row(9,0, iva, tableHeadFormat)
+
+
+#########################################
 
 ########## Hotspot sheet (5)#############
 worksheetHotspot.write('A1', 'Hotspot Coverage', headingFormat)  #headerFormat)
@@ -67,65 +87,132 @@ worksheetHotspot.write_row('A5',['Chr', 'Pos', 'Depth', 'Gene'], tableHeadFormat
 
 lowPos = 0
 row=5
-with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShortHotspot.tsv"),'r') as covFile:
+hotspotTable=[]
+with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShortHotspot.tsv"),'r') as covFile: #Always the same as bedfile just without region
     for dpLine in covFile:
         cov = dpLine.split("\t")
         chrCov = cov[0]
         posCov = cov[1]
         dp = cov[2].rstrip()
+
         with open(hotspotFile, "r") as hotspotBed:
             for hotspotLine in hotspotBed:
                 hotspot = hotspotLine.split("\t")
                 chrHS = hotspot[0]
                 lowHS = hotspot[1]
                 # highHS = hotspot[2]
-                if chrCov == chrHS and lowHS == posCov: #Start with just one pos, other if highHS and lowHS not same do something else.  or cov[1] == highHS ):
-                    hotspotTable = [chrCov,posCov, dp, hotspot[3].rstrip()]
-                    worksheetHotspot.write_row(row,0,hotspotTable)
-                    row += 1
-                    if int(dp) <= 500 :
-                        lowPos += 1
+                if chrCov == chrHS and lowHS == posCov: #Always the same as bedfile just without region, How does CARTool handle if hotspot is longer than 1bp?
+                    hotspotTable.append([chrCov,posCov, dp, hotspot[3].rstrip()])
+
+hotspotTable.sort(key=lambda x: x[2])
+for hotLine in hotspotTable:
+    if int(hotLine[2]) <= medCov: ##How to get the number from configfile?!
+        worksheetHotspot.write_row(row,0,hotLine,redFormat)
+        row += 1
+        lowPos += 1
+    else:
+        worksheetHotspot.write_row(row,0,hotLine)
+        row += 1
 
 ############################################
 
+######### Coverage sheet (4)################
+worksheetCov.set_column(1,3,10)
+worksheetCov.set_column(1,4,10)
+## Heading in sheet
+worksheetCov.write('A1', 'CARTools coverage analysis', headingFormat)
+worksheetCov.write_row('A2',emptyList,lineFormat)
+worksheetCov.write('A3', 'Sample: '+str(sample))
+description = 'Gene Regions with coverage lower than '+str(minCov)+'x.'
+worksheetCov.write('A4', description)
+covHeadings = ['Region Name','Chr','Start','Stop','Mean Coverage','Length of Region']
+worksheetCov.write_row('A6',covHeadings,tableHeadFormat) ## 1 index
+row = 6 ## 0 index
 
-######### Overview sheet (1) #################
+covLines=[]
+with open(cartool) as csvfile:
+    readCSV = csv.reader(csvfile, delimiter=',')
+    next(readCSV)
+    ## Skip header
 
-worksheetOver.write(0,0, sample, headingFormat)
-worksheetOver.write(1,0, "SeqID: "+seqID)
-worksheetOver.write(2,0, "Processing date: "+today.strftime("%B %d, %Y"))
-worksheetOver.write_row(3,0, emptyList,lineFormat)
+    for line in readCSV:
+        while not line[-1]: ## Remove empty fields at the end of line.
+            line.pop()
+        for i in range(1, int((len(line)-1)/5+1)): ##For each region/ with lower cov, create a new row.
+            start = 1+5*(i-1)
+            end = 1+5*i
+            covRow = [line[0]]+line[start:end]
+            covLines.append(covRow)
+            # worksheetCov.write_row(row,col,[line[0]]+line[start:end])
+            # row += 1
+    #sort based on Coverage
+    covLines.sort(key=lambda x: x[4])
+    for line in covLines:
+        worksheetCov.write_row(row,col,line)
+        row += 1
+        # covLines
+# Number of low cov regions for the Overview sheet.
+lowRegions = row - 6
 
-worksheetOver.write(4,0, "Created by: ")
-worksheetOver.write(4,4, "Valid from: ")
-worksheetOver.write(5,0, "Signed by: ")
-worksheetOver.write(5,4, "Document nr: ")
-worksheetOver.write_row(6,0,emptyList,lineFormat)
+###########################################
 
-worksheetOver.write(7,0,"Sheets:", tableHeadFormat)
-worksheetOver.write_url(8,0,"internal:'SNVs'!A1", string='Variants analysis')
-worksheetOver.write_url(9,0,"internal:'Indel'!A1", string = 'Indel variants')
-worksheetOver.write_url(10,0,"internal:'Coverage'!A1", string = 'Positions with coverage lower than 100x')
-worksheetOver.write_url(11,0,"internal:'Hotspot'!A1", string = 'Coverage of hotspot positions')
-worksheetOver.write_url(12,0,"internal:'Version'!A1", string = 'Version Log')
-worksheetOver.write_row(14,0,emptyList,lineFormat)
+######### Indel sheet (3)##################
+# Add genes as info before the actual table. Just use bed table as input? Sort uniq
+worksheetIndel.set_column(1,2,10)
+worksheetIndel.set_column(1,3,10)
+worksheetIndel.write('A1', 'Pindel results', headingFormat)
+worksheetIndel.write_row(1,0,emptyList,lineFormat)
+with open(bedfile) as bed:
+    genesDup = [line.split("\t")[3].strip() for line in bed]
+    genes = set(genesDup)
 
-if lowPos == 0:
-    worksheetOver.write(17,0,'Number of positions from the hotspot list not covered by at least 500x: ')
-    worksheetOver.write(18,0, str(lowPos))
-else:
-    worksheetOver.write(17,0,'Number of positions from the hotspot list not covered by at least 500x: ')
-    worksheetOver.write(18,0, str(lowPos), redFormat)
-    worksheetOver.write_url(19,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
+genesString = ['Genes looked at: ']+list(genes)
 
-##Added after CARTools sheet done
-# worksheetOver.write(19,0,'Number of regions not covered by at least 100x: ')
-# worksheetOver.write(20,0, str(lowRegions))
-worksheetOver.write(23,0,'Hotspotlist: '+hotspotFile)
-worksheetOver.write(24,0,'Artefact file: '+artefactFile)
-worksheetOver.write(25,0,'Germline file: '+germlineFile)
+for x in vcf_indel.header.records:
+    if (x.key=='reference'):
+        refI = x.value
+worksheetIndel.write('A3', 'Sample: '+str(sample))
+worksheetIndel.write('A4', 'Reference used: '+str(refI))
+worksheetIndel.write('A5','Genes included: ')
+row=5
+for gene in genes:
+    worksheetIndel.write('B'+str(row),gene)
+    row+=1
 
-######################################
+row+=1
+tableheading = ['Gene','Chr','Start','End','SV length','Af','Ref','Alt','Max popAF','Max Pop']
+worksheetIndel.write_row('A'+str(row),tableheading, tableHeadFormat) #1 index
+# row = 7 #0 index
+col=0
+
+for indel in vcf_indel.fetch():
+    if indel.filter.keys()==["PASS"]:
+        svlen = indel.info["SVLEN"]
+
+        ads = indel.samples[sample]["AD"]
+        af = int(ads[1])/(int(ads[0]) + int(ads[1]))
+        # ad = ', '.join([str(i) for i in ads])
+
+        if len(indel.alts) == 1:
+            alt=indel.alts[0]
+        else:
+            print(indel.alts)
+            sys.exit() ##Fix!!
+
+        csqIndel = indel.info["CSQ"][0] #VEP annotation
+
+        indelGene = csqIndel.split("|")[3]
+
+        maxPopAfIndel = indel.info["CSQ"][0].split("|")[57] #[60]
+        if len(maxPopAfIndel) > 1:
+            maxPopAfIndel = round(float(maxPopAfIndel),4)
+        maxPopIndel = indel.info["CSQ"][0].split("|")[58] #[61]
+
+        indelRow = [indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt, maxPopAfIndel, maxPopIndel]
+        worksheetIndel.write_row(row,col,indelRow)
+        row += 1
+
+##########################################
 
 ######### SNV sheet (2) ##################
 
@@ -249,10 +336,10 @@ for record in vcf_snv.fetch():
         consequence = csq.split("|")[1]
 
         #Population allel freq
-        maxPopAf = record.info["CSQ"][0].split("|")[60]
+        maxPopAf = record.info["CSQ"][0].split("|")[57] #[60]
         if len(maxPopAf) > 1:
             maxPopAf = round(float(maxPopAf),4)
-        maxPop = record.info["CSQ"][0].split("|")[61]
+        maxPop = record.info["CSQ"][0].split("|")[58] #[61]
 
         # Should pos be shifted if del??
         snv = [gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
@@ -297,130 +384,49 @@ for line in orange:
     row +=1
 
 
-########################################
+#############################################
 
-######### Indel sheet (3)##################
-# Add genes as info before the actual table. Just use bed table as input? Sort uniq
-worksheetIndel.set_column(1,2,10)
-worksheetIndel.set_column(1,3,10)
-worksheetIndel.write('A1', 'Pindel results', headingFormat)
-worksheetIndel.write_row(1,0,emptyList,lineFormat)
-with open(bedfile) as bed:
-    genesDup = [line.split("\t")[3].strip() for line in bed]
-    genes = set(genesDup)
+######### Overview sheet (1) #################
 
-genesString = ['Genes looked at: ']+list(genes)
+worksheetOver.write(0,0, sample, headingFormat)
+worksheetOver.write(1,0, "SeqID: "+seqID)
+worksheetOver.write(2,0, "Processing date: "+today.strftime("%B %d, %Y"))
+worksheetOver.write_row(3,0, emptyList,lineFormat)
 
-for x in vcf_indel.header.records:
-    if (x.key=='reference'):
-        refI = x.value
-worksheetIndel.write('A3', 'Sample: '+str(sample))
-worksheetIndel.write('A4', 'Reference used: '+str(refI))
-worksheetIndel.write('A5','Genes included: ')
-row=5
-for gene in genes:
-    worksheetIndel.write('B'+str(row),gene)
-    row+=1
+worksheetOver.write(4,0, "Created by: ")
+worksheetOver.write(4,4, "Valid from: ")
+worksheetOver.write(5,0, "Signed by: ")
+worksheetOver.write(5,4, "Document nr: ")
+worksheetOver.write_row(6,0,emptyList,lineFormat)
 
-row+=1
-tableheading = ['Gene','Chr','Start','End','SV length','Af','Ref','Alt','Max popAF','Max Pop']
-worksheetIndel.write_row('A'+str(row),tableheading, tableHeadFormat) #1 index
-# row = 7 #0 index
-col=0
+worksheetOver.write(7,0,"Sheets:", tableHeadFormat)
+worksheetOver.write_url(8,0,"internal:'SNVs'!A1", string='Variants analysis')
+worksheetOver.write_url(9,0,"internal:'Indel'!A1", string = 'Indel variants')
+worksheetOver.write_url(10,0,"internal:'Coverage'!A1", string = 'Positions with coverage lower than 100x')
+worksheetOver.write_url(11,0,"internal:'Hotspot'!A1", string = 'Coverage of hotspot positions')
+worksheetOver.write_url(12,0,"internal:'Version'!A1", string = 'Version Log')
+worksheetOver.write_row(14,0,emptyList,lineFormat)
 
-for indel in vcf_indel.fetch():
-    if indel.filter.keys()==["PASS"]:
-        svlen = indel.info["SVLEN"]
-
-        ads = indel.samples[sample]["AD"]
-        af = int(ads[1])/(int(ads[0]) + int(ads[1]))
-        # ad = ', '.join([str(i) for i in ads])
-
-        if len(indel.alts) == 1:
-            alt=indel.alts[0]
-        else:
-            print(indel.alts)
-            sys.exit() ##Fix!!
-
-        csqIndel = indel.info["CSQ"][0] #VEP annotation
-
-        indelGene = csqIndel.split("|")[3]
-
-        maxPopAfIndel = indel.info["CSQ"][0].split("|")[60]
-        if len(maxPopAfIndel) > 1:
-            maxPopAfIndel = round(float(maxPopAfIndel),4)
-        maxPopIndel = record.info["CSQ"][0].split("|")[61]
-
-        indelRow = [indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt, maxPopAfIndel, maxPopIndel]
-        worksheetIndel.write_row(row,col,indelRow)
-        row += 1
-
-##########################################
-
-######### Coverage sheet (4)#################
-worksheetCov.set_column(1,3,10)
-worksheetCov.set_column(1,4,10)
-## Heading in sheet
-worksheetCov.write('A1', 'CARTools coverage analysis', headingFormat)
-worksheetCov.write_row('A2',emptyList,lineFormat)
-worksheetCov.write('A3', 'Sample: '+str(sample))
-description = 'Gene Regions with coverage lower than '+str(minCov)+'x.'
-worksheetCov.write('A4', description)
-covHeadings = ['Region Name','Chr','Start','Stop','Mean Coverage','Length of Region']
-worksheetCov.write_row('A6',covHeadings,tableHeadFormat) ## 1 index
-row = 6 ## 0 index
-
-with open(cartool) as csvfile:
-    readCSV = csv.reader(csvfile, delimiter=',')
-    next(readCSV)
-    ## Skip header
-
-    for line in readCSV:
-        while not line[-1]: ## Remove empty fields at the end of line.
-            line.pop()
-        for i in range(1, int((len(line)-1)/5+1)): ##For each region/ with lower cov, create a new row.
-            start = 1+5*(i-1)
-            end = 1+5*i
-            worksheetCov.write_row(row,col,[line[0]]+line[start:end])
-            row += 1
-# Number of low cov regions for the Overview sheet.
-lowRegions = row - 6
-
-worksheetOver.write(19,0,'Number of regions not covered by at least 100x: ')
-worksheetOver.write(20,0, str(lowRegions))
-
-##############################################
-
-######### IVA sheet (6)#################
-worksheetIVA.write('A1', 'Results from Variant Analysis ', headingFormat)
-worksheetIVA.write_row('A2',emptyList,lineFormat)
-
-worksheetIVA.write('A5', "Analysen utfördes i enlighet med dokumentationen.")
-worksheetIVA.write('A6', "Eventuella avikelser:")
-iva = ['DNA nr', 'Chromosome', 'Position', 'Gene Region', 'Gene Symbol', 'Transcript ID', 'Transcript Variant', 'Protein Variant', 'Variant Findings', 'Sample Genotype Quality', 'Read Depth', 'Allele Fraction', 'Translation Impact', 'dbSNP ID','1000 Genomes Frequency', 'ExAC Frequency', 'HGMD', 'COSMIC ID', 'Artefacts_without_ASXL1','ASXL1_variant_filter']
-worksheetIVA.write_row(9,0, iva, tableHeadFormat)
+if lowPos == 0: #From Hotspot sheet
+    worksheetOver.write(17,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(18,0, str(lowPos))
+else:
+    worksheetOver.write(17,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(18,0, str(lowPos), redFormat)
+    worksheetOver.write_url(19,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
 
 
-#################################################
+worksheetOver.write(20,0,'Number of regions not covered by at least 100x: ') #From Cov sheet
+worksheetOver.write(21,0, str(lowRegions)) #From Cov sheet
+worksheetOver.write(23,0,'Hotspotlist: '+hotspotFile)
+worksheetOver.write(24,0,'Artefact file: '+artefactFile)
+worksheetOver.write(25,0,'Germline file: '+germlineFile)
 
-######### Prog Version sheet (7)#################
-worksheetVersions.write('A1', 'Version Log', headingFormat)
-worksheetVersions.write_row(1,0,emptyList,lineFormat)
-worksheetVersions.write('A3','Sample: '+str(sample))
+######################################
+
+####### Prog Version sheet (7), added last #######
 worksheetVersions.write('A5', 'Variant calling reference used: '+str(refV))
 worksheetVersions.write('A6', 'Pindel reference used: '+str(refI))
-worksheetVersions.write('A7', 'Containers used: ', tableHeadFormat)
 
-
-with open('containers.txt') as file:
-    singularitys = [line.strip() for line in file]
-    # singularitys.pop() ##Last slurm is always the makeContainersList rule.
-    row = 7
-    col = 0
-    for singularity in singularitys:
-        worksheetVersions.write_row(row,col,[singularity])
-        row += 1
-
-
-
+######################################
 workbook.close()
