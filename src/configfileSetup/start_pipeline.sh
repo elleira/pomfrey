@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 module load slurm-drmaa/1.0.7
+shopt -s extglob
 
 rawdatafolder=$1  #Always with the last /
+sequnecerun=$2
 #Stand in folder where you want to run and get the results.
 somaticFolder=/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline
 date=$(date +'%y%m%d') #Until runfolder or should it always be rundate? And then have the runfolder with seq date
 cp ${somaticFolder}/src/configfileSetup/configdefaults191120.yaml ${date}.config.yaml ## Copy configfile default to runfolder
 for i in $(ls ${rawdatafolder}*R1_001.fastq.gz); do ##Add each sample in seq run to the config yaml file What happens to undet.?
   filename=$(echo $i | awk -F/ '{print $NF}')
-  sample=${filename%%_R1*}
-  echo -e "  \"${sample}\": \"${i}\"" >> ${date}.config.yaml
+  sample=${filename%%_S+([[:digit:]])_R1*}
+  echo -e "  \"${sample}_${sequnecerun}\": \"${i}\"" >> ${date}.config.yaml
 done
+echo "dates:">> ${date}.config.yaml
+echo -e "  sequencerun: \"${sequnecerun}\"">> ${date}.config.yaml
 
 
 #Actually starting the pipeline with snakemake
