@@ -75,7 +75,7 @@ rule fixContigPindel:
     shell:
         """(cat {input} | grep -v "^##contig" | awk '/^#CHROM/ {{ printf({params});}} {{print;}}' > {output} )&> {log}  """
 
-rule fixPindelDP:
+rule fixPindelDPoAF:
     input:
         "variantCalls/pindel/{sample}.pindel.noDP.vcf"
     output:
@@ -85,7 +85,7 @@ rule fixPindelDP:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/fix_pindelDP.py {input} {output}) &> {log}"
+        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/fix_pindelDPoAF.py {input} {output}) &> {log}"
 
 rule annotatePindel:
     input:
@@ -95,7 +95,7 @@ rule annotatePindel:
     output:
         temp("variantCalls/pindel/{sample}.pindel.ann.vcf")
     params:
-        "--check_existing --pick --sift b --polyphen b --ccds --uniprot, --hgvs --symbol --numbers --domains --regulatory --canonical --protein --biotype --uniprot --tsl --appris --gene_phenotype --af --af_1kg --af_gnomad --max_af --pubmed --variant_class "
+        "--check_existing --pick --sift b --polyphen b --ccds --uniprot --hgvs --symbol --numbers --domains --regulatory --canonical --protein --biotype --uniprot --tsl --appris --gene_phenotype --af --af_1kg --af_gnomad --max_af --pubmed --variant_class "
         # "--everything --check_existing --pick"
     log:
         "logs/variantCalling/pindel/{sample}.ann.log"
@@ -116,7 +116,7 @@ rule filterPindel:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/filter_vcf.py {input.vcf} {output}) 2> {log}"
+        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/filter_vcf.py {input.vcf} {output}) &> {log}"
 
 rule bgzipPindel:
     input:

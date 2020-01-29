@@ -299,69 +299,69 @@ for record in vcf_snv.fetch():
         # clinical = ', '.join(cliSigList)
         # rsList = list(dict.fromkeys(rsList))
         # rs = ', '.join(rsList)
+        if af >= 0.03:
+            csq = record.info["CSQ"][0]
+            gene = csq.split("|")[3]
+            clinical = csq.split("|")[62]
+            existing = csq.split("|")[17].split("&")
 
-        csq = record.info["CSQ"][0]
-        gene = csq.split("|")[3]
-        clinical = csq.split("|")[62]
-        existing = csq.split("|")[17].split("&")
-
-        #rs IDs use more than just the first!
-        rsList = [rs for rs in existing if rs.startswith('rs')]
-        if len(rsList) == 0:
-            rs=''
-        else:
-            rs = ', '.join(rsList)
-            # rs = rsList[0]
-
-        # Total number of cosmic hemato hits on the position. Vep reports all cosmicId for that position.
-        cosmicVepList = [cosmic for cosmic in existing if cosmic.startswith('CO')]
-        if len(cosmicVepList) == 0:
-            cosmicVep=''
-        else:
-            cosmicVep=', '.join(cosmicVepList)
-
-        if len(cosmicVepList) == 0:
-            cosmicN = ''
-        else:
-            cosmicN = 0
-            for cosmicId in cosmicVepList:
-                cmdCosmic = 'grep -w '+cosmicId+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f 16 '
-                cosmicNew = subprocess.run(cmdCosmic, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
-                if len(cosmicNew) == 0:
-                    cosmicNew = 0
-                cosmicN += int(cosmicNew)
-
-        transcript = csq.split("|")[10].split(":")[0]
-        codingName = csq.split("|")[10].split(":")[1]
-        consequence = csq.split("|")[1]
-
-        #Population allel freq
-        maxPopAf = record.info["CSQ"][0].split("|")[57] #[60]
-        if len(maxPopAf) > 1:
-            maxPopAf = round(float(maxPopAf),4)
-        maxPop = record.info["CSQ"][0].split("|")[58] #[61]
-
-        # Should pos be shifted if del??
-        snv = [gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
-        #Append line with sample and rundate to rolling list of artefacts..
-        with open("/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt", "a") as appendfile:
-            variants=[seqID]+[sample]+snv+["\n"]
-            appendfile.write('\t'.join(str(e) for e in variants))
-
-        #Artefact_file
-        cmdArt = 'grep -w '+str(record.pos)+' '+artefactFile
-        artLine = subprocess.run(cmdArt, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip() ##What happens if two hits?
-        if artLine and record.ref == artLine.split()[2] and alt == artLine.split()[3]: #if pos exists and match in artefact file.
-            orange.append(snv)
-        else:
-            # Germline /gluster-storage-volume/projects/wp2/nobackup/Twist_Myeloid/Artefact_files/Low_VAF_SNVs.txt
-            cmdGerm = 'grep -w '+str(record.pos)+' '+germlineFile
-            germLine = subprocess.run(cmdGerm, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
-
-            if germLine and record.ref == germLine.split()[2] and alt == germLine.split()[3]: #if exists in germline file
-                green.append(snv)
+            #rs IDs use more than just the first!
+            rsList = [rs for rs in existing if rs.startswith('rs')]
+            if len(rsList) == 0:
+                rs=''
             else:
-                white.append(snv)
+                rs = ', '.join(rsList)
+                # rs = rsList[0]
+
+            # Total number of cosmic hemato hits on the position. Vep reports all cosmicId for that position.
+            cosmicVepList = [cosmic for cosmic in existing if cosmic.startswith('CO')]
+            if len(cosmicVepList) == 0:
+                cosmicVep=''
+            else:
+                cosmicVep=', '.join(cosmicVepList)
+
+            if len(cosmicVepList) == 0:
+                cosmicN = ''
+            else:
+                cosmicN = 0
+                for cosmicId in cosmicVepList:
+                    cmdCosmic = 'grep -w '+cosmicId+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f 16 '
+                    cosmicNew = subprocess.run(cmdCosmic, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
+                    if len(cosmicNew) == 0:
+                        cosmicNew = 0
+                    cosmicN += int(cosmicNew)
+
+            transcript = csq.split("|")[10].split(":")[0]
+            codingName = csq.split("|")[10].split(":")[1]
+            consequence = csq.split("|")[1]
+
+            #Population allel freq
+            maxPopAf = record.info["CSQ"][0].split("|")[57] #[60]
+            if len(maxPopAf) > 1:
+                maxPopAf = round(float(maxPopAf),4)
+            maxPop = record.info["CSQ"][0].split("|")[58] #[61]
+
+            # Should pos be shifted if del??
+            snv = [gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
+            #Append line with sample and rundate to rolling list of artefacts..
+            with open("/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt", "a") as appendfile:
+                variants=[seqID]+[sample]+snv+["\n"]
+                appendfile.write('\t'.join(str(e) for e in variants))
+
+            #Artefact_file
+            cmdArt = 'grep -w '+str(record.pos)+' '+artefactFile
+            artLine = subprocess.run(cmdArt, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip() ##What happens if two hits?
+            if artLine and record.ref == artLine.split()[2] and alt == artLine.split()[3]: #if pos exists and match in artefact file.
+                orange.append(snv)
+            else:
+                # Germline /gluster-storage-volume/projects/wp2/nobackup/Twist_Myeloid/Artefact_files/Low_VAF_SNVs.txt
+                cmdGerm = 'grep -w '+str(record.pos)+' '+germlineFile
+                germLine = subprocess.run(cmdGerm, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
+
+                if germLine and record.ref == germLine.split()[2] and alt == germLine.split()[3]: #if exists in germline file
+                    green.append(snv)
+                else:
+                    white.append(snv)
 
 ### Actually writing to the excelsheet
 for line in white:
