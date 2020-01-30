@@ -1,3 +1,5 @@
+localrules: fixoutput
+
 rule cartool:
     input:
         bam = "Results/{sample}/Data/{sample}.bam",

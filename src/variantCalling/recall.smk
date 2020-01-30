@@ -1,3 +1,5 @@
+localrules: fixContig
+
 rule recall:
     input:
         vcfs = expand("variantCalls/callers/{method}/{{sample}}.{method}.normalized.vcf.gz",  method=config["methods"]) ,  # same order as methods in config!! make sure that is correct

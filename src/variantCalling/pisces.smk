@@ -1,3 +1,4 @@
+localrules: piscesFix
 rule pisces:
     input:
       bam = "Results/{sample}/Data/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"

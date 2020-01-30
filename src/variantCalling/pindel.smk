@@ -1,3 +1,5 @@
+localrules: fixContigPindel
+
 rule pindelConf: ##Add in excel file what genes were used.
     input:
         bam = "Results/{sample}/Data/{sample}.bam",
