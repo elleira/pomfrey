@@ -1,4 +1,4 @@
-
+localrules: bgzipCallers
 rule bgzipCallers:
     input:
         vcf = "variantCalls/callers/{method}/{sample}.{method}.vcf" #[m+"/{sample}."+m+".vcf" for m in config["methods"]]

@@ -1,4 +1,4 @@
-
+localrules: fixAF
 include:    "freebayes.smk"
 
 include:    "lofreq_T.smk"

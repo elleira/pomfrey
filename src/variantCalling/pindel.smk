@@ -1,4 +1,4 @@
-localrules: fixContigPindel
+localrules: fixContigPindel, pindelConf, fixPindelDPoAF, filterPindel, bgzipPindel
 
 rule pindelConf: ##Add in excel file what genes were used.
     input:

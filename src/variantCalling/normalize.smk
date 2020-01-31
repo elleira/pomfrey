@@ -1,3 +1,4 @@
+localrules: decompose, normalizeAll, indexDecomp
 
 rule decompose: #Do we need decompose as well, maybe for all but vardict??
     input:

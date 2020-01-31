@@ -1,3 +1,4 @@
+localrules: bgzipVep, filterVep, bgzipSNV
 rule vep:
     input:
         vcf = "variantCalls/recall/{sample}.{support}.vcf.gz",

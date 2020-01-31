@@ -1,4 +1,4 @@
-localrules: fixContig
+localrules: fixContig, sort_recall
 
 rule recall:
     input:
