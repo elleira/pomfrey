@@ -104,7 +104,7 @@ with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShortHotspot.t
                 if chrCov == chrHS and lowHS == posCov: #Always the same as bedfile just without region, How does CARTool handle if hotspot is longer than 1bp?
                     hotspotTable.append([chrCov,posCov, dp, hotspot[3].rstrip()])
 
-hotspotTable.sort(key=lambda x: x[2])
+hotspotTable.sort(key=lambda x: float(x[2]))
 for hotLine in hotspotTable:
     if int(hotLine[2]) <= medCov: ##How to get the number from configfile?!
         worksheetHotspot.write_row(row,0,hotLine,redFormat)
@@ -180,7 +180,7 @@ for gene in genes:
     row+=1
 
 row+=1
-tableheading = ['Gene','Chr','Start','End','SV length','Af','Ref','Alt','Max popAF','Max Pop']
+tableheading = ['SeqID','DNAnr','Gene','Chr','Start','End','SV length','Af','Ref','Alt','Max popAF','Max Pop']
 worksheetIndel.write_row('A'+str(row),tableheading, tableHeadFormat) #1 index
 # row = 7 #0 index
 col=0
@@ -208,7 +208,7 @@ for indel in vcf_indel.fetch():
             maxPopAfIndel = round(float(maxPopAfIndel),4)
         maxPopIndel = indel.info["CSQ"][0].split("|")[58] #[61]
 
-        indelRow = [indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt, maxPopAfIndel, maxPopIndel]
+        indelRow = [seqID,sample,indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt, maxPopAfIndel, maxPopIndel]
         worksheetIndel.write_row(row,col,indelRow)
         row += 1
 
@@ -242,7 +242,7 @@ worksheetSNV.write('A15','Variant in artefact list ', orangeFormat)
 worksheetSNV.write('A16','Variant likely germline', greenFormat)
 
 ## Variant table
-tableheading = ['Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Canonical Transcript','Mutation cds', 'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop']
+tableheading = ['SeqID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Canonical Transcript','Mutation cds', 'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop']
 worksheetSNV.write_row('A18', tableheading, tableHeadFormat) #1 index
 row = 18 #0 index
 col=0
@@ -336,13 +336,28 @@ for record in vcf_snv.fetch():
             consequence = csq.split("|")[1]
 
             #Population allel freq
-            maxPopAf = record.info["CSQ"][0].split("|")[57] #[60]
-            if len(maxPopAf) > 1:
-                maxPopAf = round(float(maxPopAf),4)
-            maxPop = record.info["CSQ"][0].split("|")[58] #[61]
+            # maxPopAf = record.info["CSQ"][0].split("|")[57] #[60]
+            # if len(maxPopAf) > 1:
+            #     maxPopAf = round(float(maxPopAf),4)
+            # maxPop = record.info["CSQ"][0].split("|")[58] #[61]
+
+            popFreqsPop=['AF', 'AFR_AF','AMR_AF','EAS_AF', 'EUR_AF', 'SAS_AF', 'gnomAD_AF', 'gnomAD_AFR_AF', 'gnomAD_AMR_AF', 'gnomAD_ASJ_AF', 'gnomAD_EAS_AF', 'gnomAD_FIN_AF', 'gnomAD_NFE_AF', 'gnomAD_OTH_AF', 'gnomAD_SAS_AF']
+            popFreqAllRaw=record.info["CSQ"][0].split("|")[42:57]
+            if any(popFreqAllRaw) and max([float(x) if x else 0 for x  in popFreqAllRaw]) != 0: #if all not empty
+                popFreqAll=[float(x) if x else 0 for x  in popFreqAllRaw]
+                maxPopAf=max(popFreqAll)
+                maxIndex=[i for i, j in enumerate(popFreqAll) if j == maxPopAf]
+                if len(maxIndex) == 1:
+                    maxPop=popFreqsPop[maxIndex[0]]
+                else:
+                    popFreqPops=[popFreqsPop[x] for x in maxIndex]
+                    maxPop="&".join(popFreqPops)
+            else:
+                maxPopAf=''
+                maxPop=''
 
             # Should pos be shifted if del??
-            snv = [gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
+            snv = [seqID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
             #Append line with sample and rundate to rolling list of artefacts..
             with open("/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt", "a") as appendfile:
                 variants=[seqID]+[sample]+snv+["\n"]
@@ -365,19 +380,19 @@ for record in vcf_snv.fetch():
 
 ### Actually writing to the excelsheet
 for line in white:
-    if line[6] < 500:
+    if line[8] < 500:
         worksheetSNV.write_row(row,col,line, italicFormat)
     else:
         worksheetSNV.write_row(row,col,line)
     row +=1
 for line in green:
-    if line[6] < 500:
+    if line[8] < 500:
         worksheetSNV.write_row(row,col,line, green_italicFormat)
     else:
         worksheetSNV.write_row(row,col,line, greenFormat)
     row +=1
 for line in orange:
-    if line[6] < 500:
+    if line[8] < 500:
         worksheetSNV.write_row(row,col,line, orange_italicFormat)
     else:
         worksheetSNV.write_row(row,col,line, orangeFormat)

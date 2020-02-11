@@ -1,7 +1,8 @@
-def get_minCov(wildcards):
-    allCov = config["cartool"]["cov"]
-    minCov = allCov.split(' ')[0]
-    return minCov
+localrules: makeContainersList, fixCoverageHotspot
+# def get_minCov(wildcards):
+#     allCov = config["cartool"]["cov"]
+#     minCov = allCov.split(' ')[0]
+#     return minCov
 
 rule makeContainersList:  ##From bedfile, not really dependent on sample
     input:

@@ -26,8 +26,13 @@ for record in vcf_in.fetch():
     # For every transcript?? Seperated with , not all differs, popfreq is the same on all.
     #Filter on known population freq (KGP phase3 and gnomAD r2.1 exomes only )
     vep=record.info["CSQ"][0].split("|")
-    if not vep[57] == '' and float(vep[57]) >= 0.02 : #vep[60]
-         record.filter.add("PopAF")
+    # if not vep[57] == '' and float(vep[57]) >= 0.02 : #vep[60]
+    #      record.filter.add("PopAF")
+
+    popFreqAll = vep[42:57]
+    popFreqs = [x for x in popFreqAll if x]
+    if any(popFreqs) and any(float(x) >= 0.02 for x in popFreqs):
+        record.filter.add("PopAF")
 
     bioType=0
     conseq=0
@@ -62,6 +67,14 @@ for record in vcf_in.fetch():
 # record.alts
 
 # # recod.info["CSQ"] = vep annotering!
+# Allele 0 |Consequence 1 |IMPACT 2 |SYMBOL 3 |Gene 4 |Feature_type 5 |Feature 6 |BIOTYPE 7 |EXON 8 |INTRON 9 |HGVSc 10 |HGVSp 11 |cDNA_position 12
+# |CDS_position 13 |Protein_position 14 |Amino_acids 15 |Codons 16 |Existing_variation 17 |DISTANCE 18 |STRAND 19 |FLAGS 20 |VARIANT_CLASS 21
+# |SYMBOL_SOURCE 22 |HGNC_ID 23 |CANONICAL 24 |TSL 25 |APPRIS 26 |CCDS 27 |ENSP 28 |SWISSPROT 29 |TREMBL 30 |UNIPARC 31 |REFSEQ_MATCH 32 |SOURCE 33
+# |GIVEN_REF 34 |USED_REF 35 |BAM_EDIT 36 |GENE_PHENO 37 |SIFT 38 |PolyPhen 39 |DOMAINS 40 |HGVS_OFFSET 41 |AF 42 |AFR_AF 43 |AMR_AF 44 |EAS_AF 45
+# |EUR_AF 46 |SAS_AF 47 |gnomAD_AF 48 |gnomAD_AFR_AF 49 |gnomAD_AMR_AF 50 |gnomAD_ASJ_AF 51 |gnomAD_EAS_AF 52 |gnomAD_FIN_AF 53 |gnomAD_NFE_AF 54
+# |gnomAD_OTH_AF 55 |gnomAD_SAS_AF 56 |MAX_AF 57 |MAX_AF_POPS 58 |CLIN_SIG 59 |SOMATIC 60 |PHENO 61 |PUBMED 62 |MOTIF_NAME 63 |MOTIF_POS 64
+# |HIGH_INF_POS 65 |MOTIF_SCORE_CHANGE 66
+#################################
 # Allele 0 |Consequence 1 |IMPACT 2 |SYMBOL 3 |Gene 4 |Feature_type 5 |Feature 6 |BIOTYPE 7 |EXON 8 |INTRON 9 |HGVSc 10 |HGVSp 11 |cDNA_position 12
 # |CDS_position 13 |Protein_position 14 |Amino_acids 15 |Codons 16 |Existing_variation 17 |DISTANCE 18 |STRAND 19 |FLAGS 20 |VARIANT_CLASS 21
 # |SYMBOL_SOURCE 22 |HGNC_ID 23 |CANONICAL 24 |TSL 25 |APPRIS 26 |CCDS 27 |ENSP 28 |SWISSPROT 29 |TREMBL 30 |UNIPARC 31 |REFSEQ_MATCH 32 |SOURCE 33
