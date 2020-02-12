@@ -1,4 +1,4 @@
-localrules: piscesFix, sortPisces, compressGenomeVcf
+localrules: piscesFix, sortPisces, gVCFindex, gVCFfinalIndex
 rule pisces:
     input:
       bam = "Results/{sample}/Data/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
@@ -40,17 +40,53 @@ rule sortPisces:
     shell:
         "(bcftools sort -o {output} -O v {input}) &> {log}"
 
-
-rule compressGenomeVcf:
+rule gVCFindex:
     input:
         vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf",
-        wait = "variantCalls/callers/pisces/{sample}/{sample}.pisces.unsorted.vcf"
+        wait = "variantCalls/callers/pisces/{sample}.pisces.weirdAF.vcf"
     output:
-        vcf = "Results/{sample}/Data/{sample}.genome.vcf.gz",
-        tbi = "Results/{sample}/Data/{sample}.genome.vcf.gz.tbi"
+        temp("variantCalls/callers/pisces/{sample}/{sample}.genome.vcf.tbi")
+    log:
+        "logs/variantCalling/pisces/{sample}.index.gVCF.log"
+    singularity:
+        config["singularitys"]["bcftools"]
+    shell:
+        "(tabix {input.vcf} )&>{log}"
+
+rule gVCFdecompose:
+    input:
+        vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf",
+        tbi = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf.tbi"
+    output:
+        temp("variantCalls/callers/pisces/{sample}/{sample}.genome.decomp.vcf")
+    log:
+        "logs/variantCalling/pisces/{sample}.genome.decomp.log"
+    singularity:
+        config["singularitys"]["vt"]
+    shell:
+        "(vt decompose -s {input.vcf} | vt decompose_blocksub -o {output} -) &> {log}"
+
+rule gVCFnormalize:
+    input:
+        vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.decomp.vcf",
+        fasta = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta"
+    output:
+        "Results/{sample}/Data/{sample}.normalized.genome.vcf.gz"
+    log:
+        "logs/variantCalling/pisces/{sample}.normalized.gVCF.log"
+    singularity:
+        config["singularitys"]["vt"]
+    shell:
+        "(vt normalize -n -r {input.fasta} -o {output} {input.vcf} ) &> {log}"
+
+rule gVCFfinalIndex:
+    input:
+        vcf = "Results/{sample}/Data/{sample}.normalized.genome.vcf.gz"
+    output:
+        "Results/{sample}/Data/{sample}.normalized.genome.vcf.gz.tbi"
     singularity:
         config["singularitys"]["bcftools"]
     log:
         "logs/variantCalling/pisces/{sample}.gz.log"
     shell:
-        "(bgzip -c {input.vcf} >> {output.vcf} && tabix {output.vcf}) 2> {log}"
+        "(tabix {input.vcf}) 2> {log}"

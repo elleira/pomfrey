@@ -7,7 +7,8 @@ rule all:
         expand("Results/{sample}/Reports/{sample}.3.xlsx", sample=config["samples"]),
         expand("Results/{sample}/Reports/done-igv.txt", sample=config["samples"]),  ## For the igv images
         expand("Results/{sample}/Data/{sample}.SNV-pindel.vcf", sample=config["samples"]),
-        expand("Results/{sample}/Data/{sample}.genome.vcf.gz", sample=config["samples"]),
+        expand("Results/{sample}/Data/{sample}.normalized.genome.vcf.gz", sample=config["samples"]),
+        expand("Results/{sample}/Data/{sample}.normalized.genome.vcf.gz.tbi", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.bam", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.bam.bai", sample=config["samples"]),
         expand("variantCalls/pindel/{sample}.pindel.filt.vcf.gz", sample=config["samples"]),
