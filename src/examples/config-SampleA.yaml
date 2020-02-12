@@ -36,3 +36,8 @@ methods:   ##Should we have it here or skip and put in snakemake-file
     snver: "snver" #manta: "manta"
 
 samples:
+  "SampleA": "SampleA_R1_001.fastq.gz"
+
+dates:
+  sequencerun: "200110"
+
