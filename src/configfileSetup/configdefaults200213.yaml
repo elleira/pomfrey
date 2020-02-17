@@ -3,7 +3,7 @@ bed:
     pindel: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/bedfiles/twist_shortlist_pindel.bed"    #annotated_pindel.bed"
     cartool: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/bedfiles/all_targets_covered_by_probes_combined_sorted_merged_ann_padd10.bed" #"/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/bedfiles/twist_annotated_cartool.bed" #Why different? Should use the same as bedfile?
     hotspot: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/bedfiles/Hitlist_Sept2016_final_onePOS.bed"
-    artefact: "/gluster-storage-volume/projects/wp2/nobackup/Twist_Myeloid/Artefact_files/Artefacts_Dec2019.txt"
+    artefact: "/gluster-storage-volume/projects/wp2/nobackup/Twist_Myeloid/Artefact_files/Artefacts_Feb2020.txt"
     germline: "/gluster-storage-volume/projects/wp2/nobackup/Twist_Myeloid/Artefact_files/Low_VAF_SNVs.txt"
 
 singularitys:

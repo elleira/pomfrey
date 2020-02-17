@@ -56,7 +56,7 @@ rule pindel2vcf:
         mc = 10, #min coverage
         minsize = 10, #min size of reported 5
         refname = "hg19",
-        refdate = 000000
+        refdate = 000000  #Can I add seqID instead? config["seqID"]["sequencerun"]
     log:
         "logs/variantCalling/pindel/{sample}.pindel2vcf.log"
     singularity:

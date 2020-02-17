@@ -365,17 +365,25 @@ for record in vcf_snv.fetch():
 
             #Artefact_file
             cmdArt = 'grep -w '+str(record.pos)+' '+artefactFile
-            artLine = subprocess.run(cmdArt, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip() ##What happens if two hits?
-            if artLine and record.ref == artLine.split()[2] and alt == artLine.split()[3]: #if pos exists and match in artefact file.
-                orange.append(snv)
-            else:
+            artLines = subprocess.run(cmdArt, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip() ##What happens if two hits?!!!
+            artefact_variant = 0
+            # import pdb; pdb.set_trace()
+            for artLine in artLines.split("\n"):
+                if artLine and record.ref == artLine.split()[2] and alt == artLine.split()[3]: #if pos exists and match in artefact file.
+                    orange.append(snv)
+                    artefact_variant = 1
+                    break
+            if artefact_variant == 0:
                 # Germline /gluster-storage-volume/projects/wp2/nobackup/Twist_Myeloid/Artefact_files/Low_VAF_SNVs.txt
                 cmdGerm = 'grep -w '+str(record.pos)+' '+germlineFile
-                germLine = subprocess.run(cmdGerm, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
-
-                if germLine and record.ref == germLine.split()[2] and alt == germLine.split()[3]: #if exists in germline file
-                    green.append(snv)
-                else:
+                germLines = subprocess.run(cmdGerm, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
+                germline_variant = 0
+                for germLine in germLines.split("\n"):
+                    if germLine and record.ref == germLine.split()[2] and alt == germLine.split()[3]: #if exists in germline file
+                        green.append(snv)
+                        germline_variant = 1
+                        break
+                if germline_variant == 0:
                     white.append(snv)
 
 ### Actually writing to the excelsheet

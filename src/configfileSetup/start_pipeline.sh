@@ -13,7 +13,7 @@ for i in $(ls ${rawdatafolder}*R1_001.fastq.gz); do ##Add each sample in seq run
   sample=${filename%%_S+([[:digit:]])_R1*}
   echo -e "  \"${sample}_${sequnecerun}\": \"${i}\"" >> ${date}.config.yaml
 done
-echo "dates:">> ${date}.config.yaml
+echo "seqID:">> ${date}.config.yaml
 echo -e "  sequencerun: \"${sequnecerun}\"">> ${date}.config.yaml
 
 

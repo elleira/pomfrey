@@ -44,7 +44,7 @@ rule vcf2excel:
         "Results/{sample}/Reports/{sample}.{support}.xlsx"
     params:
         coverage = config["cartool"]["cov"], #All coverage, goes in as three sys.argv[], get_minCov,
-        seqID = config["dates"]["sequencerun"]
+        seqID = config["seqID"]["sequencerun"]
     log:
         "logs/report/{sample}.{support}.vcf2excel.log"
     singularity:
