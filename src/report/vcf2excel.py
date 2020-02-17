@@ -242,13 +242,14 @@ worksheetSNV.write('A15','Variant in artefact list ', orangeFormat)
 worksheetSNV.write('A16','Variant likely germline', greenFormat)
 
 ## Variant table
-tableheading = ['SeqID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Canonical Transcript','Mutation cds', 'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop']
+tableheading = ['SeqID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Canonical Transcript','Mutation cds', 'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop','IGV image']
 worksheetSNV.write_row('A18', tableheading, tableHeadFormat) #1 index
 row = 18 #0 index
 col=0
 white=[]
 green=[]
 orange=[]
+whiteIGV=[]
 
 for record in vcf_snv.fetch():
     synoCosmicN = 0
@@ -355,8 +356,9 @@ for record in vcf_snv.fetch():
             else:
                 maxPopAf=''
                 maxPop=''
+            ##IGV image path for each SNV
+            igv="external:"+record.contig+"_"+str(int(record.pos)-1)+"_"+str(int(record.pos)-1+len(alt))+".svg"  #Or should it be reltive the xlsx file?
 
-            # Should pos be shifted if del??
             snv = [seqID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
             #Append line with sample and rundate to rolling list of artefacts..
             with open("/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt", "a") as appendfile:
@@ -385,20 +387,27 @@ for record in vcf_snv.fetch():
                         break
                 if germline_variant == 0:
                     white.append(snv)
+                    whiteIGV.append(igv)
 
 ### Actually writing to the excelsheet
+i=0
 for line in white:
     if line[8] < 500:
         worksheetSNV.write_row(row,col,line, italicFormat)
+        worksheetSNV.write_url('S'+str(row+1), whiteIGV[i],string = "IGV image")
     else:
         worksheetSNV.write_row(row,col,line)
+        # import pdb; pdb.set_trace()
+        worksheetSNV.write_url('S'+str(row+1), whiteIGV[i],string = "IGV image")
     row +=1
+    i+=1
 for line in green:
     if line[8] < 500:
         worksheetSNV.write_row(row,col,line, green_italicFormat)
     else:
         worksheetSNV.write_row(row,col,line, greenFormat)
     row +=1
+
 for line in orange:
     if line[8] < 500:
         worksheetSNV.write_row(row,col,line, orange_italicFormat)
