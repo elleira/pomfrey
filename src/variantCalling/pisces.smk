@@ -1,4 +1,4 @@
-localrules: piscesFix, sortPisces, gVCFindex, gVCFfinalIndex
+localrules: piscesFix, sortPisces, gVCFfinalIndex
 rule pisces:
     input:
       bam = "Results/{sample}/Data/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
@@ -8,7 +8,7 @@ rule pisces:
         vcf = temp("variantCalls/callers/pisces/{sample}/{sample}.genome.vcf")
     params:
         outfolder = "variantCalls/callers/pisces/{sample}",
-        bed = lambda wildcards: config["bed"]["bedfile"]
+        bed = config["bed"]["bedfile"]
     threads: 1
     log:
         "logs/variantCalling/pisces/{sample}.log"
@@ -40,25 +40,25 @@ rule sortPisces:
     shell:
         "(bcftools sort -o {output} -O v {input}) &> {log}"
 
-rule gVCFindex:
-    input:
-        vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf",
-        wait = "variantCalls/callers/pisces/{sample}.pisces.weirdAF.vcf"
-    output:
-        temp("variantCalls/callers/pisces/{sample}/{sample}.genome.vcf.tbi")
-    log:
-        "logs/variantCalling/pisces/{sample}.index.gVCF.log"
-    singularity:
-        config["singularitys"]["bcftools"]
-    shell:
-        "(tabix {input.vcf} )&>{log}"
+# rule gVCFindex: #Remove? Not Needed?
+#     input:
+#         vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf",
+#         wait = "variantCalls/callers/pisces/{sample}.pisces.weirdAF.vcf"
+#     output:
+#         temp("variantCalls/callers/pisces/{sample}/{sample}.genome.vcf.tbi")
+#     log:
+#         "logs/variantCalling/pisces/{sample}.index.gVCF.log"
+#     singularity:
+#         config["singularitys"]["bcftools"]
+#     shell:
+#         "(tabix {input.vcf} )&>{log}"
 
 rule gVCFdecompose:
     input:
         vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf",
-        tbi = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf.tbi"
+        # tbi = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf.tbi"
     output:
-        temp("variantCalls/callers/pisces/{sample}/{sample}.genome.decomp.vcf")
+        temp("variantCalls/callers/pisces/{sample}/{sample}.decomp.genome.vcf")
     log:
         "logs/variantCalling/pisces/{sample}.genome.decomp.log"
     singularity:
@@ -68,7 +68,7 @@ rule gVCFdecompose:
 
 rule gVCFnormalize:
     input:
-        vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.decomp.vcf",
+        vcf = "variantCalls/callers/pisces/{sample}/{sample}.decomp.genome.vcf",
         fasta = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta"
     output:
         "Results/{sample}/Data/{sample}.normalized.genome.vcf.gz"
