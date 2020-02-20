@@ -2,9 +2,9 @@ localrules: fixoutput
 
 rule cartool:
     input:
-        bam = "Results/{sample}/Data/{sample}.bam",
+        bam = "Results/{sample}/Data/{sample}-dedup.bam",
         bed = config["bed"]["cartool"],
-        bai = "Results/{sample}/Data/{sample}.bam.bai"
+        bai = "Results/{sample}/Data/{sample}-dedup.bam.bai"
     output:
         statstable = "qc/{sample}/{sample}_Stat_table.csv",
         cartoollog =  "qc/{sample}/{sample}_Log.csv",

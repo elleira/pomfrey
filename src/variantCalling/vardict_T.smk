@@ -1,8 +1,8 @@
 
 rule vardict:
     input:
-        bam = "Results/{sample}/Data/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
-        index = "Results/{sample}/Data/{sample}.bam.bai",
+        bam = "Results/{sample}/Data/{sample}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
+        index = "Results/{sample}/Data/{sample}-dedup.bam.bai",
         ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
         bed =  config["bed"]["bedfile"]#"/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/bedfiles/TST500C_manifest.bed"
     output:

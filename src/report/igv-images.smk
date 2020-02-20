@@ -30,7 +30,7 @@ rule makePassVCF:
 rule createBatFile:
     input:
         vcf = "Results/{sample}/Reports/{sample}.PASS.vcf",
-        bam = "Results/{sample}/Data/{sample}.bam",
+        bam = "Results/{sample}/Data/{sample}-dedup.bam",
         bed = config["bed"]["cartool"],
         ref = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/igv/genomes/hg19.genome"
     output:

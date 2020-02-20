@@ -2,8 +2,8 @@ localrules: fixContigPindel, pindelConf, fixPindelDPoAF, filterPindel, bgzipPind
 
 rule pindelConf: ##Add in excel file what genes were used.
     input:
-        bam = "Results/{sample}/Data/{sample}.bam",
-        bai = "Results/{sample}/Data/{sample}.bam.bai"
+        bam = "Results/{sample}/Data/{sample}-dedup.bam",
+        bai = "Results/{sample}/Data/{sample}-dedup.bam.bai"
     output:
         "variantCalls/pindel/{sample}/{sample}-config.txt"
     log:

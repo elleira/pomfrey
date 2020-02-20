@@ -9,8 +9,8 @@ rule all:
         expand("Results/{sample}/Data/{sample}.SNV-pindel.vcf", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.normalized.genome.vcf.gz", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.normalized.genome.vcf.gz.tbi", sample=config["samples"]),
-        expand("Results/{sample}/Data/{sample}.bam", sample=config["samples"]),
-        expand("Results/{sample}/Data/{sample}.bam.bai", sample=config["samples"]),
+        expand("Results/{sample}/Data/{sample}-dedup.bam", sample=config["samples"]),
+        expand("Results/{sample}/Data/{sample}-dedup.bam.bai", sample=config["samples"]),
         expand("variantCalls/pindel/{sample}.pindel.filt.vcf.gz", sample=config["samples"]),
         expand("variantCalls/annotation/{sample}.3.filt.vcf.gz", sample=config["samples"])
         # expand("variantCalls/recall/{sample}.3.vcf.gz", sample=config["samples"]) ## Reports, final vcf, bam, fastqs..
@@ -32,6 +32,7 @@ include:    "trimming/cutadapt.smk"
 
 ## Map in trimming/{sample}_R[12]_trimmed.fastq.gz out bam/{sample}.bam
 include:    "map/bwa-mem.smk" #fastq R1 R2 from trimming in, bam out.
+include:    "map/markDuplicates.smk"
 
 ## Variant callers
 ##bamfiles in! then a annotation/{sample}.3.filt.vcf.gz and indel/{sample}.pindel.vcf.gz

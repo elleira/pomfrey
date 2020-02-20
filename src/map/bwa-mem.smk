@@ -1,9 +1,9 @@
 
 rule bwa_mem:
     input:
-        reads=["fastq_trimmed/{sample}/{sample}_R1_trimmed.fastq", "fastq_trimmed/{sample}/{sample}_R2_trimmed.fastq"]
+        reads=["data_processing/{sample}/{sample}_R1_trimmed.fastq", "data_processing/{sample}/{sample}_R2_trimmed.fastq"]
     output:
-        "Results/{sample}/Data/{sample}.bam"
+        "data_processing/{sample}/{sample}.bam"
     log:
         "logs/map/bwa_mem/{sample}.log"
     params:   #-M
@@ -20,9 +20,9 @@ rule bwa_mem:
 
 rule samtools_index:
     input:
-        "Results/{sample}/Data/{sample}.bam"
+        "data_processing/{sample}/{sample}.bam"
     output:
-        "Results/{sample}/Data/{sample}.bam.bai"
+        "data_processing/{sample}/{sample}.bam.bai"
     params:
         "" # optional params string
     log:

@@ -1,6 +1,6 @@
 rule samtools_stats:
     input:
-        "Results/{sample}/Data/{sample}.bam"
+        "Results/{sample}/Data/{sample}-dedup.bam"
     output:
         "qc/{sample}/{sample}.samtools-stats.txt"
     params:

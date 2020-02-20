@@ -1,9 +1,9 @@
 localrules: piscesFix, sortPisces, gVCFfinalIndex
 rule pisces:
     input:
-      bam = "Results/{sample}/Data/{sample}.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
+      bam = "Results/{sample}/Data/{sample}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
       reffolder = "/data/ref_genomes/hg19/genome_fasta/",
-      index = "Results/{sample}/Data/{sample}.bam.bai"
+      index = "Results/{sample}/Data/{sample}-dedup.bam.bai"
     output:
         vcf = temp("variantCalls/callers/pisces/{sample}/{sample}.genome.vcf")
     params:
