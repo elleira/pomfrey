@@ -3,9 +3,8 @@ rule markDuplicates:
         bam = "data_processing/{sample}/{sample}.bam",
         bai =  "data_processing/{sample}/{sample}.bam.bai"
     output:
-        "Results/{sample}/Data/{sample}-dedup.bam"
-    params:
-        metric = "qc/{sample}_DuplicationMetrics.txt"
+        bam = "Results/{sample}/Data/{sample}-dedup.bam",
+        metric = "qc/{sample}/{sample}_DuplicationMetrics.txt"
     log:
         "logs/map/{sample}-dedup.log"
     threads:
@@ -13,7 +12,7 @@ rule markDuplicates:
     singularity:
         config["singularitys"]["bwa"]
     shell:
-        "(java -Xmx4g -jar /opt/conda/share/picard-2.20.1-0/picard.jar MarkDuplicates INPUT={input.bam} OUTPUT={output} METRICS_FILE={params.metric}) &> {log}"
+        "(java -Xmx4g -jar /opt/conda/share/picard-2.20.1-0/picard.jar MarkDuplicates INPUT={input.bam} OUTPUT={output.bam} METRICS_FILE={output.metric}) &> {log}"
 
 rule samtools_index_dedup:
     input:

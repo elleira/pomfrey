@@ -5,7 +5,7 @@ rule pisces:
       reffolder = "/data/ref_genomes/hg19/genome_fasta/",
       index = "Results/{sample}/Data/{sample}-dedup.bam.bai"
     output:
-        vcf = temp("variantCalls/callers/pisces/{sample}/{sample}.genome.vcf")
+        vcf = temp("variantCalls/callers/pisces/{sample}/{sample}-dedup.genome.vcf")
     params:
         outfolder = "variantCalls/callers/pisces/{sample}",
         bed = config["bed"]["bedfile"]
@@ -15,12 +15,12 @@ rule pisces:
     singularity:
         config["singularitys"]["pisces"]
     shell:  #Remove gVCF False for genome vcf and save for db, and artifacts? -gVCF FALSE
-        "(dotnet /app/Pisces/Pisces.dll -b {input.bam} -g {input.reffolder} -i {params.bed} -t 1 --filterduplicates TRUE --outfolder {params.outfolder} ) 2> {log}"
+        "(dotnet /app/Pisces/Pisces.dll -b {input.bam} -g {input.reffolder} -i {params.bed} -t {threads} --filterduplicates TRUE --outfolder {params.outfolder} ) &> {log}"
 ##Bed file?
 
-rule piscesFix: ##Might not be needed with -gVCF FALSE
+rule piscesFix: ## use bcftools view --minalleles 2 {input} instead?
     input:
-        "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf"
+        "variantCalls/callers/pisces/{sample}/{sample}-dedup.genome.vcf"
     output:
         temp("variantCalls/callers/pisces/{sample}/{sample}.pisces.unsorted.vcf")
     log:
@@ -55,7 +55,7 @@ rule sortPisces:
 
 rule gVCFdecompose:
     input:
-        vcf = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf",
+        vcf = "variantCalls/callers/pisces/{sample}/{sample}-dedup.genome.vcf",
         # tbi = "variantCalls/callers/pisces/{sample}/{sample}.genome.vcf.tbi"
     output:
         temp("variantCalls/callers/pisces/{sample}/{sample}.decomp.genome.vcf")

@@ -16,7 +16,7 @@ if method == "pisces":
     new_header.info.add("AF","A","Float","DescriptionDescription")
 
 if  method == "snver":
-    new_header.info.add("AF","A","Float","Allel count divided on depth, very crude")
+    new_header.info.add("AF","A","Float","Allel count divided on depth, crude")
 
 #start new vcf with the new_header
 vcf_out = VariantFile(sys.argv[2], 'w', header=new_header)
