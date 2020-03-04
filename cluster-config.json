@@ -1,23 +1,24 @@
 {
     "__default__": {
-        "queue": "core",
-        "time": "1:00:00",
-        "partition": "core",
+        "queue": "batch.q",
         "n": "1",
+        "name": "{rule}_{wildcards.sample}",
+        "output": "/home/xalmal/standard_o_and_e/{wildcards.sample}_out.txt",
+        "error": "/home/xalmal/standard_o_and_e/{wildcards.sample}_err.txt"
     },
-    "fastqc": {"time": "3:00:00"},
-    "cartool": {"time": "2:00:00"}, #15 min?
-    "cutadapt": {"time": "3:00:00", "n": "8"},  #15 min w 8 cores
-    "bwa_mem": {"time": "8:00:00", "n": "8"},
-    "pindel": {"time": "5:00:00", "n": "4"},
-    "lofreq": {"time" : "5:00:00", "n": "8"},
-    "vardict": {"time":"5:00:00", "n": "4"},
-    "freebayes": {"time": "8:00:00"},
-    "snver": {"time": "8:00:00"},
-    "normalizeAll": {"time":"5:00:00"},
-    "pisces": {"time":"8:00:00"},
-    "manta_exec": {"time":"3:00:00"},
-    "strelka_exec": {"time":"8:00:00"},
-    "vep": {"time":"2:00:00", "n": "8"},
-    "igv": {"n": "2", "time":"2:00:00"}
+    #"fastqc": {"time": "3:00:00"},
+    #"cartool": {"time": "2:00:00"}, #15 min?
+    "cutadapt": {"n": "20"},  #15 min w 8 cores
+    "bwa_mem": {"n": "20"},
+    "pindel": {"n": "8"},
+    "lofreq": {"n": "20"},
+    "vardict": {"n": "8"},
+    #"freebayes": {"time": "8:00:00"},
+    #"snver": {"time": "8:00:00"},
+    #"normalizeAll": {"time":"5:00:00"},
+    #"pisces": {"time":"8:00:00"},
+    #"manta_exec": {"time":"3:00:00"},
+    #"strelka_exec": {"time":"8:00:00"},
+    "vep": {"n": "20"},
+    "igv": {"n": "2"}
 }
