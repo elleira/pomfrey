@@ -122,7 +122,6 @@ rule filterPindel:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 {params}/src/variantCalling/filter_vcf.py {input.vcf} {output}) &> {log}"
 
 rule bgzipPindel:
     input:
