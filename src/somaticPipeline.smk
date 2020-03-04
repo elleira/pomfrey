@@ -2,6 +2,12 @@
 ##Specify configfile and singularity folder in snakemake command.
 localrules: makeContainersList
 
+#shell.prefix('set +u; PATH=/apps/bio/software/singularity/bin/:$PATH; set -u ')
+#shell.prefix('export SINGULARITY_BIND="/medstore,/seqstore,/apps ')
+#shell.prefix('export DRMAA_LIBRARY_PATH=/apps/univa-gridengine/lib/lx-amd64/libdrmaa.so.1.0 ')
+#shell.prefix('export SGE_ROOT=/apps/univa-gridengine ')
+#shell.prefix('export SGE_CELL=default ')
+
 rule all:
     input:
         expand("Results/{sample}_{seqID}/Reports/{sample}_{seqID}_MultiQC.html", sample=config["samples"], seqID=config["seqID"]["sequencerun"]), 
