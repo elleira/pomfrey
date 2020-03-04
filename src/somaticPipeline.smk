@@ -19,9 +19,10 @@ wildcard_constraints:
     sample = "[a-zA-Z0-9-_\.]+",
     support = "3" #"\.[0-9]+\."
 
+
 ### QC modules
 include:    "qc/fastqc.smk" #fastq in html/text out
-include:    "qc/samtools-stats.smk" #bam in txt out
+include:    "qc/samtools-picard-stats.smk" #bam in txt out
 include:    "qc/cartool.smk" #bam in tables out
 
 ## Demultiplexing out runfolder/{sample}_S[0-9]_R[12]_001.fastq.g
@@ -42,6 +43,18 @@ include:    "variantCalling/pindel.smk"
 ## CNV?
 
 ## Rapportering
+rule makeContainersList:  ##From bedfile, not really dependent on sample
+    input:
+        expand("data_processing/{sample}/{sample}_R1_trimmed.fastq", sample=config["samples"])
+    output:
+        temp("containers.txt")
+    log:
+        "logs/report/containersLog.log"
+    run:
+        for k,v in config["singularitys"].items():
+            shell("echo {v} >> containers.txt")
+        "(cat slurm-*out | grep singularity | sort | uniq | cut -d' ' -f4 > {output}) &> {log}"
+
 include:    "report/multiqc.smk" # per sample, add per batch as well but only certain results?
 include:    "report/vcf2excel.smk"
 include:    "report/igv-images.smk" #per sample

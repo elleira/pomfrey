@@ -1,4 +1,4 @@
-localrules: piscesFix, sortPisces, gVCFfinalIndex
+localrules: piscesFix, sortPisces, gVCFfinalIndex, renameSample
 rule pisces:
     input:
       bam = "Results/{sample}/Data/{sample}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
@@ -28,9 +28,21 @@ rule piscesFix: ## use bcftools view --minalleles 2 {input} instead?
     shell:
         """( awk '{{if($5 != "." || $1 ~ /^"#"/)print $0}}' {input} >{output} ) 2> {log}"""
 
+rule renameSample:
+    input:
+        "variantCalls/callers/pisces/{sample}/{sample}-dedup.genome.vcf"
+    output:
+        temp("variantCalls/callers/pisces/{sample}-name.txt")
+    log:
+        "logs/variantCalling/pisces/{sample}-name.log"
+    shell:
+        "echo {wildcards.sample} > {output}"
+
+
 rule sortPisces:
     input:
-        "variantCalls/callers/pisces/{sample}/{sample}.pisces.unsorted.vcf"
+        vcf = "variantCalls/callers/pisces/{sample}/{sample}.pisces.unsorted.vcf",
+        name = "variantCalls/callers/pisces/{sample}-name.txt"
     output:
         temp("variantCalls/callers/pisces/{sample}.pisces.weirdAF.vcf")
     singularity:
@@ -38,7 +50,7 @@ rule sortPisces:
     log:
         "logs/variantCalling/pisces/{sample}.sort.log"
     shell:
-        "(bcftools sort -o {output} -O v {input}) &> {log}"
+        "(bcftools reheader -s {input.name} {input.vcf} | bcftools sort -o {output} -O v - ) &> {log}"
 
 # rule gVCFindex: #Remove? Not Needed?
 #     input:

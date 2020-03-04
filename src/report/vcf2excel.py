@@ -439,20 +439,35 @@ worksheetOver.write_url(11,0,"internal:'Hotspot'!A1", string = 'Coverage of hots
 worksheetOver.write_url(12,0,"internal:'Version'!A1", string = 'Version Log')
 worksheetOver.write_row(14,0,emptyList,lineFormat)
 
+
+##Add avg. cov and clonalisy
+cartoolLog=cartool.replace("_MeanCoverageShortList.csv", "_Log.csv")
+cmdAvgCov = 'grep Depth '+cartoolLog+' | cut -d"," -f2 | cut -f1 -d" "'
+avgCov = subprocess.run(cmdAvgCov, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
+
+duplicationFile = cartool.replace("_MeanCoverageShortList.csv", "_DuplicationMetrics.txt")
+cmdDupl = 'grep -A1 PERCENT '+duplicationFile+' | tail -1 | cut -f9'
+duplicateLevel = subprocess.run(cmdDupl, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
+
+worksheetOver.write(16,0, "Avg. coverage [x]: ")
+worksheetOver.write(16,2, avgCov)
+worksheetOver.write(17,0, "Duplicationlevel [%]: ")
+worksheetOver.write(17,2, str(round(float(duplicateLevel)*100,2)))
+
 if lowPos == 0: #From Hotspot sheet
-    worksheetOver.write(17,0,'Number of positions from the hotspot list not covered by at least 500x: ')
-    worksheetOver.write(18,0, str(lowPos))
+    worksheetOver.write(20,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(21,0, str(lowPos))
 else:
-    worksheetOver.write(17,0,'Number of positions from the hotspot list not covered by at least 500x: ')
-    worksheetOver.write(18,0, str(lowPos), redFormat)
-    worksheetOver.write_url(19,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
+    worksheetOver.write(20,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(21,0, str(lowPos), redFormat)
+    worksheetOver.write_url(22,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
 
 
-worksheetOver.write(20,0,'Number of regions not covered by at least 100x: ') #From Cov sheet
-worksheetOver.write(21,0, str(lowRegions)) #From Cov sheet
-worksheetOver.write(23,0,'Hotspotlist: '+hotspotFile)
-worksheetOver.write(24,0,'Artefact file: '+artefactFile)
-worksheetOver.write(25,0,'Germline file: '+germlineFile)
+worksheetOver.write(23,0,'Number of regions not covered by at least 100x: ') #From Cov sheet
+worksheetOver.write(24,0, str(lowRegions)) #From Cov sheet
+worksheetOver.write(26,0,'Hotspotlist: '+hotspotFile)
+worksheetOver.write(27,0,'Artefact file: '+artefactFile)
+worksheetOver.write(28,0,'Germline file: '+germlineFile)
 
 ######################################
 
