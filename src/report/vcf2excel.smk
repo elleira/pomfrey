@@ -1,21 +1,8 @@
-localrules: makeContainersList, fixCoverageHotspot
+localrules: fixCoverageHotspot
 # def get_minCov(wildcards):
 #     allCov = config["cartool"]["cov"]
 #     minCov = allCov.split(' ')[0]
 #     return minCov
-
-rule makeContainersList:  ##From bedfile, not really dependent on sample
-    input:
-        expand("Results/{sample}/Reports/{sample}.html", sample=config["samples"])
-    output:
-        temp("containers.txt")
-    log:
-        "logs/report/containersLog.log"
-    run:
-        for k,v in config["singularitys"].items():
-            shell("echo {v} >> containers.txt")
-        # "(cat slurm-*out | grep singularity | sort | uniq | cut -d' ' -f4 > {output}) &> {log}"
-
 
 rule fixCoverageHotspot:
     input:

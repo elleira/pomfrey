@@ -3,4 +3,14 @@ extra_fn_clean_exts: ##from this until end
       pattern: '_S[0-9]'
     - type: regex
       pattern: '_R[12]'
+    - '_001'
+    - '-dedup'
 # extra_fn_clean_trim:   #if found in beginning or end
+
+custom_content:
+  order:
+    #egen stats
+    - cutadapt
+    - fastqc
+    - samtools
+    - picard

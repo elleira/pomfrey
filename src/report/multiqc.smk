@@ -1,6 +1,6 @@
 rule multiqc:
     input: #Add bcl2fastq folder?
-        ["qc/{sample}/{sample}.samtools-stats.txt", "qc/{sample}/{sample}_fastqc.zip", "data_processing/{sample}/{sample}.qc.txt", "qc/{sample}/{sample}_cartool_mqc.csv", "qc/{sample}/{sample}_DuplicationMetrics.txt"]
+        ["qc/{sample}/{sample}.samtools-stats.txt", "qc/{sample}/{sample}_fastqc.zip", "data_processing/{sample}/{sample}.qc.txt", "qc/{sample}/{sample}_DuplicationMetrics.txt", "qc/{sample}/{sample}.HsMetrics.txt"] #, "qc/{sample}/{sample}_cartool_mqc.csv"
     output:
         "Results/{sample}/Reports/{sample}.html"
     params:
