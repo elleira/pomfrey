@@ -14,7 +14,7 @@ rule pindelConf: ##Add in excel file what genes were used.
 rule pindel:
     input:
         bed = lambda wildcards: config["bed"]["pindel"],
-        ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
+        ref = "/medstore/External_References/hs37d5/hs37d5.fa",
         bamconfig = "variantCalls/pindel/{sample}/{sample}-config.txt" #path to bam \t insert size \t sample name
     output:
         "variantCalls/pindel/{sample}/{sample}_BP",
@@ -39,7 +39,7 @@ rule pindel:
 
 rule pindel2vcf:
     input:
-        ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
+        ref = "/medstore/External_References/hs37d5/hs37d5.fa",
         bp = "variantCalls/pindel/{sample}/{sample}_BP",
         closeend = "variantCalls/pindel/{sample}/{sample}_CloseEndMapped",
         d = "variantCalls/pindel/{sample}/{sample}_D",
@@ -71,7 +71,7 @@ rule fixContigPindel:
     output:
         temp("variantCalls/pindel/{sample}.pindel.noDP.vcf")
     params: ## awk '{printf("##contig=<ID=%s,length=%d>\\n",$1,$2);}' ref.fai
-        "\"##contig=<ID=chr1,length=249250621>\\n##contig=<ID=chr2,length=243199373>\\n##contig=<ID=chr3,length=198022430>\\n##contig=<ID=chr4,length=191154276>\\n##contig=<ID=chr5,length=180915260>\\n##contig=<ID=chr6,length=171115067>\\n##contig=<ID=chr7,length=159138663>\\n##contig=<ID=chr8,length=146364022>\\n##contig=<ID=chr9,length=141213431>\\n##contig=<ID=chr10,length=135534747>\\n##contig=<ID=chr11,length=135006516>\\n##contig=<ID=chr12,length=133851895>\\n##contig=<ID=chr13,length=115169878>\\n##contig=<ID=chr14,length=107349540>\\n##contig=<ID=chr15,length=102531392>\\n##contig=<ID=chr16,length=90354753>\\n##contig=<ID=chr17,length=81195210>\\n##contig=<ID=chr18,length=78077248>\\n##contig=<ID=chr19,length=59128983>\\n##contig=<ID=chr20,length=63025520>\\n##contig=<ID=chr21,length=48129895>\\n##contig=<ID=chr22,length=51304566>\\n##contig=<ID=chrX,length=155270560>\\n##contig=<ID=chrY,length=59373566>\\n##contig=<ID=chrM,length=16571>\\n\""
+        "\"##contig=<ID=1,length=249250621>\\n##contig=<ID=2,length=243199373>\\n##contig=<ID=3,length=198022430>\\n##contig=<ID=4,length=191154276>\\n##contig=<ID=5,length=180915260>\\n##contig=<ID=6,length=171115067>\\n##contig=<ID=7,length=159138663>\\n##contig=<ID=8,length=146364022>\\n##contig=<ID=9,length=141213431>\\n##contig=<ID=10,length=135534747>\\n##contig=<ID=11,length=135006516>\\n##contig=<ID=12,length=133851895>\\n##contig=<ID=13,length=115169878>\\n##contig=<ID=14,length=107349540>\\n##contig=<ID=15,length=102531392>\\n##contig=<ID=16,length=90354753>\\n##contig=<ID=17,length=81195210>\\n##contig=<ID=18,length=78077248>\\n##contig=<ID=19,length=59128983>\\n##contig=<ID=20,length=63025520>\\n##contig=<ID=21,length=48129895>\\n##contig=<ID=22,length=51304566>\\n##contig=<ID=X,length=155270560>\\n##contig=<ID=Y,length=59373566>\\n##contig=<ID=MT,length=16569>\\n\""
     log:
         "logs/variantCalling/pindel/{sample}.fixContig.log"
     shell:
@@ -87,13 +87,13 @@ rule fixPindelDPoAF:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/fix_pindelDPoAF.py {input} {output}) &> {log}"
+        "(python3.6 /apps/bio/repos/somatic-twist/src/variantCalling/fix_pindelDPoAF.py {input} {output}) &> {log}"
 
 rule annotatePindel:
     input:
         vcf = "variantCalls/pindel/{sample}.pindel.vcf",
-        fasta = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
-        cache = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/vep"
+        fasta = "/medstore/External_References/hs37d5/hs37d5.fa",
+        cache = "/medstore/External_References/VEP/vep-data-99.0"
     output:
         temp("variantCalls/pindel/{sample}.pindel.ann.vcf")
     params:
@@ -118,7 +118,7 @@ rule filterPindel:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/filter_vcf.py {input.vcf} {output}) &> {log}"
+        "(python3.6 /apps/bio/repos/somatic-twist/src/variantCalling/filter_vcf.py {input.vcf} {output}) &> {log}"
 
 rule bgzipPindel:
     input:

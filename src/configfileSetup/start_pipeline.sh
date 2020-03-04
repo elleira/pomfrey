@@ -18,7 +18,7 @@ echo -e "  sequencerun: \"${sequnecerun}\"">> ${date}.config.yaml
 
 
 #Actually starting the pipeline with snakemake
-snakemake -p -j 32 --drmaa "-A wp4 -s -p core -t {cluster.time} -n {cluster.n} " \
+snakemake -p -j 32 --drmaa "-A wp4 -s -p core -n {cluster.n} " \
 -s ${somaticFolder}/src/somaticPipeline.smk \
 --configfile ${date}.config.yaml \
 --use-singularity --singularity-prefix ${somaticFolder}/src/singularity/ \

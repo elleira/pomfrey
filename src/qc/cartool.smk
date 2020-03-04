@@ -25,7 +25,7 @@ rule cartool:
 
 rule fixoutput:
     input:
-        header = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/multiqc-header.txt", #Always change to correct full path
+        header = "/apps/bio/repos/somatic-twist/src/report/multiqc-header.txt", #Always change to correct full path
         stat = "qc/{sample}/{sample}_Stat_table.csv"
     output:
         "qc/{sample}/{sample}_cartool_mqc.csv"

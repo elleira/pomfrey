@@ -7,7 +7,7 @@ rule bwa_mem:
     log:
         "logs/map/bwa_mem/{sample}.log"
     params:   #-M
-        index="/data/ref_genomes/hg19/bwa/BWA_0.7.10_refseq/hg19.with.mt.fasta",
+        index="/medstore/External_References/hs37d5/hs37d5.fa",
         extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
         sort="samtools",             # Can be 'none', 'samtools' or 'picard'.
         sort_order="coordinate",  # Can be 'queryname' or 'coordinate'.

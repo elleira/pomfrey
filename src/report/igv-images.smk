@@ -25,14 +25,14 @@ rule makePassVCF:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "( python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makePASSvcf.py {input.vcf} {input.artefact} {input.germline} {output} ) &>{log}"
+        "( python3.6 /apps/bio/repos/somatic-twist/src/report/makePASSvcf.py {input.vcf} {input.artefact} {input.germline} {output} ) &>{log}"
 
 rule createBatFile:
     input:
         vcf = "Results/{sample}/Reports/{sample}.PASS.vcf",
         bam = "Results/{sample}/Data/{sample}-dedup.bam",
         bed = config["bed"]["cartool"],
-        ref = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/igv/genomes/hg19.genome"
+        ref = "/seqstore/webfolders/igv/genomes/hg19.genome"
     output:
         "Results/{sample}/Reports/{sample}-igv.bat"
     params:
@@ -46,7 +46,7 @@ rule createBatFile:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makeBatfile.py {output} {input.vcf} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
+        "(python3.6 /apps/bio/repos/somatic-twist/src/report/makeBatfile.py {output} {input.vcf} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
 
 rule igv:
     input:

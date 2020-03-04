@@ -50,4 +50,4 @@ rule vcf2excel:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"
+        "(python3.6 /apps/bio/repos/somatic-twist/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"

@@ -16,7 +16,7 @@ rule decompose: #Do we need decompose as well, maybe for all but vardict??
 rule normalizeAll:
     input:
         vcf = "variantCalls/callers/{method}/{sample}.{method}.decomposed.vcf.gz", #"variantCalls/callers/{method}/{sample}.{method}.vcf.gz", #[m+"/{sample}."+m+".vcf.gz" for m in config["methods"]], ##inte normalized.vcf filer! Hur?!
-        fasta = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta" #,
+        fasta = "/medstore/External_References/hs37d5/hs37d5.fa" #,
         # tbi = "variantCalls/callers/{method}/{sample}.{method}.vcf.gz.tbi"
     output:
         "variantCalls/callers/{method}/{sample}.{method}.normalized.vcf.gz"

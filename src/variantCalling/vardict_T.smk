@@ -3,7 +3,7 @@ rule vardict:
     input:
         bam = "Results/{sample}/Data/{sample}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
         index = "Results/{sample}/Data/{sample}-dedup.bam.bai",
-        ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
+        ref = "/medstore/External_References/hs37d5/hs37d5.fa",
         bed =  config["bed"]["bedfile"]#"/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/bedfiles/TST500C_manifest.bed"
     output:
         temp("variantCalls/callers/vardict/{sample}.vardict.vcf")
