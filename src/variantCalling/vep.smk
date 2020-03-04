@@ -2,8 +2,8 @@ localrules: bgzipVep, filterVep, bgzipSNV
 rule vep:
     input:
         vcf = "variantCalls/recall/{sample}.{support}.vcf.gz",
-        cache = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/vep",#"/opt/vep/.vep", ## always remeber the --bind vep-data:/opt/vep/.vep command in singularity args
-        fasta = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta"
+        cache = config["configCache"]["vep"], #"/opt/vep/.vep", ## always remeber the --bind vep-data:/opt/vep/.vep command in singularity args
+        fasta = config["reference"]["ref"]
     output:
         vcf = temp("variantCalls/annotation/raw/{sample}.{support}.raw.vcf")
     params:
@@ -34,12 +34,14 @@ rule filterVep:
         vcf="variantCalls/annotation/raw/{sample}.{support}.raw.vcf.gz"
     output:
         temp("variantCalls/annotation/{sample}.{support}.filt.vcf")
+    params:
+        config["programdir"]["dir"]
     log:
         "logs/variantCalling/vep/filter/{sample}.{support}.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/filter_vcf.py {input.vcf} {output}) &> {log}"
+        "(python3.6 {params}/src/variantCalling/filter_vcf.py {input.vcf} {output}) &> {log}"
 
 rule bgzipSNV:
     input:

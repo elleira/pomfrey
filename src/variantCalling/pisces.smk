@@ -1,8 +1,10 @@
 localrules: piscesFix, sortPisces, gVCFfinalIndex, renameSample
+from os.path import dirname
+
 rule pisces:
     input:
       bam = "Results/{sample}/Data/{sample}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
-      reffolder = "/data/ref_genomes/hg19/genome_fasta/",
+      reffolder = dirname(config["reference"]["ref"]), #"/data/ref_genomes/hg19/genome_fasta/",
       index = "Results/{sample}/Data/{sample}-dedup.bam.bai"
     output:
         vcf = temp("variantCalls/callers/pisces/{sample}/{sample}-dedup.genome.vcf")
@@ -37,7 +39,6 @@ rule renameSample:
         "logs/variantCalling/pisces/{sample}-name.log"
     shell:
         "echo {wildcards.sample} > {output}"
-
 
 rule sortPisces:
     input:
@@ -81,7 +82,7 @@ rule gVCFdecompose:
 rule gVCFnormalize:
     input:
         vcf = "variantCalls/callers/pisces/{sample}/{sample}.decomp.genome.vcf",
-        fasta = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta"
+        fasta = config["reference"]["ref"]
     output:
         "Results/{sample}/Data/{sample}.normalized.genome.vcf.gz"
     log:

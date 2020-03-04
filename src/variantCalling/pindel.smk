@@ -13,8 +13,8 @@ rule pindelConf: ##Add in excel file what genes were used.
 
 rule pindel:
     input:
-        bed = lambda wildcards: config["bed"]["pindel"],
-        ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
+        bed = config["bed"]["pindel"],
+        ref = config["reference"]["ref"],
         bamconfig = "variantCalls/pindel/{sample}/{sample}-config.txt" #path to bam \t insert size \t sample name
     output:
         "variantCalls/pindel/{sample}/{sample}_BP",
@@ -39,7 +39,7 @@ rule pindel:
 
 rule pindel2vcf:
     input:
-        ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
+        ref = config["reference"]["ref"],
         bp = "variantCalls/pindel/{sample}/{sample}_BP",
         closeend = "variantCalls/pindel/{sample}/{sample}_CloseEndMapped",
         d = "variantCalls/pindel/{sample}/{sample}_D",
@@ -82,18 +82,20 @@ rule fixPindelDPoAF:
         "variantCalls/pindel/{sample}.pindel.noDP.vcf"
     output:
         "variantCalls/pindel/{sample}.pindel.vcf"
+    params:
+        config["programdir"]["dir"]
     log:
         "logs/variantCalling/{sample}.fixDP.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/fix_pindelDPoAF.py {input} {output}) &> {log}"
+        "(python3.6 {params}/src/variantCalling/fix_pindelDPoAF.py {input} {output}) &> {log}"
 
 rule annotatePindel:
     input:
         vcf = "variantCalls/pindel/{sample}.pindel.vcf",
-        fasta = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
-        cache = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/vep"
+        fasta = config["reference"]["ref"],
+        cache = config["configCache"]["vep"]
     output:
         temp("variantCalls/pindel/{sample}.pindel.ann.vcf")
     params:
@@ -113,12 +115,14 @@ rule filterPindel:
         vcf = "variantCalls/pindel/{sample}.pindel.ann.vcf"
     output:
         temp("variantCalls/pindel/{sample}.pindel.filt.vcf")
+    params:
+        config["programdir"]["dir"]
     log:
         "logs/variantCalling/pindel.{sample}.filt.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/filter_vcf.py {input.vcf} {output}) &> {log}"
+        "(python3.6 {params}/src/variantCalling/filter_vcf.py {input.vcf} {output}) &> {log}"
 
 rule bgzipPindel:
     input:

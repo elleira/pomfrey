@@ -31,10 +31,11 @@ rule vcf2excel:
         "Results/{sample}/Reports/{sample}.{support}.xlsx"
     params:
         coverage = config["cartool"]["cov"], #All coverage, goes in as three sys.argv[], get_minCov,
-        seqID = config["seqID"]["sequencerun"]
+        seqID = config["seqID"]["sequencerun"],
+        dir = config["programdir"]["dir"]
     log:
         "logs/report/{sample}.{support}.vcf2excel.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"
+        "(python3.6 {params.dir}/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"

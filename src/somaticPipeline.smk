@@ -53,7 +53,7 @@ rule makeContainersList:  ##From bedfile, not really dependent on sample
     run:
         for k,v in config["singularitys"].items():
             shell("echo {v} >> containers.txt")
-        "(cat slurm-*out | grep singularity | sort | uniq | cut -d' ' -f4 > {output}) &> {log}"
+        # "(cat slurm-*out | grep singularity | sort | uniq | cut -d' ' -f4 > {output}) &> {log}"
 
 include:    "report/multiqc.smk" # per sample, add per batch as well but only certain results?
 include:    "report/vcf2excel.smk"

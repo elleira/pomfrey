@@ -6,8 +6,8 @@ rule lofreq:
     log:
         "logs/variantCalling/lofreq_call/{sample}.log"
     params:
-        ref="/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
-        extra="-l "+ config["bed"]["bedfile"]
+        ref = config["reference"]["ref"],
+        extra = "-l "+ config["bed"]["bedfile"]
     singularity:
         config["singularitys"]["lofreq"]
     threads: 8

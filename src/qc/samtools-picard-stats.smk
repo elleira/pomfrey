@@ -4,7 +4,7 @@ rule samtools_stats:
     output:
         "qc/{sample}/{sample}.samtools-stats.txt"
     params:
-        extra="-t "+config["bed"]["bedfile"],                       # Optional: extra arguments.
+        extra = "-t "+config["bed"]["bedfile"],                       # Optional: extra arguments.
         # region="1:1000000-2000000"      # Optional: region string.
     log:
         "logs/qc/samtools_stats/{sample}.log"
@@ -24,4 +24,4 @@ rule picardHsMetrics:
     singularity:
         config["singularitys"]["bwa"]
     shell:
-        "(java -Xmx4g -jar /opt/conda/share/picard-2.20.1-0/picard.jar CollectHsMetrics --BAIT_INTERVALS {input.intervals} --TARGET_INTERVALS {input.intervals} --INPUT {input.bam} --OUTPUT {output}) &> {log})
+        "(java -Xmx4g -jar /opt/conda/share/picard-2.20.1-0/picard.jar CollectHsMetrics BAIT_INTERVALS={input.intervals} TARGET_INTERVALS={input.intervals} INPUT={input.bam} OUTPUT={output}) &> {log}"

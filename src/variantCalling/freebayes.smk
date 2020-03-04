@@ -1,6 +1,6 @@
 rule freebayes:
     input:
-        ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
+        ref = config["reference"]["ref"],
         samples = "Results/{sample}/Data/{sample}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
         index = "Results/{sample}/Data/{sample}-dedup.bam.bai"
     output:

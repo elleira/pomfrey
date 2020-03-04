@@ -15,12 +15,14 @@ rule fixAF:
         "variantCalls/callers/{method}/{sample}.{method}.weirdAF.vcf"
     output:
         temp("variantCalls/callers/{method}/{sample}.{method}.vcf")
+    params:
+        config["programdir"]["dir"]
     log:
         "logs/variantCalling/fixAF/{method}/{sample}.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/variantCalling/fix_af.py {input} {output}) &> {log}"
+        "(python3.6 {params}/src/variantCalling/fix_af.py {input} {output}) &> {log}"
 
 
 include:    "bgzips.smk"

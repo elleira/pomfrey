@@ -4,7 +4,7 @@ rule recall:
     input:
         vcfs = expand("variantCalls/callers/{method}/{{sample}}.{method}.normalized.vcf.gz",  method=config["methods"]) ,  # same order as methods in config!! make sure that is correct
         tabix = expand("variantCalls/callers/{method}/{{sample}}.{method}.normalized.vcf.gz.tbi",  method=config["methods"]),
-        ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta"
+        ref = config["reference"]["ref"]
     output:
         vcf = "variantCalls/recall/{sample}.{support}.unsorted.vcf.gz"
     params:

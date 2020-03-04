@@ -20,19 +20,21 @@ rule makePassVCF:
         germline = config["bed"]["germline"]
     output:
         temp("Results/{sample}/Reports/{sample}.PASS.vcf")
+    params:
+        config["programdir"]["dir"]
     log:
         "logs/report/{sample}.PASS.vcf.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "( python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makePASSvcf.py {input.vcf} {input.artefact} {input.germline} {output} ) &>{log}"
+        "( python3.6 {params}/src/report/makePASSvcf.py {input.vcf} {input.artefact} {input.germline} {output} ) &>{log}"
 
 rule createBatFile:
     input:
         vcf = "Results/{sample}/Reports/{sample}.PASS.vcf",
         bam = "Results/{sample}/Data/{sample}-dedup.bam",
         bed = config["bed"]["cartool"],
-        ref = "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/caches/igv/genomes/hg19.genome"
+        ref = config["configCache"]["igv"] #cache
     output:
         "Results/{sample}/Reports/{sample}-igv.bat"
     params:
@@ -40,13 +42,14 @@ rule createBatFile:
         padding = "40",
         sort = "base", #Type of sorting: base, position, strand, quality, sample or readgroup. Could add pos after, but always uses middle.
         view = "squish",  #Type of view, collaps, squished...
-        format = "svg" #svg, jpg
+        format = "svg", #svg, jpg
+        dir = config["programdir"]["dir"]
     log:
         "logs/report/{sample}-makeBat.log"
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/report/makeBatfile.py {output} {input.vcf} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
+        "(python3.6 {params.dir}/src/report/makeBatfile.py {output} {input.vcf} {input.bam} {input.ref} {input.bed} {params.outfolder} {params.padding} {params.sort} {params.view} {params.format}) &> {log}"
 
 rule igv:
     input:

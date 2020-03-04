@@ -3,8 +3,8 @@ rule snver:
     input:
         bam = "Results/{sample}/Data/{sample}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
         index = "Results/{sample}/Data/{sample}-dedup.bam.bai",
-        ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
-        bed = lambda wildcards: config["bed"]["bedfile"]
+        ref = config["reference"]["ref"],
+        bed = config["bed"]["bedfile"]
     output:
         temp("variantCalls/callers/snver/{sample}.snver.raw.vcf"),
         temp("variantCalls/callers/snver/{sample}.snver.filter.vcf"),
