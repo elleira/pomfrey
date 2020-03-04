@@ -3,7 +3,11 @@ rule vardict:
     input:
         bam = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}_{seqID}.bam"
         index = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam.bai",
+<<<<<<< HEAD
         ref = config["reference"]["ref"],
+=======
+        fasta = config["reference"]["ref"]
+>>>>>>> Commit av de andringar som initialt krävdes för att köra på medair-klustret i Göteborg 2
         bed =  config["bed"]["bedfile"]#"/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/bedfiles/TST500C_manifest.bed"
     output:
         temp("variantCalls/callers/vardict/{sample}_{seqID}.vardict.vcf")

@@ -24,7 +24,6 @@ rule fixAF:
     shell:
         "(python3.6 {params}/src/variantCalling/fix_af.py {input} {output}) &> {log}"
 
-
 include:    "bgzips.smk"
 
 include:    "normalize.smk"
