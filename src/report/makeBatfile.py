@@ -27,6 +27,8 @@ for record in vcf_in.fetch():
         pos = record.pos-1
         low = pos-padding
         high = pos+len(record.alts[0])+padding
+        csq = record.info["CSQ"][0]
+        gene = csq.split("|")[3]
 
         batfile.write("\ngoto "+chr+":"+str(low)+"-"+str(high))
         if len(record.ref) > len(record.alts[0]):  #Deletions
@@ -34,7 +36,7 @@ for record in vcf_in.fetch():
         else:
             sortPos = record.pos
         batfile.write("\nsort "+sort+" "+str(sortPos)+"\n"+view+" "+bamfile.split("/")[-1])
-        batfile.write("\nsnapshot "+chr+"_"+str(pos)+"_"+str(pos+len(record.alts[0]))+"."+format)
+        batfile.write("\nsnapshot "+chr+"_"+str(pos)+"_"+str(pos+len(record.alts[0]))+"-"+gene+"."+format)
 
 batfile.write("\nexit")
 batfile.close()

@@ -5,7 +5,7 @@ rule all:
     input:
         expand("Results/{sample}/Reports/{sample}.html", sample=config["samples"]), ##Borde vi addera which run?
         expand("Results/{sample}/Reports/{sample}.3.xlsx", sample=config["samples"]),
-        expand("Results/{sample}/Reports/done-igv.txt", sample=config["samples"]),  ## For the igv images
+        expand("Results/{sample}/Reports/IGV/done-igv.txt", sample=config["samples"]),  ## For the igv images
         expand("Results/{sample}/Data/{sample}.SNV-pindel.vcf", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.normalized.genome.vcf.gz", sample=config["samples"]),
         expand("Results/{sample}/Data/{sample}.normalized.genome.vcf.gz.tbi", sample=config["samples"]),

@@ -357,7 +357,7 @@ for record in vcf_snv.fetch():
                 maxPopAf=''
                 maxPop=''
             ##IGV image path for each SNV
-            igv="external:"+record.contig+"_"+str(int(record.pos)-1)+"_"+str(int(record.pos)-1+len(alt))+".svg"  #Or should it be reltive the xlsx file?
+            igv="external:IGV/"+record.contig+"_"+str(int(record.pos)-1)+"_"+str(int(record.pos)-1+len(alt))+"-"+gene+".svg"
 
             snv = [seqID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
             #Append line with sample and rundate to rolling list of artefacts..
