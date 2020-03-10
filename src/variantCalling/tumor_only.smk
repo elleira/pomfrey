@@ -12,13 +12,13 @@ include:    "pisces.smk"
 #include:    "manta_T.smk"
 rule fixAF:
     input:
-        "variantCalls/callers/{method}/{sample}.{method}.weirdAF.vcf"
+        "variantCalls/callers/{method}/{sample}_{seqID}.{method}.weirdAF.vcf"
     output:
-        temp("variantCalls/callers/{method}/{sample}.{method}.vcf")
+        temp("variantCalls/callers/{method}/{sample}_{seqID}.{method}.vcf")
     params:
         config["programdir"]["dir"]
     log:
-        "logs/variantCalling/fixAF/{method}/{sample}.log"
+        "logs/variantCalling/fixAF/{method}/{sample}_{seqID}.log"
     singularity:
         config["singularitys"]["python"]
     shell:

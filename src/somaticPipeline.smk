@@ -3,21 +3,22 @@
 
 rule all:
     input:
-        expand("Results/{sample}/Reports/{sample}.html", sample=config["samples"]), ##Borde vi addera which run?
-        expand("Results/{sample}/Reports/{sample}.3.xlsx", sample=config["samples"]),
-        expand("Results/{sample}/Reports/IGV/done-igv.txt", sample=config["samples"]),  ## For the igv images
-        expand("Results/{sample}/Data/{sample}.SNV-pindel.vcf", sample=config["samples"]),
-        expand("Results/{sample}/Data/{sample}.normalized.genome.vcf.gz", sample=config["samples"]),
-        expand("Results/{sample}/Data/{sample}.normalized.genome.vcf.gz.tbi", sample=config["samples"]),
-        expand("Results/{sample}/Data/{sample}-dedup.bam", sample=config["samples"]),
-        expand("Results/{sample}/Data/{sample}-dedup.bam.bai", sample=config["samples"]),
-        expand("variantCalls/pindel/{sample}.pindel.filt.vcf.gz", sample=config["samples"]),
-        expand("variantCalls/annotation/{sample}.3.filt.vcf.gz", sample=config["samples"])
-        # expand("variantCalls/recall/{sample}.3.vcf.gz", sample=config["samples"]) ## Reports, final vcf, bam, fastqs..
+        expand("Results/{sample}_{seqID}/Reports/{sample}_{seqID}.html", sample=config["samples"], seqID=config["seqID"]["sequencerun"]), ##Borde vi addera which run?
+        expand("Results/{sample}_{seqID}/Reports/{sample}_{seqID}.xlsx", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
+        expand("Results/{sample}_{seqID}/Reports/IGV/done-igv.txt", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),  ## For the igv images
+        expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.SNV-pindel.vcf", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
+        expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.normalized.genome.vcf.gz", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
+        expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.normalized.genome.vcf.gz.tbi", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
+        expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
+        expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam.bai", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
+        expand("variantCalls/pindel/{sample}_{seqID}.pindel.filt.vcf.gz", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
+        expand("variantCalls/annotation/{sample}_{seqID}.filt.vcf.gz", sample=config["samples"], seqID=config["seqID"]["sequencerun"])
+        # expand("variantCalls/recall/{sample}_{seqID}.3.vcf.gz", sample=config["samples"]) ## Reports, final vcf, bam, fastqs..
 
 wildcard_constraints:
     sample = "[a-zA-Z0-9-_\.]+",
-    support = "3" #"\.[0-9]+\."
+    # support = "3", #"\.[0-9]+\."
+    seqID = config["seqID"]["sequencerun"]
 
 
 ### QC modules
@@ -45,7 +46,7 @@ include:    "variantCalling/pindel.smk"
 ## Rapportering
 rule makeContainersList:  ##From bedfile, not really dependent on sample
     input:
-        expand("data_processing/{sample}/{sample}_R1_trimmed.fastq", sample=config["samples"])
+        expand("data_processing/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed.fastq", sample=config["samples"], seqID=config["seqID"]["sequencerun"])
     output:
         temp("containers.txt")
     log:

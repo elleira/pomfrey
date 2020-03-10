@@ -1,12 +1,12 @@
 rule markDuplicates:
     input:
-        bam = "data_processing/{sample}/{sample}.bam",
-        bai =  "data_processing/{sample}/{sample}.bam.bai"
+        bam = "data_processing/{sample}_{seqID}/{sample}_{seqID}.bam",
+        bai =  "data_processing/{sample}_{seqID}/{sample}_{seqID}.bam.bai"
     output:
-        bam = "Results/{sample}/Data/{sample}-dedup.bam",
-        metric = "qc/{sample}/{sample}_DuplicationMetrics.txt"
+        bam = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam",
+        metric = "qc/{sample}_{seqID}/{sample}_{seqID}_DuplicationMetrics.txt"
     log:
-        "logs/map/{sample}-dedup.log"
+        "logs/map/{sample}_{seqID}-dedup.log"
     threads:
         4 ##2??
     singularity:
@@ -16,13 +16,13 @@ rule markDuplicates:
 
 rule samtools_index_dedup:
     input:
-        "Results/{sample}/Data/{sample}-dedup.bam"
+        "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam"
     output:
-        "Results/{sample}/Data/{sample}-dedup.bam.bai"
+        "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam.bai"
     params:
         "" # optional params string
     log:
-        "logs/map/samtools_index/{sample}-dedup.log" # optional params string
+        "logs/map/samtools_index/{sample}_{seqID}-dedup.log" # optional params string
     singularity:
         config["singularitys"]["bwa"]
     wrapper:

@@ -1,16 +1,16 @@
 localrules: bgzipVep, filterVep, bgzipSNV
 rule vep:
     input:
-        vcf = "variantCalls/recall/{sample}.{support}.vcf.gz",
+        vcf = "variantCalls/recall/{sample}_{seqID}.vcf.gz",
         cache = config["configCache"]["vep"], #"/opt/vep/.vep", ## always remeber the --bind vep-data:/opt/vep/.vep command in singularity args
         fasta = config["reference"]["ref"]
     output:
-        vcf = temp("variantCalls/annotation/raw/{sample}.{support}.raw.vcf")
+        vcf = temp("variantCalls/annotation/raw/{sample}_{seqID}.raw.vcf")
     params:
         "--check_existing --pick --sift b --polyphen b --ccds --uniprot --hgvs --symbol --numbers --domains --regulatory --canonical --protein --biotype --uniprot --tsl --appris --gene_phenotype --af --af_1kg --af_gnomad --max_af --pubmed --variant_class "
         # "--everything --check_existing --pick"  #--exclude_null_alleles
     log:
-        "logs/variantCalling/vep/{sample}.{support}.log"
+        "logs/variantCalling/vep/{sample}_{seqID}.log"
     singularity:
         config["singularitys"]["vep"]
     threads:    8
@@ -19,11 +19,11 @@ rule vep:
 
 rule bgzipVep:
     input:
-        "variantCalls/annotation/raw/{sample}.{support}.raw.vcf"
+        "variantCalls/annotation/raw/{sample}_{seqID}.raw.vcf"
     output:
-        "variantCalls/annotation/raw/{sample}.{support}.raw.vcf.gz"
+        "variantCalls/annotation/raw/{sample}_{seqID}.raw.vcf.gz"
     log:
-        "logs/variantCalling/vep/{sample}.{support}.bgzip.log"
+        "logs/variantCalling/vep/{sample}_{seqID}.bgzip.log"
     singularity:
         config["singularitys"]["bcftools"]
     shell:
@@ -31,13 +31,13 @@ rule bgzipVep:
 
 rule filterVep:
     input:
-        vcf="variantCalls/annotation/raw/{sample}.{support}.raw.vcf.gz"
+        vcf="variantCalls/annotation/raw/{sample}_{seqID}.raw.vcf.gz"
     output:
-        temp("variantCalls/annotation/{sample}.{support}.filt.vcf")
+        temp("variantCalls/annotation/{sample}_{seqID}.filt.vcf")
     params:
         config["programdir"]["dir"]
     log:
-        "logs/variantCalling/vep/filter/{sample}.{support}.log"
+        "logs/variantCalling/vep/filter/{sample}_{seqID}.log"
     singularity:
         config["singularitys"]["python"]
     shell:
@@ -45,12 +45,12 @@ rule filterVep:
 
 rule bgzipSNV:
     input:
-        "variantCalls/annotation/{sample}.{support}.filt.vcf"
+        "variantCalls/annotation/{sample}_{seqID}.filt.vcf"
     output:
-        "variantCalls/annotation/{sample}.{support}.filt.vcf.gz",
-        "variantCalls/annotation/{sample}.{support}.filt.vcf.gz.tbi"
+        "variantCalls/annotation/{sample}_{seqID}.filt.vcf.gz",
+        "variantCalls/annotation/{sample}_{seqID}.filt.vcf.gz.tbi"
     log:
-        "logs/variantCalling/{sample}.{support}.bgzip.log"
+        "logs/variantCalling/{sample}_{seqID}.bgzip.log"
     singularity:
         config["singularitys"]["bcftools"]
     shell:

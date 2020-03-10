@@ -1,16 +1,16 @@
 
 rule vardict:
     input:
-        bam = "Results/{sample}/Data/{sample}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
-        index = "Results/{sample}/Data/{sample}-dedup.bam.bai",
+        bam = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}_{seqID}.bam"
+        index = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam.bai",
         ref = "/data/ref_genomes/hg19/genome_fasta/hg19.with.mt.fasta",
         bed =  config["bed"]["bedfile"]#"/gluster-storage-volume/projects/wp4/nobackup/workspace/somatic_dev/bedfiles/TST500C_manifest.bed"
     output:
-        temp("variantCalls/callers/vardict/{sample}.vardict.vcf")
+        temp("variantCalls/callers/vardict/{sample}_{seqID}.vardict.vcf")
     params:
         af = "0.01"
     log:
-        "logs/variantCalling/vardict/{sample}.log"
+        "logs/variantCalling/vardict/{sample}_{seqID}.log"
     threads:
         4
     singularity:

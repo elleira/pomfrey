@@ -1,10 +1,10 @@
 rule lofreq:
     input:
-        "Results/{sample}/Data/{sample}-dedup.bam"
+        "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam"
     output:
-        temp("variantCalls/callers/lofreq/{sample}.lofreq.vcf")
+        temp("variantCalls/callers/lofreq/{sample}_{seqID}.lofreq.vcf")
     log:
-        "logs/variantCalling/lofreq_call/{sample}.log"
+        "logs/variantCalling/lofreq_call/{sample}_{seqID}.log"
     params:
         ref = config["reference"]["ref"],
         extra = "-l "+ config["bed"]["bedfile"]

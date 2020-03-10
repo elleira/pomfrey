@@ -1,12 +1,12 @@
 rule freebayes:
     input:
         ref = config["reference"]["ref"],
-        samples = "Results/{sample}/Data/{sample}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
-        index = "Results/{sample}/Data/{sample}-dedup.bam.bai"
+        samples = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam",  # differnet path sort of like: "{delivery}/bam/{sample}.bam"
+        index = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam.bai"
     output:
-        temp("variantCalls/callers/freebayes/{sample}.freebayes.unsort.vcf")  # either .vcf or .bcf
+        temp("variantCalls/callers/freebayes/{sample}_{seqID}.freebayes.unsort.vcf")  # either .vcf or .bcf
     log:
-        "logs/variantCalling/freebayes/{sample}.log"
+        "logs/variantCalling/freebayes/{sample}_{seqID}.log"
     singularity:
         config["singularitys"]["freebayes"]  ##Not including bcftools and parallel
     params:
@@ -18,12 +18,12 @@ rule freebayes:
 
 rule sortFreebayes:
     input:
-        "variantCalls/callers/freebayes/{sample}.freebayes.unsort.vcf"
+        "variantCalls/callers/freebayes/{sample}_{seqID}.freebayes.unsort.vcf"
     output:
-        temp("variantCalls/callers/freebayes/{sample}.freebayes.weirdAF.vcf")
+        temp("variantCalls/callers/freebayes/{sample}_{seqID}.freebayes.weirdAF.vcf")
     singularity:
         config["singularitys"]["bcftools"]
     log:
-        "logs/variantCalling/freebayes/{sample}.sort.log"
+        "logs/variantCalling/freebayes/{sample}_{seqID}.sort.log"
     shell:
         "(bcftools sort -o {output} -O v {input}) &> {log}"
