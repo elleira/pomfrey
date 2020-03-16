@@ -6,21 +6,21 @@ rawdatafolder=$1  #Always with the last /
 sequnecerun=$2
 #Stand in folder where you want to run and get the results.
 somaticFolder=/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline
-date=$(date +'%y%m%d') #Until runfolder or should it always be rundate? And then have the runfolder with seq date
-cp ${somaticFolder}/src/configfileSetup/configdefaults200213.yaml ${date}.config.yaml ## Copy configfile default to runfolder
-for i in $(ls ${rawdatafolder}*R1_001.fastq.gz); do ##Add each sample in seq run to the config yaml file What happens to undet.?
+today=$(date +'%y%m%d') #Until runfolder or should it always be rundate? And then have the runfolder with seq date
+cp ${somaticFolder}/src/configfileSetup/configdefaults200316.yaml ${today}.config.yaml ## Copy configfile default to runfolder
+for i in $(ls ${rawdatafolder}*R1_001.fastq.gz); do ##Should use sample sheet instead!
   filename=$(echo $i | awk -F/ '{print $NF}')
   sample=${filename%%_S+([[:digit:]])_R1*}
-  echo -e "  \"${sample}_${sequnecerun}\": \"${i}\"" >> ${date}.config.yaml
+  echo -e "  \"${sample}\": \"${i}\"" >> ${today}.config.yaml
 done
-echo "seqID:">> ${date}.config.yaml
-echo -e "  sequencerun: \"${sequnecerun}\"">> ${date}.config.yaml
+echo "seqID:">> ${today}.config.yaml
+echo -e "  sequencerun: \"${sequnecerun}\"">> ${today}.config.yaml
 
 
 #Actually starting the pipeline with snakemake
 snakemake -p -j 32 --drmaa "-A wp4 -s -p core -t {cluster.time} -n {cluster.n} " \
 -s ${somaticFolder}/src/somaticPipeline.smk \
---configfile ${date}.config.yaml \
+--configfile ${today}.config.yaml \
 --use-singularity --singularity-prefix ${somaticFolder}/src/singularity/ \
 --singularity-args "--bind /data --bind /gluster-storage-volume " --latency-wait 5 \
 --cluster-config ${somaticFolder}/cluster-config.json \
