@@ -7,8 +7,8 @@ rule cutadapt:
     input:
         getFastqs
     output:
-        fastq1="data_processing/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed.fastq",
-        fastq2="data_processing/{sample}_{seqID}/{sample}_{seqID}_R2_trimmed.fastq",
+        fastq1="data_processing/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed.fastq.gz",
+        fastq2="data_processing/{sample}_{seqID}/{sample}_{seqID}_R2_trimmed.fastq.gz",
         qc="data_processing/{sample}_{seqID}/{sample}_{seqID}.qc.txt"
     params:
         # https://cutadapt.readthedocs.io/en/stable/guide.html#adapter-types

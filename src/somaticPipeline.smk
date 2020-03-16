@@ -46,7 +46,7 @@ include:    "variantCalling/pindel.smk"
 ## Rapportering
 rule makeContainersList:  ##From bedfile, not really dependent on sample
     input:
-        expand("data_processing/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed.fastq", sample=config["samples"], seqID=config["seqID"]["sequencerun"])
+        expand("data_processing/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed.fastq.gz", sample=config["samples"], seqID=config["seqID"]["sequencerun"])
     output:
         temp("containers.txt")
     log:

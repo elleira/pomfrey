@@ -1,6 +1,6 @@
 rule fastqcR1:
     input:
-        "data_processing/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed.fastq" ##one for each R1 and one for R2 should be from a samples.yaml file
+        "data_processing/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed.fastq.gz" ##one for each R1 and one for R2 should be from a samples.yaml file
     output:
         html="qc/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed_fastqc.html",
         zip="qc/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed_fastqc.zip" # the suffix _fastqc.zip is necessary for multiqc to find the file. If not using multiqc, you are free to choose an arbitrary filename
