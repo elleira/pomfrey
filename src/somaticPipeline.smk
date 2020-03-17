@@ -1,9 +1,10 @@
 #configfile: "/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/samples.yaml"
 ##Specify configfile and singularity folder in snakemake command.
+localrules: makeContainersList
 
 rule all:
     input:
-        expand("Results/{sample}_{seqID}/Reports/{sample}_{seqID}.html", sample=config["samples"], seqID=config["seqID"]["sequencerun"]), ##Borde vi addera which run?
+        expand("Results/{sample}_{seqID}/Reports/{sample}_{seqID}_MultiQC.html", sample=config["samples"], seqID=config["seqID"]["sequencerun"]), 
         expand("Results/{sample}_{seqID}/Reports/{sample}_{seqID}.xlsx", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         expand("Results/{sample}_{seqID}/Reports/IGV/done-igv.txt", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),  ## For the igv images
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.SNV-pindel.vcf", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
@@ -12,7 +13,10 @@ rule all:
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam.bai", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         expand("variantCalls/pindel/{sample}_{seqID}.pindel.filt.vcf.gz", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
-        expand("variantCalls/annotation/{sample}_{seqID}.filt.vcf.gz", sample=config["samples"], seqID=config["seqID"]["sequencerun"])
+        expand("variantCalls/annotation/{sample}_{seqID}.filt.vcf.gz", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
+        expand("qc/{sample}_{seqID}/{sample}_batchStats.done", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
+        expand("Results/batchQC_{seqID}/{seqID}_MultiQC.html", seqID=config["seqID"]["sequencerun"])
+
         # expand("variantCalls/recall/{sample}_{seqID}.3.vcf.gz", sample=config["samples"]) ## Reports, final vcf, bam, fastqs..
 
 wildcard_constraints:

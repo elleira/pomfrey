@@ -1,15 +1,15 @@
 extra_fn_clean_exts: ##from this until end
     - type: regex
       pattern: '_S[0-9]'
-    - type: regex
-      pattern: '_R[12]'
     - '_001'
     - '-dedup'
+    - type: regex
+      pattern: '_R[12]'
 # extra_fn_clean_trim:   #if found in beginning or end
 
 custom_content:
   order:
-    #egen stats
+    - qc-stats
     - cutadapt
     - fastqc
     - samtools

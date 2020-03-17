@@ -1,8 +1,0 @@
-# title: 'CARTool tab!'
-# description: 'This output is  described in the file header.'
-# section_name: 'CARTool'
-# description: 'Coverage based on region.'
-# format: 'csv'
-# pconfig:
-#     namespace: 'CARTool Data'
-# plot_type: 'table'
