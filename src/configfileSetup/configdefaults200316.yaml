@@ -40,7 +40,7 @@ singularitys:
     multiqc: "/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/src/singularity/multiqc-1.7.simg"
 
 cartool:
-    cov: "100 500 1000"
+    cov: "100 200 1000"
 
 methods:   ##Should we have it here or skip and put in snakemake-file
     vardict: "vardict"

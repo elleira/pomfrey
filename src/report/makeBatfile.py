@@ -36,7 +36,7 @@ for record in vcf_in.fetch():
         else:
             sortPos = record.pos
         batfile.write("\nsort "+sort+" "+str(sortPos)+"\n"+view+" "+bamfile.split("/")[-1])
-        batfile.write("\nsnapshot "+chr+"_"+str(pos)+"_"+str(pos+len(record.alts[0]))+"-"+gene+"."+format)
+        batfile.write("\nsnapshot "+gene+"-"+chr+"_"+str(pos)+"_"+str(pos+len(record.alts[0]))+"."+format)
 
 batfile.write("\nexit")
 batfile.close()
