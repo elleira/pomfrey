@@ -33,7 +33,7 @@ rule headerBatchMqc:
     input:
         header = config["programdir"]["dir"]+"src/qc/multiqc-header.txt"
     output:
-        batch = "Results/batchQC_{seqID}/{seqID}_stats_mqc.tsv"
+        batch = "Results/batchQC_{seqID}/{seqID}_stats_mqc.csv"
     log:
         "logs/qc/batchHeader_{seqID}.log"
     # singularity:
@@ -45,7 +45,7 @@ rule headerBatchMqc:
             with open(output.batch, "w") as file:
                 for mqcline in f:
                     file.write(mqcline)
-                writer = csv.writer(file, delimiter='\t')
+                writer = csv.writer(file, delimiter=',', lineterminator = '\n')
                 writer.writerow(header)
 
 rule getStatsforMqc:
@@ -55,11 +55,11 @@ rule getStatsforMqc:
         samtools = "qc/{sample}_{seqID}/{sample}_{seqID}.samtools-stats.txt",
         multiQCheader = config["programdir"]["dir"]+"src/qc/multiqc-header.txt",
         cartool = "qc/{sample}_{seqID}/{sample}_{seqID}_Log.csv",
-        batch =  "Results/batchQC_{seqID}/{seqID}_stats_mqc.tsv"
+        batch =  "Results/batchQC_{seqID}/{seqID}_stats_mqc.csv"
     output:
         batchTmp = temp("qc/{sample}_{seqID}/{sample}_batchStats.done"),
         # batch = "qc/{seqID}_stats_mqc.tsv",
-        sample = "qc/{sample}_{seqID}/{sample}_{seqID}_stats_mqc.tsv"
+        sample = "qc/{sample}_{seqID}/{sample}_{seqID}_stats_mqc.csv"
     params:
         dir = config["programdir"]["dir"]
     log:

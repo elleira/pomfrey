@@ -53,7 +53,7 @@ line = [sample, samDict['raw total sequences'], samDict['reads mapped'], avgCov.
 
 ##append to Batch file and write sampleFile
 with open(batchFile, 'a') as file:
-    writer = csv.writer(file, delimiter='\t')
+    writer = csv.writer(file, delimiter=',', lineterminator = '\n')
     writer.writerow(line)
 
 ##Print multiQCheader
@@ -61,6 +61,6 @@ with open(multiQCheader, 'r') as f:
     with open(outFile, "w") as file:
         for mqcline in f:
             file.write(mqcline)
-        writer = csv.writer(file, delimiter='\t')
+        writer = csv.writer(file, delimiter = ',', lineterminator = '\n')
         writer.writerow(header)
         writer.writerow(line)

@@ -1,6 +1,6 @@
 # section_name: 'QC Stats'
 # description: 'QC values from Picard and Samtools.'
-# format: 'tsv'
+# format: 'csv'
 # pconfig:
 #     namespace: 'qc-table'
 # plot_type: 'table'
