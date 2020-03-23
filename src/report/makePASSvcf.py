@@ -25,7 +25,7 @@ for record in vcf_in.fetch():
     if record.filter.keys()==["PASS"] or synoCosmicN != 0 :
         # if len(record.ref) > len(record.alts[0]): Deletion but need to remove first base as well
         #     record.pos = record.pos-1
-        if record.info["AF"][0] >= 0.03:
+        if record.info["AF"][0] >= 0.03: ##Change for pindel, get all pindels
             cmdArt = 'grep -w '+str(record.pos)+' '+artefactFile
             artLines = subprocess.run(cmdArt, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip() ##What happens if two hits?
             artefact_variant = 0

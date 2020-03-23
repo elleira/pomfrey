@@ -29,7 +29,7 @@ for record in vcf_in.fetch():
     # if not vep[57] == '' and float(vep[57]) >= 0.02 : #vep[60]
     #      record.filter.add("PopAF")
 
-    popFreqAll = vep[42:57]
+    popFreqAll = vep[41:56]  #[42:57]
     popFreqs = [x for x in popFreqAll if x]
     if any(popFreqs) and any(float(x) >= 0.02 for x in popFreqs):
         record.filter.add("PopAF")

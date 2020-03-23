@@ -108,7 +108,7 @@ rule annotatePindel:
         config["singularitys"]["vep"]
     shell:
         """(if [[ $(cat {input.vcf} | grep -v '^#' | wc -l) -eq 0 ]]; then mv {input.vcf} {output}
-        else vep --vcf --no_stats -o {output} -i {input.vcf} --dir_cache {input.cache} --fork {threads} --cache --merged --offline --fasta {input.fasta} {params} ; fi) &> {log}"""
+        else vep --vcf --no_stats -o {output} -i {input.vcf} --dir_cache {input.cache} --fork {threads} --cache --refseq --offline --fasta {input.fasta} {params} ; fi) &> {log}"""
 
 rule filterPindel:
     input:

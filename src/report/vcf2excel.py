@@ -1,4 +1,4 @@
-#!/bin/python3.6
+trusight#!/bin/python3.6
 import sys
 import csv
 from pysam import VariantFile
@@ -23,7 +23,7 @@ output = sys.argv[12]
  ## Create execl file and sheets.
 workbook = xlsxwriter.Workbook(output)
 worksheetOver = workbook.add_worksheet('Overview')
-worksheetTrueSight = workbook.add_worksheet('TrueSight')
+worksheetTruSight = workbook.add_worksheet('TruSight')
 worksheetSNV = workbook.add_worksheet('SNVs')
 worksheetIndel = workbook.add_worksheet('InDel') #.... sys.argv[2]
 worksheetLowCov = workbook.add_worksheet('Low Coverage') #... sys.argv[3]
@@ -49,7 +49,7 @@ sample = list(vcf_snv.header.samples)[0]
 today=date.today()
 emptyList=['','','','','','']
 
-truesightGenes=['ABL1','ASXL1','ATRX','BCOR','BCORL1','BRAF','CALR','CBL','CBLB','CBLC','CDKN2A','CEBPA','CSF3R','CUX1','DNMT3A','ETV6','TEL','EZH2','FBXW7','FLT3','GATA1','GATA2','GNAS','HRAS','IDH1','IDH2','IKZF1','JAK2','JAK3','KDM6A','KIT','KRAS','KMT2A','MPL','MYD88','NOTCH1','NPM1','NRAS','PDGFRA','PHF6','PTEN','PTPN11','RAD21','RUNX1','SETBP1','SF3B1','SMC1A','SMC3','SRSF2','STAG2','TET2','TP53','U2AF1','WT1','ZRSR2']
+trusightGenes=['ABL1','ASXL1','ATRX','BCOR','BCORL1','BRAF','CALR','CBL','CBLB','CBLC','CDKN2A','CEBPA','CSF3R','CUX1','DNMT3A','ETV6','TEL','EZH2','FBXW7','FLT3','GATA1','GATA2','GNAS','HRAS','IDH1','IDH2','IKZF1','JAK2','JAK3','KDM6A','KIT','KRAS','KMT2A','MPL','MYD88','NOTCH1','NPM1','NRAS','PDGFRA','PHF6','PTEN','PTPN11','RAD21','RUNX1','SETBP1','SF3B1','SMC1A','SMC3','SRSF2','STAG2','TET2','TP53','U2AF1','WT1','ZRSR2']
 
 
 ######### Prog Version sheet (7)###########
@@ -83,6 +83,47 @@ worksheetIVA.write_row(9,0, iva, tableHeadFormat)
 
 #########################################
 
+########### Coverage ####################
+##Lägga till hela MeanFullCoverage... som filtrerbar lista
+#Number of lines in MeanFullCoverage
+covFullFile = cartool.replace("_MeanCoverageShortList.csv", "_MeanCoverageFullList.csv")
+def file_lengthy(fname):
+        with open(fname) as f:
+                for i, l in enumerate(f):
+                        pass
+        return i + 1
+
+numRows = file_lengthy(covFullFile)
+worksheetCov.write('A1','Average Coverage',headingFormat)
+worksheetCov.write_row('A2',emptyList,lineFormat)
+worksheetCov.write('A3', 'Sample: '+str(sample))
+worksheetCov.write('A4', 'Averge coverage of each region in bedfile')
+
+## Fixa data i table först
+
+tableLines=[]
+with open(covFullFile) as csvfile:
+    readCSV = csv.reader(csvfile, delimiter=',')
+    next(readCSV)
+    ## Skip header
+    for line in readCSV:
+        while not line[-1]: ## Remove empty fields at the end of line.
+            line.pop()
+        for i in range(1, int((len(line)-1)/5+1)): ##For each region/ with lower cov, create a new row.
+            start = 1+5*(i-1)
+            end = 1+5*i
+            covRow = [line[0]]+line[start:end]
+            tableLines.append(covRow)
+            # worksheetLowCov.write_row(row,col,[line[0]]+line[start:end])
+# import pdb; pdb.set_trace()
+tableArea='A6:F'+str(len(tableLines)+6) ##rows of full list
+headerListDict = [{'header':'Region Name'}, {'header':'Chr'}, {'header':'Start'},{'header':'End'}, {'header':'Mean Coverage'}, {'header':'Length of Region'},]
+worksheetCov.add_table(tableArea, {'data':tableLines,'columns':headerListDict,'style': 'Table Style Light 1'})
+# worksheetCov.write_row('A6', )#, tableHeadFormat) #table header How sokbar??
+
+
+#########################################
+
 ########## Hotspot sheet (5)#############
 worksheetHotspot.write('A1', 'Hotspot Coverage', headingFormat)  #headerFormat)
 worksheetHotspot.write('A3', 'Sample: '+str(sample))
@@ -92,8 +133,8 @@ worksheetHotspot.write_row('A5',['Chr', 'Pos', 'Depth', 'Gene'], tableHeadFormat
 lowPos = 0
 row=5
 hotspotTable=[]
-with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShortHotspot.tsv"),'r') as covFile: #Always the same as bedfile just without region
-    for dpLine in covFile:
+with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShortHotspot.tsv"),'r') as hotFile: #Always the same as bedfile just without region
+    for dpLine in hotFile:
         cov = dpLine.split("\t")
         chrCov = cov[0]
         posCov = cov[1]
@@ -120,7 +161,7 @@ for hotLine in hotspotTable:
 
 ############################################
 
-######### Coverage sheet (4)################
+######### Low Coverage sheet (4)################
 worksheetLowCov.set_column(1,3,10)
 worksheetLowCov.set_column(1,4,10)
 ## Heading in sheet
@@ -207,10 +248,10 @@ for indel in vcf_indel.fetch():
 
         indelGene = csqIndel.split("|")[3]
 
-        maxPopAfIndel = csqIndel.split("|")[57] #[60]
+        maxPopAfIndel = csqIndel.split("|")[56] #[57]
         if len(maxPopAfIndel) > 1:
             maxPopAfIndel = round(float(maxPopAfIndel),4)
-        maxPopIndel = csqIndel.split("|")[58] #[61]
+        maxPopIndel = csqIndel.split("|")[57] #[61]
 
         indelTranscript = csqIndel.split("|")[10].split(":")[0]
         indelCodingName = csqIndel.split("|")[10].split(":")[1]
@@ -251,7 +292,7 @@ worksheetSNV.write('A15','Variant in artefact list ', orangeFormat)
 worksheetSNV.write('A16','Variant likely germline', greenFormat)
 
 ## Variant table
-tableheading = ['SeqID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Canonical Transcript','Mutation cds', 'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop','IGV image']
+tableheading = ['SeqID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Canonical Transcript','Mutation cds', 'ENSP' ,'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop','IGV image']
 worksheetSNV.write_row('A18', tableheading, tableHeadFormat) #1 index
 row = 18 #0 index
 col=0
@@ -261,8 +302,8 @@ orange=[]
 whiteIGV=[]
 underFive=[] #put after green and orange but still white
 underFiveIGV=[] #put after green and orange but still white
-truesightSNV=[] #Truesight genes only
-truesightSNVigv=[] #Truesight genes only
+trusightSNV=[] #trusight genes only
+trusightSNVigv=[] #trusight genes only
 
 for record in vcf_snv.fetch():
     synoCosmicN = 0
@@ -316,7 +357,7 @@ for record in vcf_snv.fetch():
         if af >= 0.03:
             csq = record.info["CSQ"][0]
             gene = csq.split("|")[3]
-            clinical = csq.split("|")[59]
+            clinical = csq.split("|")[58] #[59]
             existing = csq.split("|")[17].split("&")
 
             #rs IDs use more than just the first!
@@ -348,6 +389,7 @@ for record in vcf_snv.fetch():
             transcript = csq.split("|")[10].split(":")[0]
             codingName = csq.split("|")[10].split(":")[1]
             consequence = csq.split("|")[1]
+            ensp = csq.split("|")[11]
 
             #Population allel freq
             # maxPopAf = record.info["CSQ"][0].split("|")[57] #[60]
@@ -356,7 +398,7 @@ for record in vcf_snv.fetch():
             # maxPop = record.info["CSQ"][0].split("|")[58] #[61]
 
             popFreqsPop=['AF', 'AFR_AF','AMR_AF','EAS_AF', 'EUR_AF', 'SAS_AF', 'gnomAD_AF', 'gnomAD_AFR_AF', 'gnomAD_AMR_AF', 'gnomAD_ASJ_AF', 'gnomAD_EAS_AF', 'gnomAD_FIN_AF', 'gnomAD_NFE_AF', 'gnomAD_OTH_AF', 'gnomAD_SAS_AF']
-            popFreqAllRaw=record.info["CSQ"][0].split("|")[42:57]
+            popFreqAllRaw=record.info["CSQ"][0].split("|")[41:56] #[42:57]
             if any(popFreqAllRaw) and max([float(x) if x else 0 for x  in popFreqAllRaw]) != 0: #if all not empty
                 popFreqAll=[float(x) if x else 0 for x  in popFreqAllRaw]
                 maxPopAf=max(popFreqAll)
@@ -372,10 +414,10 @@ for record in vcf_snv.fetch():
             ##IGV image path for each SNV
             igv="external:IGV/"+gene+"-"+record.contig+"_"+str(int(record.pos)-1)+"_"+str(int(record.pos)-1+len(alt))+".svg"
 
-            snv = [seqID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
+            snv = [seqID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, ensp, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
             #Append line with sample and rundate to rolling list of artefacts..
             with open("/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt", "a") as appendfile:
-                variants=[seqID]+[sample]+snv+["\n"]
+                variants = snv+["\n"]
                 appendfile.write('\t'.join(str(e) for e in variants))
 
             #Artefact_file
@@ -405,9 +447,9 @@ for record in vcf_snv.fetch():
                     else:
                         white.append(snv)
                         whiteIGV.append(igv)
-                    if gene in truesightGenes:
-                        truesightSNV.append(snv)
-                        truesightSNVigv.append(igv)
+                    if gene in trusightGenes:
+                        trusightSNV.append(snv)
+                        trusightSNVigv.append(igv)
 ### Actually writing to the excelsheet
 i=0
 for line in white:
@@ -448,37 +490,37 @@ for line in underFive:
 
 #############################################
 
-######### TrueSight varianter ###############
+######### TruSight varianter ###############
 # Variants or snv rows from SNV sheet.
-worksheetTrueSight.write('A1', 'TrueSight variants found', headingFormat)
-worksheetTrueSight.write('A3', 'Sample: '+str(sample))
-worksheetTrueSight.write('A4', 'Reference used: '+str(refV))
-# worksheetTrueSight.write('A4', 'Callers used: VardictJava v.1,6 ? Dubbelkolla!, Pisces 5.2.11, Freebayes v1.1.0, LoFreq v.2.1.3.1, TrueSighter v.2.1.3.1')
-worksheetTrueSight.write('A6', 'VEP: '+vepline ) #, textwrapFormat)
-worksheetTrueSight.write('A8', 'The following filters were applied: ')
-worksheetTrueSight.write('B9','Coverage >= 100x')
-worksheetTrueSight.write('B10','Population freq (KGP, gnomAD, NHLBI_ESP ) <= 2%')
-worksheetTrueSight.write('B11','Biotype is protein coding')
-worksheetTrueSight.write('B12','Consequence not deemed relevant')
+worksheetTruSight.write('A1', 'TruSight variants found', headingFormat)
+worksheetTruSight.write('A3', 'Sample: '+str(sample))
+worksheetTruSight.write('A4', 'Reference used: '+str(refV))
+# worksheetTruSight.write('A4', 'Callers used: VardictJava v.1,6 ? Dubbelkolla!, Pisces 5.2.11, Freebayes v1.1.0, LoFreq v.2.1.3.1, TruSighter v.2.1.3.1')
+worksheetTruSight.write('A6', 'VEP: '+vepline ) #, textwrapFormat)
+worksheetTruSight.write('A8', 'The following filters were applied: ')
+worksheetTruSight.write('B9','Coverage >= 100x')
+worksheetTruSight.write('B10','Population freq (KGP, gnomAD, NHLBI_ESP ) <= 2%')
+worksheetTruSight.write('B11','Biotype is protein coding')
+worksheetTruSight.write('B12','Consequence not deemed relevant')
 
 
-worksheetTrueSight.write('A14','Only variants in genes from TrueSight panel:')
-worksheetTrueSight.write_row(14,0,truesightGenes)
-worksheetTrueSight.write('A16','For all variants see: ')
-worksheetTrueSight.write_url('B16', "internal:'SNVs'!A1",string='SNVs')
+worksheetTruSight.write('A14','Only variants in genes from TruSight panel:')
+worksheetTruSight.write_row(14,0,trusightGenes)
+worksheetTruSight.write('A16','For all variants see: ')
+worksheetTruSight.write_url('B16', "internal:'SNVs'!A1",string='SNVs')
 
-worksheetTrueSight.write('A18','Coverage below 500x', italicFormat)
-worksheetTrueSight.write_row('A20', tableheading, tableHeadFormat) #1 index
+worksheetTruSight.write('A18','Coverage below 500x', italicFormat)
+worksheetTruSight.write_row('A20', tableheading, tableHeadFormat) #1 index
 row=20 # 0 index
 i=0
-for line in truesightSNV:
+for line in trusightSNV:
     if line[8] < 500:
-        worksheetTrueSight.write_row(row,col,line, italicFormat)
-        worksheetTrueSight.write_url('S'+str(row+1), truesightSNVigv[i],string = "IGV image")
+        worksheetTruSight.write_row(row,col,line, italicFormat)
+        worksheetTruSight.write_url('S'+str(row+1), trusightSNVigv[i],string = "IGV image")
     else:
-        worksheetTrueSight.write_row(row,col,line)
+        worksheetTruSight.write_row(row,col,line)
         # import pdb; pdb.set_trace()
-        worksheetTrueSight.write_url('S'+str(row+1), truesightSNVigv[i],string = "IGV image")
+        worksheetTruSight.write_url('S'+str(row+1), trusightSNVigv[i],string = "IGV image")
     row +=1
     i+=1
 
@@ -501,7 +543,7 @@ worksheetOver.write(5,4, "Document nr: ")
 worksheetOver.write_row(6,0,emptyList,lineFormat)
 
 worksheetOver.write(7,0,"Sheets:", tableHeadFormat)
-worksheetOver.write_url(8,0,"internal:'TrueSight'!A1", string='TrueSight Variants')
+worksheetOver.write_url(8,0,"internal:'TruSight'!A1", string='TruSight Variants')
 worksheetOver.write_url(9,0,"internal:'SNVs'!A1", string='Variants analysis')
 worksheetOver.write_url(10,0,"internal:'Indel'!A1", string = 'Indel variants')
 worksheetOver.write_url(11,0,"internal:'Coverage'!A1", string = 'Positions with coverage lower than 100x')

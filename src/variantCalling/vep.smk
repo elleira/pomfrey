@@ -15,7 +15,7 @@ rule vep:
         config["singularitys"]["vep"]
     threads:    8
     shell:
-        "(vep --vcf --no_stats -o {output.vcf} -i {input.vcf} --dir_cache {input.cache} --fork {threads} --cache --merged --offline --fasta {input.fasta} {params} ) &> {log}"
+        "(vep --vcf --no_stats -o {output.vcf} -i {input.vcf} --dir_cache {input.cache} --fork {threads} --cache --refseq --offline --fasta {input.fasta} {params} ) &> {log}"
 
 rule bgzipVep:
     input:
