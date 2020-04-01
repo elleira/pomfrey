@@ -16,7 +16,7 @@ for record in vcf_in.fetch():
         synoCosmicVepList = [cosmic for cosmic in csq.split("|")[17].split("&") if cosmic.startswith('CO')] #Get all cosmicID in list
         if len(synoCosmicVepList) != 0:
             for synoCosmicId in synoCosmicVepList:
-                cmdCosmic = 'grep -w '+synoCosmicId+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f 16 '
+                cmdCosmic = 'grep -w '+synoCosmicId+' /apps/bio/singularities/gms_hematology/bedfiles/COSMIC_v90_hemato_counts.txt | cut -f 16 '
                 synoCosmicNew = subprocess.run(cmdCosmic, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
                 if len(synoCosmicNew) == 0:
                     synoCosmicNew = 0

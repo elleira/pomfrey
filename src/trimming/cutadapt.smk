@@ -3,6 +3,8 @@ def getFastqs(wildcards):
     fastq2 = fastq1.replace("_R1_","_R2_")
     return [fastq1, fastq2]
 
+#shell.prefix('export SINGULARITY_BIND="/medstore,/seqstore,/apps"')
+
 rule cutadapt:
     input:
         getFastqs

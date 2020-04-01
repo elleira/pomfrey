@@ -312,7 +312,7 @@ for record in vcf_snv.fetch():
         synoCosmicVepList = [cosmic for cosmic in csq.split("|")[17].split("&") if cosmic.startswith('CO')] #Get all cosmicID in list
         if len(synoCosmicVepList) != 0:
             for synoCosmicId in synoCosmicVepList:
-                cmdCosmic = 'grep -w '+synoCosmicId+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f 16 '
+                cmdCosmic = 'grep -w '+synoCosmicId+' /apps/bio/singularities/gms_hematology/bedfiles/COSMIC_v90_hemato_counts.txt | cut -f 16 '
                 synoCosmicNew = subprocess.run(cmdCosmic, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
                 if len(synoCosmicNew) == 0:
                     synoCosmicNew = 0
@@ -380,7 +380,7 @@ for record in vcf_snv.fetch():
             else:
                 cosmicN = 0
                 for cosmicId in cosmicVepList:
-                    cmdCosmic = 'grep -w '+cosmicId+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f 16 '
+                    cmdCosmic = 'grep -w '+cosmicId+' /apps/bio/singularities/gms_hematology/bedfiles/COSMIC_v90_hemato_counts.txt | cut -f 16 '
                     cosmicNew = subprocess.run(cmdCosmic, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
                     if len(cosmicNew) == 0:
                         cosmicNew = 0
@@ -416,7 +416,7 @@ for record in vcf_snv.fetch():
 
             snv = [seqID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, ensp, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
             #Append line with sample and rundate to rolling list of artefacts..
-            with open("/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt", "a") as appendfile:
+            with open("/apps/bio/singularities/gms_hematology/bedfiles/twistVariants.txt", "a") as appendfile:
                 variants = snv+["\n"]
                 appendfile.write('\t'.join(str(e) for e in variants))
 
