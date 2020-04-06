@@ -23,7 +23,7 @@ rule multiqcBatch:
     output:
         "Results/batchQC_{seqID}/{seqID}_MultiQC.html"
     params:
-        "-c "+config["configCache"]["multiqc"]+" --ignore *_{seqID}_stats_mqc.tsv --ignore *HsMetrics.txt --ignore *samtools-stats.txt"
+        "-c "+config["configCache"]["multiqc"]+" --ignore *_{seqID}_stats_mqc.csv --ignore *HsMetrics.txt --ignore *samtools-stats.txt"
     log:
         "logs/report/multiqc/{seqID}.log"
     singularity:

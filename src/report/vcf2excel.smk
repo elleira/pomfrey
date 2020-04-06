@@ -26,6 +26,8 @@ rule vcf2excel:
         hotspot = config["bed"]["hotspot"],
         artefact = config["bed"]["artefact"],
         germline = config["bed"]["germline"],
+        hematoCount = config["configCache"]["hemato"],
+        variantsLog = config["configCache"]["variantlist"],
         shortCov = "qc/{sample}_{seqID}/{sample}_{seqID}_coverageShortHotspot.tsv"
     output:
         "Results/{sample}_{seqID}/Reports/{sample}_{seqID}.xlsx"
@@ -38,4 +40,4 @@ rule vcf2excel:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 {params.dir}/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {output}) &> {log}"
+        "(python3.6 {params.dir}/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {input.hematoCount} {input.variantsLog} {output}) &> {log}"

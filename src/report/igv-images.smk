@@ -15,9 +15,11 @@ rule mergeSNVPindel:
 
 rule makePassVCF:
     input:
-        vcf = "Results/{sample}_{seqID}/Data/{sample}_{seqID}.SNV-pindel.vcf",
+        vcf_snv = "variantCalls/annotation/{sample}_{seqID}.filt.vcf.gz",
+        vcf_indel = "variantCalls/pindel/{sample}_{seqID}.pindel.filt.vcf.gz",
         artefact = config["bed"]["artefact"],
-        germline = config["bed"]["germline"]
+        germline = config["bed"]["germline"],
+        hemato = config["configCache"]["hemato"]
     output:
         temp("Results/{sample}_{seqID}/Reports/{sample}_{seqID}.PASS.vcf")
     params:
@@ -27,12 +29,27 @@ rule makePassVCF:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "( python3.6 {params}/src/report/makePASSvcf.py {input.vcf} {input.artefact} {input.germline} {output} ) &>{log}"
+        "(python3.6 {params}/src/report/makePASSvcf.py {input.vcf_snv} {input.vcf_indel} {input.artefact} {input.germline} {input.hemato} {output} ) &>{log}"
+
+rule appendPindeltoPASS:
+    input:
+        pindel = "variantCalls/pindel/{sample}_{seqID}.pindel.filt.vcf.gz",
+        PASS = "Results/{sample}_{seqID}/Reports/{sample}_{seqID}.PASS.vcf"
+    output:
+        temp("Results/{sample}_{seqID}/Reports/{sample}_{seqID}.pindel.done")
+    log:
+        "logs/report/{sample}_{seqID}.pindel.log"
+    singularity:
+        config["singularitys"]["python"]
+    shell:
+        "(zcat {input.pindel} | grep -v '^#' | grep PASS >> {input.PASS} || true && touch {output} ) &> {log}"
+
 
 rule createBatFile:
     input:
         vcf = "Results/{sample}_{seqID}/Reports/{sample}_{seqID}.PASS.vcf",
         bam = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam",
+        pindelWait = "Results/{sample}_{seqID}/Reports/{sample}_{seqID}.pindel.done",
         bed = config["bed"]["cartool"],
         ref = config["configCache"]["igv"] #cache
     output:

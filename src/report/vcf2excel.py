@@ -1,4 +1,4 @@
-trusight#!/bin/python3.6
+#!/bin/python3.6
 import sys
 import csv
 from pysam import VariantFile
@@ -9,7 +9,7 @@ import subprocess
 ## Define sys.argvs
 vcf_snv = VariantFile(sys.argv[1])
 vcf_indel = VariantFile(sys.argv[2])
-seqID = sys.argv[3]
+runID = sys.argv[3]
 cartool = sys.argv[4]
 minCov = int(sys.argv[5])  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
 medCov = int(sys.argv[6])
@@ -18,7 +18,9 @@ bedfile = sys.argv[8]
 hotspotFile = sys.argv[9]
 artefactFile = sys.argv[10]
 germlineFile = sys.argv[11]
-output = sys.argv[12]
+hematoCountFile = sys.argv[12]
+variantLog = sys.argv[13]
+output = sys.argv[14]
 
  ## Create execl file and sheets.
 workbook = xlsxwriter.Workbook(output)
@@ -72,6 +74,7 @@ with open('containers.txt') as file:
 ########################################
 
 ######### IVA sheet (6)#################
+worksheetIVA.set_column('C:C',10)
 worksheetIVA.write('A1', 'Results from Variant Analysis ', headingFormat)
 worksheetIVA.write_row('A2',emptyList,lineFormat)
 
@@ -115,7 +118,7 @@ with open(covFullFile) as csvfile:
             covRow = [line[0]]+line[start:end]
             tableLines.append(covRow)
             # worksheetLowCov.write_row(row,col,[line[0]]+line[start:end])
-# import pdb; pdb.set_trace()
+
 tableArea='A6:F'+str(len(tableLines)+6) ##rows of full list
 headerListDict = [{'header':'Region Name'}, {'header':'Chr'}, {'header':'Start'},{'header':'End'}, {'header':'Mean Coverage'}, {'header':'Length of Region'},]
 worksheetCov.add_table(tableArea, {'data':tableLines,'columns':headerListDict,'style': 'Table Style Light 1'})
@@ -203,8 +206,8 @@ lowRegions = row - 6
 
 ######### Indel sheet (3)##################
 # Add genes as info before the actual table. Just use bed table as input? Sort uniq
-worksheetIndel.set_column(1,2,10)
-worksheetIndel.set_column(1,3,10)
+worksheetIndel.set_column('E:F',10) #pos
+# worksheetIndel.set_column(1,3,10)
 worksheetIndel.write('A1', 'Pindel results', headingFormat)
 worksheetIndel.write_row(1,0,emptyList,lineFormat)
 with open(bedfile) as bed:
@@ -225,7 +228,7 @@ for gene in genes:
     row+=1
 
 row+=1
-tableheading = ['SeqID','DNAnr','Gene','Chr','Start','End','SV length','Af','Ref','Alt','Dp','Canonical','Mutation cds','ENSP','Max popAF','Max Pop']
+tableheading = ['RunID','DNAnr','Gene','Chr','Start','End','SV length','Af','Ref','Alt','Dp','Transcript','Mutation cds','ENSP','Max popAF','Max Pop','IGV']
 worksheetIndel.write_row('A'+str(row),tableheading, tableHeadFormat) #1 index
 # row = 7 #0 index
 col=0
@@ -256,17 +259,18 @@ for indel in vcf_indel.fetch():
         indelTranscript = csqIndel.split("|")[10].split(":")[0]
         indelCodingName = csqIndel.split("|")[10].split(":")[1]
         indelEnsp = csqIndel.split("|")[11]
-        # indelIGV =
+        indelIgv="external:IGV/"+indelGene+"-"+indel.contig+"_"+str(int(indel.pos)-1)+"_"+str(int(indel.pos)-1+len(alt))+".svg"
 
-        indelRow = [seqID,sample,indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt, indel.info["DP"], indelTranscript, indelCodingName,indelEnsp ,maxPopAfIndel, maxPopIndel]
+        indelRow = [runID,sample,indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt, indel.info["DP"], indelTranscript, indelCodingName,indelEnsp ,maxPopAfIndel, maxPopIndel]
         worksheetIndel.write_row(row,col,indelRow)
+        worksheetIndel.write_url('Q'+str(row+1), indelIgv,string = "IGV image")
         row += 1
 
 ##########################################
 
 ######### SNV sheet (2) ##################
 
-worksheetSNV.set_column(1,3,10) #Width for position column
+worksheetSNV.set_column('E:E',10) #Width for position column
 # worksheetSNV.set_column(1,11,9) #Width for MaxPopAf column.
 
 for x in vcf_snv.header.records:
@@ -292,7 +296,7 @@ worksheetSNV.write('A15','Variant in artefact list ', orangeFormat)
 worksheetSNV.write('A16','Variant likely germline', greenFormat)
 
 ## Variant table
-tableheading = ['SeqID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Canonical Transcript','Mutation cds', 'ENSP' ,'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop','IGV image']
+tableheading = ['RunID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Transcript','Mutation cds', 'ENSP' ,'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop','IGV image']
 worksheetSNV.write_row('A18', tableheading, tableHeadFormat) #1 index
 row = 18 #0 index
 col=0
@@ -312,7 +316,7 @@ for record in vcf_snv.fetch():
         synoCosmicVepList = [cosmic for cosmic in csq.split("|")[17].split("&") if cosmic.startswith('CO')] #Get all cosmicID in list
         if len(synoCosmicVepList) != 0:
             for synoCosmicId in synoCosmicVepList:
-                cmdCosmic = 'grep -w '+synoCosmicId+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f 16 '
+                cmdCosmic = 'grep -w '+synoCosmicId+' '+hematoCountFile+' | cut -f 16 '
                 synoCosmicNew = subprocess.run(cmdCosmic, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
                 if len(synoCosmicNew) == 0:
                     synoCosmicNew = 0
@@ -332,28 +336,7 @@ for record in vcf_snv.fetch():
             print(record.alts)
             sys.exit() ##Fix!!
 
-  #       cosmicList = []
-  #       geneList = []
-  #       maxPopAfList = []
-  #       maxPopList = []
-  #       cliSigList = []
-  #       rsList = []
-  # ##Change all with the new pick!
-  #       for csq in record.info["CSQ"]:
-  #           geneList.append(csq.split("|")[3])
-  #           existing = csq.split("|")[17] ##What about the rest?? What is tmp_esp??
-  #           cliSigList.append(csq.split("|")[62] )
-  #           cosmicList += [cosm for cosm in existing.split("&") if cosm.startswith('COSM')]
-  #           rsList += [rs for rs in existing.split("&") if rs.startswith('rs')]
-        #
-        # geneList = list(dict.fromkeys(geneList))
-        # gene = ', '.join(geneList)
-        # cosmicList = list(dict.fromkeys(cosmicList))
-        # cosmic = ', '.join(cosmicList)
-        # cliSigList = list(dict.fromkeys(cliSigList))
-        # clinical = ', '.join(cliSigList)
-        # rsList = list(dict.fromkeys(rsList))
-        # rs = ', '.join(rsList)
+
         if af >= 0.03:
             csq = record.info["CSQ"][0]
             gene = csq.split("|")[3]
@@ -380,7 +363,7 @@ for record in vcf_snv.fetch():
             else:
                 cosmicN = 0
                 for cosmicId in cosmicVepList:
-                    cmdCosmic = 'grep -w '+cosmicId+' /gluster-storage-volume/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt | cut -f 16 '
+                    cmdCosmic = 'grep -w '+cosmicId+' '+hematoCountFile+' | cut -f 16 '
                     cosmicNew = subprocess.run(cmdCosmic, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
                     if len(cosmicNew) == 0:
                         cosmicNew = 0
@@ -414,9 +397,9 @@ for record in vcf_snv.fetch():
             ##IGV image path for each SNV
             igv="external:IGV/"+gene+"-"+record.contig+"_"+str(int(record.pos)-1)+"_"+str(int(record.pos)-1+len(alt))+".svg"
 
-            snv = [seqID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, ensp, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
+            snv = [runID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, ensp, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
             #Append line with sample and rundate to rolling list of artefacts..
-            with open("/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt", "a") as appendfile:
+            with open(variantLog, "a") as appendfile:
                 variants = snv+["\n"]
                 appendfile.write('\t'.join(str(e) for e in variants))
 
@@ -424,7 +407,7 @@ for record in vcf_snv.fetch():
             cmdArt = 'grep -w '+str(record.pos)+' '+artefactFile
             artLines = subprocess.run(cmdArt, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip() ##What happens if two hits?!!!
             artefact_variant = 0
-            # import pdb; pdb.set_trace()
+
             for artLine in artLines.split("\n"):
                 if artLine and record.ref == artLine.split()[2] and alt == artLine.split()[3]: #if pos exists and match in artefact file.
                     orange.append(snv)
@@ -455,11 +438,10 @@ i=0
 for line in white:
     if line[8] < 500:
         worksheetSNV.write_row(row,col,line, italicFormat)
-        worksheetSNV.write_url('S'+str(row+1), whiteIGV[i],string = "IGV image")
+        worksheetSNV.write_url('T'+str(row+1), whiteIGV[i],string = "IGV image")
     else:
         worksheetSNV.write_row(row,col,line)
-        # import pdb; pdb.set_trace()
-        worksheetSNV.write_url('S'+str(row+1), whiteIGV[i],string = "IGV image")
+        worksheetSNV.write_url('T'+str(row+1), whiteIGV[i],string = "IGV image")
     row +=1
     i+=1
 
@@ -481,16 +463,17 @@ i=0
 for line in underFive:
     if line[8] < 500:
         worksheetSNV.write_row(row,col,line, italicFormat)
-        worksheetSNV.write_url('S'+str(row+1), underFiveIGV[i],string = "IGV image")
+        worksheetSNV.write_url('T'+str(row+1), underFiveIGV[i],string = "IGV image")
     else:
         worksheetSNV.write_row(row,col,line)
-        worksheetSNV.write_url('S'+str(row+1), underFiveIGV[i],string = "IGV image")
+        worksheetSNV.write_url('T'+str(row+1), underFiveIGV[i],string = "IGV image")
     row +=1
     i+=1
 
 #############################################
 
 ######### TruSight varianter ###############
+worksheetTruSight.set_column('E:E',10)
 # Variants or snv rows from SNV sheet.
 worksheetTruSight.write('A1', 'TruSight variants found', headingFormat)
 worksheetTruSight.write('A3', 'Sample: '+str(sample))
@@ -516,11 +499,10 @@ i=0
 for line in trusightSNV:
     if line[8] < 500:
         worksheetTruSight.write_row(row,col,line, italicFormat)
-        worksheetTruSight.write_url('S'+str(row+1), trusightSNVigv[i],string = "IGV image")
+        worksheetTruSight.write_url('T'+str(row+1), trusightSNVigv[i],string = "IGV image")
     else:
         worksheetTruSight.write_row(row,col,line)
-        # import pdb; pdb.set_trace()
-        worksheetTruSight.write_url('S'+str(row+1), trusightSNVigv[i],string = "IGV image")
+        worksheetTruSight.write_url('T'+str(row+1), trusightSNVigv[i],string = "IGV image")
     row +=1
     i+=1
 
@@ -532,7 +514,7 @@ for line in trusightSNV:
 ######### Overview sheet (1) ################
 
 worksheetOver.write(0,0, sample, headingFormat)
-worksheetOver.write(1,0, "SeqID: "+seqID)
+worksheetOver.write(1,0, "RunID: "+runID)
 worksheetOver.write(2,0, "Processing date: "+today.strftime("%B %d, %Y"))
 worksheetOver.write_row(3,0, emptyList,lineFormat)
 
@@ -546,10 +528,11 @@ worksheetOver.write(7,0,"Sheets:", tableHeadFormat)
 worksheetOver.write_url(8,0,"internal:'TruSight'!A1", string='TruSight Variants')
 worksheetOver.write_url(9,0,"internal:'SNVs'!A1", string='Variants analysis')
 worksheetOver.write_url(10,0,"internal:'Indel'!A1", string = 'Indel variants')
-worksheetOver.write_url(11,0,"internal:'Coverage'!A1", string = 'Positions with coverage lower than 100x')
+worksheetOver.write_url(11,0,"internal:'Low Coverage'!A1", string = 'Positions with coverage lower than 100x')
 worksheetOver.write_url(12,0,"internal:'Hotspot'!A1", string = 'Coverage of hotspot positions')
-worksheetOver.write_url(13,0,"internal:'Version'!A1", string = 'Version Log')
-worksheetOver.write_row(15,0,emptyList,lineFormat)
+worksheetOver.write_url(13,0,"internal: 'Coverage'!A1", string = 'Average coverage of all regions in bed')
+worksheetOver.write_url(14,0,"internal:'Version'!A1", string = 'Version Log')
+worksheetOver.write_row(16,0,emptyList,lineFormat)
 
 
 ##Add avg. cov and clonalisy
@@ -563,29 +546,25 @@ duplicateLevel = subprocess.run(cmdDupl, stdout=subprocess.PIPE,shell = 'TRUE').
 
 breadthCmd = 'grep "Mean Coverage Breadth:" '+cartoolLog + ' | cut -f2- -d"," '
 breadth = subprocess.run(breadthCmd, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
-#
-# worksheetOver.write(17,0, "Avg. coverage [x]: ")
-# worksheetOver.write(17,2, avgCov)
-# worksheetOver.write(18,0, "Duplicationlevel [%]: ")
-# worksheetOver.write(18,2, str(round(float(duplicateLevel)*100,2)))
 
-worksheetOver.write_row(17,0,['SeqId', 'DNAnr', 'Avg. coverage [x]','Duplicationlevel [%]',str(minCov)+'x',str(medCov)+'x',str(maxCov)+'x'],tableHeadFormat)
-worksheetOver.write_row(18,0,[seqID, sample, avgCov, str(round(float(duplicateLevel)*100,2))]+breadth.split(','))
+
+worksheetOver.write_row(18,0,['RunID', 'DNAnr', 'Avg. coverage [x]','Duplicationlevel [%]',str(minCov)+'x',str(medCov)+'x',str(maxCov)+'x'],tableHeadFormat)
+worksheetOver.write_row(19,0,[runID, sample, avgCov, str(round(float(duplicateLevel)*100,2))]+breadth.split(','))
 
 if lowPos == 0: #From Hotspot sheet
-    worksheetOver.write(21,0,'Number of positions from the hotspot list not covered by at least 500x: ')
-    worksheetOver.write(22,0, str(lowPos))
+    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(23,0, str(lowPos))
 else:
-    worksheetOver.write(21,0,'Number of positions from the hotspot list not covered by at least 500x: ')
-    worksheetOver.write(22,0, str(lowPos), redFormat)
-    worksheetOver.write_url(23,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
+    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(23,0, str(lowPos), redFormat)
+    worksheetOver.write_url(24,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
 
 
-worksheetOver.write(24,0,'Number of regions not covered by at least 100x: ') #From Cov sheet
-worksheetOver.write(25,0, str(lowRegions)) #From Cov sheet
-worksheetOver.write(28,0,'Hotspotlist: '+hotspotFile)
-worksheetOver.write(29,0,'Artefact file: '+artefactFile)
-worksheetOver.write(30,0,'Germline file: '+germlineFile)
+worksheetOver.write(25,0,'Number of regions not covered by at least 100x: ') #From Cov sheet
+worksheetOver.write(26,0, str(lowRegions)) #From Cov sheet
+worksheetOver.write(27,0,'Hotspotlist: '+hotspotFile)
+worksheetOver.write(30,0,'Artefact file: '+artefactFile)
+worksheetOver.write(31,0,'Germline file: '+germlineFile)
 
 ######################################
 
