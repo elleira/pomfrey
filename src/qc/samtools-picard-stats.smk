@@ -1,4 +1,4 @@
-localrules: headerBatchMqc, getStatsforMqc
+localrules: touchBatch, getStatsforMqc, sortBatchStats
 
 rule samtools_stats:
     input:
@@ -28,25 +28,15 @@ rule picardHsMetrics:
     shell:
         "(java -Xmx4g -jar /opt/conda/share/picard-2.20.1-0/picard.jar CollectHsMetrics BAIT_INTERVALS={input.intervals} TARGET_INTERVALS={input.intervals} INPUT={input.bam} OUTPUT={output}) &> {log}"
 
-
-rule headerBatchMqc:
+rule touchBatch:
     input:
-        header = config["programdir"]["dir"]+"src/qc/multiqc-header.txt"
+        expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam", sample = config["samples"], seqID=config["seqID"]["sequencerun"])
     output:
-        batch = "Results/batchQC_{seqID}/{seqID}_stats_mqc.csv"
+         "Results/batchQC_{seqID}/{seqID}_stats_unsorted.csv"
     log:
-        "logs/qc/batchHeader_{seqID}.log"
-    # singularity:
-    #     config["singularitys"]["python"]
-    run:
-        import csv
-        header = ['Sample','Tot seq','Reads mapped','Avg Coverage','Breadth 500x','Reads paired [%]','Insert size','Insert size s.d.','Average Quality','Duplicates [%]','Target bases 50x','Target bases 100x','Bases on target']
-        with open(input.header, 'r') as f:
-            with open(output.batch, "w") as file:
-                for mqcline in f:
-                    file.write(mqcline)
-                writer = csv.writer(file, delimiter=',', lineterminator = '\n')
-                writer.writerow(header)
+        "logs/touch_{seqID}.log"
+    shell:
+        "(touch {output}) &> {log}"
 
 rule getStatsforMqc:
     input:
@@ -55,7 +45,7 @@ rule getStatsforMqc:
         samtools = "qc/{sample}_{seqID}/{sample}_{seqID}.samtools-stats.txt",
         multiQCheader = config["programdir"]["dir"]+"src/qc/multiqc-header.txt",
         cartool = "qc/{sample}_{seqID}/{sample}_{seqID}_Log.csv",
-        batch =  "Results/batchQC_{seqID}/{seqID}_stats_mqc.csv"
+        batch =  "Results/batchQC_{seqID}/{seqID}_stats_unsorted.csv"
     output:
         batchTmp = temp("qc/{sample}_{seqID}/{sample}_batchStats.done"),
         # batch = "qc/{seqID}_stats_mqc.tsv",
@@ -67,4 +57,20 @@ rule getStatsforMqc:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 {params.dir}/src/qc/get_stats.py {input.picardDup} {input.picardMet} {input.samtools} {input.multiQCheader} {input.cartool} {output.sample} {input.batch} && touch {output.batchTmp}) &> {log}"
+        "(python3.6 {params.dir}/src/qc/get_stats.py {input.picardDup} {input.picardMet} {input.samtools} {input.multiQCheader} {input.cartool} {wildcards.sample} {output.sample} {input.batch} && touch {output.batchTmp}) &> {log}"
+
+rule sortBatchStats:
+    input:
+        SampleSheetUsed = "fastq/SampleSheetUsed.csv", ##Where actually?!
+        batchUnsorted = "Results/batchQC_{seqID}/{seqID}_stats_unsorted.csv",
+        batchDone = expand("qc/{sample}_{seqID}/{sample}_batchStats.done", sample = config["samples"], seqID=config["seqID"]["sequencerun"])
+    output:
+        batch =  "Results/batchQC_{seqID}/{seqID}_stats_mqc.json"
+    params:
+        dir = config["programdir"]["dir"]
+    log:
+        "logs/qc/sortBatchStats_{seqID}.log"
+    singularity:
+        config["singularitys"]["python"]
+    shell:
+        "(python3.6 {params.dir}/src/qc/sortBatchStats.py {input.batchUnsorted} {input.SampleSheetUsed} {output.batch}) &> {log}"

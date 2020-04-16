@@ -8,10 +8,11 @@ picardMet = sys.argv[2]
 samtools = sys.argv[3]
 multiQCheader = sys.argv[4]
 cartoolLog = sys.argv[5]
-outFile = sys.argv[6]
-batchFile = sys.argv[7]
+sample = sys.argv[6]
+outFile = sys.argv[7]
+batchFile = sys.argv[8]
 
-sample = samtools.split('/')[1]
+# sample = samtools.split('/')[1]
 
 ##picardDup
 # percent duplicateLevel
