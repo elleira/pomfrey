@@ -54,7 +54,7 @@ rule pindel2vcf:
     params:
         e = 10, #min supporting reads 35
         mc = 10, #min coverage
-        minsize = 10, #min size of reported 5
+        minsize = 5, #min size of reported 5
         refname = "hg19",
         refdate = 000000  #Can I add seqID instead? config["seqID"]["sequencerun"]
     log:
