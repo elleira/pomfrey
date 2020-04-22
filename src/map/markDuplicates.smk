@@ -25,5 +25,5 @@ rule samtools_index_dedup:
         "logs/map/samtools_index/{sample}_{seqID}-dedup.log" # optional params string
     singularity:
         config["singularitys"]["bwa"]
-    wrapper:
-        "0.38.0/bio/samtools/index"
+    shell:
+        "(samtools index {input} {output}) &> {log}"

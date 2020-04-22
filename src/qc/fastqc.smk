@@ -4,13 +4,16 @@ rule fastqcR1:
     output:
         html="qc/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed_fastqc.html",
         zip="qc/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed_fastqc.zip" # the suffix _fastqc.zip is necessary for multiqc to find the file. If not using multiqc, you are free to choose an arbitrary filename
-    params: ""
+    params:
+        outdir = "qc/{sample}_{seqID}/"
     log:
         "logs/qc/fastqc/{sample}_{seqID}_R1_trimmed.log"
     singularity:
         config["singularitys"]["fastqc"]
-    wrapper:
-        "0.38.0/bio/fastqc"
+    shell:
+        "(fastqc --quiet --outdir {params.outdir} {input}) &> {log}"
+    # wrapper:
+    #     "0.38.0/bio/fastqc"
 
 # rule fastqcR2:
 #     input:

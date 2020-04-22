@@ -21,5 +21,8 @@ rule cutadapt:
     threads:    8
     singularity:
         config["singularitys"]["cutadapt"]
-    wrapper:
-        "0.38.0/bio/cutadapt/pe"
+    shell:
+        "(cutadapt {params.adapters_r1} {params.adapters_r2} {params.others} -o {output.fastq1} -p {output.fastq2} -j {threads} {input} > {output.qc} ) &> {log}"
+            
+    # wrapper:
+    #     "0.38.0/bio/cutadapt/pe"

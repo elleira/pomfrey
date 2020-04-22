@@ -13,8 +13,10 @@ rule freebayes:
         extra = " --min-alternate-fraction 0.01 --allele-balance-priors-off --pooled-discrete --pooled-continuous --report-genotype-likelihood-max -t " +config["bed"]["bedfile"],         # optional parameters. Add regions file, bed-format.
         chunksize = 100000  # reference genome chunk size for parallelization (default: 100000)
     threads: 1
-    wrapper:
-        "0.34.0/bio/freebayes"
+    shell:
+        "(freebayes {params.extra} -f {input.ref} {input.samples} > {output}) &> {log}"
+    # wrapper:
+    #     "0.34.0/bio/freebayes"
 
 rule sortFreebayes:
     input:

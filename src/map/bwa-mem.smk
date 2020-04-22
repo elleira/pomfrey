@@ -9,14 +9,16 @@ rule bwa_mem:
     params:   #-M
         index = config["reference"]["bwa"],
         extra = r"-R '@RG\tID:{sample}\tSM:{sample}'",
-        sort = "samtools",             # Can be 'none', 'samtools' or 'picard'.
-        sort_order = "coordinate",  # Can be 'queryname' or 'coordinate'.
-        sort_extra = ""            # Extra args for samtools/picard.
+        # sort = "samtools",             # Can be 'none', 'samtools' or 'picard'.
+        sort_order = "coordinate"  # Can be 'queryname' or 'coordinate'.
+        # sort_extra = ""            # Extra args for samtools/picard.
     threads: 8
     singularity:
         config["singularitys"]["bwa"] #bwa 0.7.17, samtools 1.9, picard 2.20.11
-    wrapper:
-        "0.38.0/bio/bwa/mem"
+    shell:
+        "(bwa mem -t {threads} {params.extra} {params.index} {input.reads} | samtools sort -o {output} - ) &> {log}"
+    # wrapper:
+    #     "0.38.0/bio/bwa/mem"
 
 rule samtools_index:
     input:
@@ -29,5 +31,7 @@ rule samtools_index:
         "logs/map/samtools_index/{sample}_{seqID}.log" # optional params string
     singularity:
         config["singularitys"]["bwa"]
-    wrapper:
-        "0.38.0/bio/samtools/index"
+    shell:
+        "(samtools index {input} {output}) &> {log}"
+    # wrapper:
+    #     "0.38.0/bio/samtools/index"

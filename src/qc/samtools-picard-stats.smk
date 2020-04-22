@@ -12,8 +12,10 @@ rule samtools_stats:
         "logs/qc/samtools_stats/{sample}_{seqID}.log"
     singularity:
         config["singularitys"]["bwa"]
-    wrapper:
-        "0.38.0/bio/samtools/stats"
+    shell:
+        "(samtools stats {params.extra} {input} > {output} ) &> {log}"
+    # wrapper:
+    #     "0.38.0/bio/samtools/stats"
 
 rule picardHsMetrics:
     input:
@@ -32,7 +34,7 @@ rule touchBatch:
     input:
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam", sample = config["samples"], seqID=config["seqID"]["sequencerun"])
     output:
-         "Results/batchQC_{seqID}/{seqID}_stats_unsorted.csv"
+         temp("Results/batchQC_{seqID}/{seqID}_stats_unsorted.csv")
     log:
         "logs/touch_{seqID}.log"
     shell:
