@@ -51,7 +51,7 @@ rule createBatFile:
         bam = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam",
         pindelWait = "Results/{sample}_{seqID}/Reports/{sample}_{seqID}.pindel.done",
         bed = config["bed"]["cartool"],
-        ref = config["configCache"]["igv"] #cache
+        ref = config["reference"]["ref"] #until build own .genome file.
     output:
         "Results/{sample}_{seqID}/Reports/IGV/{sample}_{seqID}-igv.bat"
     params:
