@@ -25,6 +25,12 @@ with open(SampleSheetUsed, 'r') as file:
 # samples.pop() #Remove any empty are there empty line at end?!
 samples = samples[1:] #Remove header from SampleSheetUsed
 sampleSheetSamples = [string for string in samples if string != ""]#Remove empty fields
+#Remove any HD829 because other pipeline
+# HDindices = [i for i, x in enumerate(sampleSheetSamples) if x.startswith("HD829")]
+# if len(HDindices) != 0 :
+#     for index in HDindices:
+#         sampleSheetSamples.pop(index)
+
 header = ['Sample','Tot seq','Reads mapped','Avg Coverage','Breadth 500x','Reads paired [%]','Insert size','Insert size s.d.','Average quality','Duplicates [%]','Breadth 50x','Breadth 100x','Bases on target']
 
 with open(outFile, 'w') as file:
@@ -43,7 +49,7 @@ with open(outFile, 'w') as file:
     file.write("      \"title\": \"Average Coverage\",\n")
     file.write("      \"description\": \"Avg cov of bedfile from CARTool\"\n")
     file.write("    },\n")
-    file.write("    \"Averge quality\": {\n")
+    file.write("    \"Average quality\": {\n")
     file.write("      \"title\": \"Averge quality\",\n")
     file.write("      \"description\": \"Average mapping quality from Samtools\",\n")
     file.write("      \"min\": 0,\n")
