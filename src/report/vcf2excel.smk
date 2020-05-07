@@ -28,7 +28,8 @@ rule vcf2excel:
         germline = config["bed"]["germline"],
         hematoCount = config["configCache"]["hemato"],
         variantsLog = config["configCache"]["variantlist"],
-        shortCov = "qc/{sample}_{seqID}/{sample}_{seqID}_coverageShortHotspot.tsv"
+        shortCov = "qc/{sample}_{seqID}/{sample}_{seqID}_coverageShortHotspot.tsv",
+        igv = "Results/{sample}_{seqID}/Reports/IGV/done-igv.txt"
     output:
         "Results/{sample}_{seqID}/Reports/{sample}_{seqID}.xlsx"
     params:
@@ -37,7 +38,37 @@ rule vcf2excel:
         dir = config["programdir"]["dir"]
     log:
         "logs/report/{sample}_{seqID}.vcf2excel.log"
+    wildcard_constraints:
+        sample = "(?!HD829).*"
     singularity:
         config["singularitys"]["python"]
     shell:
         "(python3.6 {params.dir}/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {input.hematoCount} {input.variantsLog} {output}) &> {log}"
+
+rule vcf2excelHD829:
+    input:
+        snv =  "variantCalls/annotation/{sample}_{seqID}.filt.vcf.gz",
+        indel = "variantCalls/pindel/{sample}_{seqID}.pindel.filt.vcf.gz",
+        cart =  "qc/{sample}_{seqID}/{sample}_{seqID}_MeanCoverageShortList.csv",
+        sing = "containers.txt",
+        bed = config["bed"]["pindel"],
+        hotspot = config["bed"]["hotspot"],
+        artefact = config["bed"]["artefact"],
+        germline = config["bed"]["germline"],
+        hematoCount = config["configCache"]["hemato"],
+        variantsLog = config["configCache"]["variantlist"],
+        shortCov = "qc/{sample}_{seqID}/{sample}_{seqID}_coverageShortHotspot.tsv"
+    output:
+        "Results/{sample}_{seqID}/Reports/{sample}_{seqID}.xlsx"
+    params:
+        coverage = config["cartool"]["cov"], #All coverage, goes in as three sys.argv[], get_minCov,
+        seqID = config["seqID"]["sequencerun"],
+        dir = config["programdir"]["dir"]
+    wildcard_constraints:
+        sample = "(HD829).*"
+    log:
+        "logs/report/{sample}_{seqID}.vcf2excel.log"
+    singularity:
+        config["singularitys"]["python"]
+    shell:
+        "(python3.6 {params.dir}/src/report/vcf2excelHD829.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {input.hematoCount} {input.variantsLog} {output}) &> {log}"

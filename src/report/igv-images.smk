@@ -26,6 +26,8 @@ rule makePassVCF:
         config["programdir"]["dir"]
     log:
         "logs/report/{sample}_{seqID}.PASS.vcf.log"
+    wildcard_constraints:
+        sample = "(?!HD829).*"
     singularity:
         config["singularitys"]["python"]
     shell:
@@ -39,6 +41,8 @@ rule appendPindeltoPASS:
         temp("Results/{sample}_{seqID}/Reports/{sample}_{seqID}.pindel.done")
     log:
         "logs/report/{sample}_{seqID}.pindel.log"
+    wildcard_constraints:
+        sample = "(?!HD829).*"
     singularity:
         config["singularitys"]["python"]
     shell:
@@ -63,6 +67,8 @@ rule createBatFile:
         dir = config["programdir"]["dir"]
     log:
         "logs/report/{sample}_{seqID}-makeBat.log"
+    wildcard_constraints:
+        sample = "(?!HD829).*"
     singularity:
         config["singularitys"]["python"]
     shell:
@@ -75,6 +81,8 @@ rule igv:
         touch("Results/{sample}_{seqID}/Reports/IGV/done-igv.txt")##Several files, add a done.txt
     log:
         "logs/report/{sample}_{seqID}.igv.log"
+    wildcard_constraints:
+        sample = "(?!HD829).*"
     threads:
         2
     singularity:

@@ -6,7 +6,7 @@ rule all:
     input:
         expand("Results/{sample}_{seqID}/Reports/{sample}_{seqID}_MultiQC.html", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         expand("Results/{sample}_{seqID}/Reports/{sample}_{seqID}.xlsx", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
-        expand("Results/{sample}_{seqID}/Reports/IGV/done-igv.txt", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),  ## For the igv images
+        #expand("Results/{sample}_{seqID}/Reports/IGV/done-igv.txt", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),  ## For the igv images
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.SNV-pindel.vcf", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.normalized.genome.vcf.gz", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.normalized.genome.vcf.gz.tbi", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
@@ -18,9 +18,8 @@ rule all:
         expand("Results/batchQC_{seqID}/{seqID}_MultiQC.html", seqID=config["seqID"]["sequencerun"])
 
         # expand("variantCalls/recall/{sample}_{seqID}.3.vcf.gz", sample=config["samples"]) ## Reports, final vcf, bam, fastqs..
-
 wildcard_constraints:
-    sample = "[a-zA-Z0-9-_\.]+",
+    # sample = "[a-zA-Z0-9-_\.]+",
     # support = "3", #"\.[0-9]+\."
     seqID = config["seqID"]["sequencerun"]
 
