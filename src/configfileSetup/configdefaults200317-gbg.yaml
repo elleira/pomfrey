@@ -9,7 +9,11 @@ reference:
 configCache:
     multiqc: "/apps/bio/repos/somatic-twist/src/report/multiqc_config.yaml"
     igv: "/seqstore/webfolders/igv/genomes/hg19.genome"
+<<<<<<< HEAD
     vep: "/medstore/External_References/VEP/vep-data-99.0_refseq"
+=======
+    vep: "/medstore/External_References/VEP/vep-data-99.0"
+>>>>>>> 7721ac2e61c7e3f304693880b6cb45103fb2aebe
 
 bed:
     bedfile: "/apps/bio/singularities/gms_hematology/bedfiles/all_targets_covered_by_probes_combined_sorted_merged_ann_padd6.bed"
