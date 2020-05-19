@@ -1,10 +1,10 @@
 {
     "__default__": {
-        "queue": "batch.q",
-        "n": "1",
-        "name": "{rule}_{wildcards.sample}",
-        "output": "/home/xalmal/standard_o_and_e/{wildcards.sample}_out.txt",
-        "error": "/home/xalmal/standard_o_and_e/{wildcards.sample}_err.txt"
+        "queue": "production.q",
+        "n": "1"
+        #"name": "{rule}_{wildcards.sample}",
+        #"output": "/home/xalmal/standard_o_and_e/{wildcards.sample}_out.txt",
+        #"error": "/home/xalmal/standard_o_and_e/{wildcards.sample}_err.txt"
     },
     #"fastqc": {"time": "3:00:00"},
     #"cartool": {"time": "2:00:00"}, #15 min?

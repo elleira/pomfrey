@@ -34,7 +34,7 @@ unset LD_PRELOAD # förhindrar spam i singularities
 #unset PETASUITE_REFPATH
 #Actually starting the pipeline with snakemake
 #snakemake -p -j 999 --cluster "qsub -V -S /bin/bash -q {cluster.queue} -pe mpi {cluster.n} -e ./logs/stderr.log -o ./logs/stderr.log " \
-snakemake -p -j 999 --drmaa " -V -q {cluster.queue} -pe mpi {cluster.n} -e {cluster.error} -o {cluster.output} -l excl=1 -N \"{cluster.name}\" " \
+snakemake -p -j 999 --drmaa " -V -q {cluster.queue} -pe mpi {cluster.n} -l excl=1 " \
 -s ${somaticFolder}/src/somaticPipeline.smk \
 --configfile ${today}.config.yaml \
 --use-singularity --singularity-prefix ${singularityFolder} \
