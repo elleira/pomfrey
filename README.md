@@ -1,9 +1,117 @@
-# somatic-twist
+# Pomfrey
+##### Hematology Twist Pipeline
 
-To run the pipeline start with snakemake using:
-1. Move where you want the results
-2. Start a screen
-3. Create a configfile and start the pipeline with the command:
- `bash start_pipeline.sh ¤rawdatafolder`
+To run the pipeline you need Snakemake and Singularitys installed. At Uppsala it is used together with slurm-drmaa to submit on the local HPC. If Horizon Myeloid DNA Reference Standard is used it should be named HD829 to be processed separately and not hold up the pipeline.
 
-The script will create a configfile named based on the rundate. Then start the snakemake pipeline.
+### Files & Caches
+- **SampleSheetUsed.csv**: A csv-file with produced when demultiplexing on Illumina machine. Is used to order samples in MultiQC table. The script only use the column *Sample_Name*. Lines needed are in the file except the actual sample-lines are:
+    ```sh
+    [Data]
+    Sample_ID,Sample_Name,Description,index,I7_Index_ID,index2,I5_Index_ID,Sample_Project
+    ```
+- **Bedfile**: Four columns: chr, start, stop, regionname. No header. The bed-file is used as both target and bait intervals in picard HsMetric for bases on target stats. The fourth column is used in CARTools to identify low coverage regions.
+- **Pindel bedfile**: Since pindel is quite slow a smaller bedfile with limited regions is needed to run pindel.
+- **Intervals-file**: Corresponding to the bedfile for picard jobs. Can be generated in GATK4 with:
+    `gatk fileBedToIntervalList --INPUT $bedfile --OUTPUT $interval_output --SEQUENCE_DICTIONARY $reference_dict`
+- **Reference**: Fasta refernce index both with bwa index and .fai.
+- **Artefact file**:
+- **Germline file**:
+- **COSMIC hemato counts**:
+- **Hotspot list**: List of regions where higher coverage is important.
+- **VEP cache**: Need to download cache for vep to run. Read more on the different version at [vep-cache](https://m.ensembl.org/info/docs/tools/vep/script/vep_cache.html).
+    `singularity exec --bind $PWD vep-container.simg perl /opt/vep/src/ensembl-vep/INSTALL.pl -s homo_sapiens_refseq --CACHEDIR vep-data-99.0/ -a c --ASSEMBLY GRCh37`
+
+
+### Singularity Containers
+| Program | Version | Source |
+| ------- | ------- | ------ |
+| Bcftools |1.9 | docker://quay.io/biocontainers/bcftools:1.9--h68d8f2e_8	|
+| Cutadapt | 2.5 |	docker://quay.io/biocontainers/cutadapt:2.5--py37h516909a_0 |
+| Fastqc | 0.11.8 | docker://quay.io/biocontainers/fastqc:0.11.8--1	|
+| Freebayes | 1.3.1 |docker://quay.io/biocontainers/freebayes:1.3.1--py37h56106d0_0 |
+| Lofreq | 2.1.3.1 |	docker://quay.io/biocontainers/lofreq:2.1.3.1--py36_0	|
+| MultiQC| 1.7 |	docker://quay.io/biocontainers/multiqc:1.7--py_3	|
+| Pindel | 0.2.58	| docker://shuangbroad/pindel:v0.2.5b8 |
+| Snver | 0.5.3 | docker://quay.io/biocontainers/snver:0.5.3--0	|
+| Vardict-java | 1.7.0 | docker://quay.io/biocontainers/vardict-java:1.7.0--0	|
+| Vep | 99 |docker://ensemblorg/ensembl-vep:release_99.0	|
+| Vt | 0.57721 | docker://quay.io/biocontainers/vt:0.57721--hdf88d34_2	|
+
+|Program| Comment| Source|
+| ----- | ------ | ----- |
+| bcbio-ensemble-recall | |		bcbio-variation-recall.simg |
+| Bwa & Samtools & Picard|  v.7.17 &  v.1.9 & v.2.20.1 | bwa-snakemakewrapper.def |
+| CARTool |In-house program avaialble at [Github](https://github.com/anod6351/CARtool) | CARTools-200206.simg |
+| Igv v.2.4.10 & xvfb | Not working to load hg19 genome into container | igv.def |
+| Pisces v.5.2.11.163 |Microsoft dotnet v.2.1| Pisces_singularity.def	|
+| Python3 | Libraries: csv, pysam, xlsxwriter|	python-pysam.def |
+
+### Config Files
+#### Samples Config
+Yaml config file with samples to process and local variables and files for the pipeline.
+```
+programdir:
+  dir: "${PATH_TO_POMFREY}"
+
+reference:
+    ref: "" #Path to fasta ref and .fai
+    bwa: "" #Path to bwa indexed ref
+
+configCache:
+    multiqc: "${PATH_TO_POMFREY}/src/report/multiqc_config.yaml"
+    vep: "" #Path to downloaded VEP cache
+    hemato: "/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt" #Path to COSMIC hemato count file
+    variantlist: "/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt" #Path to file where all variants are written to to create artefact and germlinefilter files.
+
+bed:
+    bedfile: "" #Path to main bedfile
+    intervals: "" Path to interval file corresponing to main bedfile
+    pindel: ""  #Path to pindel bedfile
+    cartool: "" #Path to (main) bedfile or differnet if intrested in the coverage of different regions.
+    hotspot: "" #Path to hotpspotlist
+    artefact: "" #Path to artefact filter file
+    germline: "" #Path to germline filter file
+
+
+singularitys:
+    cutadapt: ""
+    bwa: ""
+    fastqc: ""
+    cartool: ""
+    bcftools: ""
+    freebayes: ""
+    lofreq: ""
+    pisces: ""
+    snver: ""
+    vardict: ""
+    pindel: ""
+    vep: ""
+    recall: ""
+    python: ""
+    vt: ""
+    igv: ""
+    multiqc: ""
+
+cartool:
+    cov: "100 200 1000" #Coverage limits, first number minCov, second for hotspotlist, third wishful
+
+methods:   # Order of vcfs into ensemble recall
+    vardict: "vardict"
+    pisces: "pisces"
+    freebayes: "freebayes"
+    snver: "snver"
+
+seqID:
+    sequencerun: ""  
+
+samples:
+   "${sampleName}": "${path_to_R1_fastq_gz}"
+
+```
+
+#### Cluster Config
+Json file with config for submission on HPC. Need to be specified to suit you HPC. See cluster-config.json for example.
+### Snakemake command
+`
+snakemake -p -j ${max_nr_jobs_submitted} --drmaa "-A ${project} -s -p core -t {cluster.time} -n {cluster.n} " --use-singularity --cluster-config ${cluster_config} -s ${PATH_TO_POMFREY}/src/somaticPipeline.smk --singularity-args "--bind /data/ --bind /projects/ " --configfile ${sample_config}
+`
