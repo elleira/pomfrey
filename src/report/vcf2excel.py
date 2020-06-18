@@ -51,7 +51,7 @@ sample = list(vcf_snv.header.samples)[0]
 today=date.today()
 emptyList=['','','','','','']
 
-trusightGenes=['ABL1','ANKRD26','ASXL1','ATRX','BCOR','BCORL1','BRAF','CALR','CBL','CBLB','CBLC','CDKN2A','CEBPA','CSF3R','CUX1','DDX41','DNMT3A','ETV6','TEL','EZH2','FBXW7','FLT3','GATA1','GATA2','GNAS','HRAS','IDH1','IDH2','IKZF1','JAK2','JAK3','KDM6A','KIT','KRAS','KMT2A','MPL','MYD88','NF1','NOTCH1','NPM1','NRAS','PDGFRA','PHF6','PPM1D','PTEN','PTPN11','RAD21','RUNX1','SETBP1','SF3B1','SMC1A','SMC3','SRP72','SRSF2','STAG2','TET2','TP53','U2AF1','WT1','ZRSR2']
+trusightGenes=['ABL1','ANKRD26','ASXL1','ATRX','BCOR','BCORL1','BRAF','CALR','CBL','CBLB','CBLC','CDKN2A','CEBPA','CSF3R','CUX1','DDX41','DNMT3A','ETV6','EZH2','FBXW7','FLT3','GATA1','GATA2','GNAS','HRAS','IDH1','IDH2','IKZF1','JAK2','JAK3','KDM6A','KIT','KRAS','KMT2A','MPL','MYD88','NF1','NOTCH1','NPM1','NRAS','PDGFRA','PHF6','PPM1D','PTEN','PTPN11','RAD21','RUNX1','SETBP1','SF3B1','SMC1A','SMC3','SRP72','SRSF2','STAG2','TET2','TP53','U2AF1','WT1','ZRSR2']
 
 
 ######### Prog Version sheet (7)###########
@@ -257,7 +257,10 @@ for indel in vcf_indel.fetch():
         maxPopIndel = csqIndel.split("|")[57] #[61]
 
         indelTranscript = csqIndel.split("|")[10].split(":")[0]
-        indelCodingName = csqIndel.split("|")[10].split(":")[1]
+        if len(csqIndel.split("|")[10].split(":"))>1:
+            indelCodingName = csqIndel.split("|")[10].split(":")[1]
+        else:
+            indelCodingName = ''
         indelEnsp = csqIndel.split("|")[11]
         indelIgv="external:IGV/"+indelGene+"-"+indel.contig+"_"+str(int(indel.pos)-1)+"_"+str(int(indel.pos)-1+len(alt))+".svg"
 
@@ -291,7 +294,7 @@ worksheetSNV.write('B10','Population freq (KGP, gnomAD, NHLBI_ESP ) <= 2%')
 worksheetSNV.write('B11','Biotype is protein coding')
 worksheetSNV.write('B12','Consequence not deemed relevant')
 
-worksheetSNV.write('A14','Coverage below 500x', italicFormat)
+worksheetSNV.write('A14','Coverage below '+str(medCov)+'x', italicFormat)
 worksheetSNV.write('A15','Variant in artefact list ', orangeFormat)
 worksheetSNV.write('A16','Variant likely germline', greenFormat)
 
@@ -311,6 +314,7 @@ trusightSNVigv=[] #trusight genes only
 
 for record in vcf_snv.fetch():
     synoCosmicN = 0
+
     if   record.filter.keys()==["Syno"]: #Only if Syno not and popAF.   any(x in "Syno" for x in record.filter.keys()):
         csq = record.info["CSQ"][0]
         synoCosmicVepList = [cosmic for cosmic in csq.split("|")[17].split("&") if cosmic.startswith('CO')] #Get all cosmicID in list
@@ -436,7 +440,7 @@ for record in vcf_snv.fetch():
 ### Actually writing to the excelsheet
 i=0
 for line in white:
-    if line[8] < 500:
+    if line[8] < medCov:
         worksheetSNV.write_row(row,col,line, italicFormat)
         worksheetSNV.write_url('T'+str(row+1), whiteIGV[i],string = "IGV image")
     else:
@@ -446,14 +450,14 @@ for line in white:
     i+=1
 
 for line in green:
-    if line[8] < 500:
+    if line[8] < medCov:
         worksheetSNV.write_row(row,col,line, green_italicFormat)
     else:
         worksheetSNV.write_row(row,col,line, greenFormat)
     row +=1
 
 for line in orange:
-    if line[8] < 500:
+    if line[8] < medCov:
         worksheetSNV.write_row(row,col,line, orange_italicFormat)
     else:
         worksheetSNV.write_row(row,col,line, orangeFormat)
@@ -461,7 +465,7 @@ for line in orange:
 
 i=0
 for line in underFive:
-    if line[8] < 500:
+    if line[8] < medCov:
         worksheetSNV.write_row(row,col,line, italicFormat)
         worksheetSNV.write_url('T'+str(row+1), underFiveIGV[i],string = "IGV image")
     else:
@@ -492,12 +496,12 @@ worksheetTruSight.write_row(14,0,trusightGenes)
 worksheetTruSight.write('A16','For all variants see: ')
 worksheetTruSight.write_url('B16', "internal:'SNVs'!A1",string='SNVs')
 
-worksheetTruSight.write('A18','Coverage below 500x', italicFormat)
+worksheetTruSight.write('A18','Coverage below '+str(medCov)+'x', italicFormat)
 worksheetTruSight.write_row('A20', tableheading, tableHeadFormat) #1 index
 row=20 # 0 index
 i=0
 for line in trusightSNV:
-    if line[8] < 500:
+    if line[8] < medCov:
         worksheetTruSight.write_row(row,col,line, italicFormat)
         worksheetTruSight.write_url('T'+str(row+1), trusightSNVigv[i],string = "IGV image")
     else:
@@ -552,10 +556,10 @@ worksheetOver.write_row(18,0,['RunID', 'DNAnr', 'Avg. coverage [x]','Duplication
 worksheetOver.write_row(19,0,[runID, sample, avgCov, str(round(float(duplicateLevel)*100,2))]+breadth.split(','))
 
 if lowPos == 0: #From Hotspot sheet
-    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
     worksheetOver.write(23,0, str(lowPos))
 else:
-    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
     worksheetOver.write(23,0, str(lowPos), redFormat)
     worksheetOver.write_url(24,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
 

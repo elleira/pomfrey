@@ -19,7 +19,7 @@ with open(SampleSheetUsed, 'r') as file:
     lines = [line.strip() for line in file]
     for line in lines:
         if startReading == 1: ##Once reached [Data]
-            samples.append(line.split(',')[0])
+            samples.append(line.split(',')[1])
         if line == "[Data]":
             startReading = 1
 # samples.pop() #Remove any empty are there empty line at end?!
@@ -50,7 +50,7 @@ with open(outFile, 'w') as file:
     file.write("      \"description\": \"Avg cov of bedfile from CARTool\"\n")
     file.write("    },\n")
     file.write("    \"Average quality\": {\n")
-    file.write("      \"title\": \"Averge quality\",\n")
+    file.write("      \"title\": \"Average quality\",\n")
     file.write("      \"description\": \"Average mapping quality from Samtools\",\n")
     file.write("      \"min\": 0,\n")
     file.write("      \"max\": 60,\n")
