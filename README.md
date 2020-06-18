@@ -17,8 +17,8 @@ To run the pipeline you need Snakemake and Singularitys installed. At Uppsala it
 - **Artefact file**:
 - **Germline file**:
 - **COSMIC hemato counts**:
-- **Hotspot list**: List of regions where higher coverage is important.
-- **VEP cache**: Need to download cache for vep to run. Read more on the different version at [vep-cache](https://m.ensembl.org/info/docs/tools/vep/script/vep_cache.html).
+- **Hotspot list**: List of regions where higher coverage is important. Each region and its coverage is listed in the sheet "HotSpot" in the xlsx-file
+- **VEP cache**: Need to download cache for vep to run. Read more on the different versions of [vep-cache](https://m.ensembl.org/info/docs/tools/vep/script/vep_cache.html).
     `singularity exec --bind $PWD vep-container.simg perl /opt/vep/src/ensembl-vep/INSTALL.pl -s homo_sapiens_refseq --CACHEDIR vep-data-99.0/ -a c --ASSEMBLY GRCh37`
 
 
@@ -65,9 +65,9 @@ configCache:
 
 bed:
     bedfile: "" #Path to main bedfile
-    intervals: "" Path to interval file corresponing to main bedfile
+    intervals: "" Path to interval file corresponding to main bedfile
     pindel: ""  #Path to pindel bedfile
-    cartool: "" #Path to (main) bedfile or differnet if intrested in the coverage of different regions.
+    cartool: "" #Path to (main) bedfile or different if interested in the coverage of different regions.
     hotspot: "" #Path to hotpspotlist
     artefact: "" #Path to artefact filter file
     germline: "" #Path to germline filter file
