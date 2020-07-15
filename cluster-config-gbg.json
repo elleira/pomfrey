@@ -1,13 +1,14 @@
 {
     "__default__": {
         "queue": "production.q",
-        "n": "1"
-        #"name": "{rule}_{wildcards.sample}",
-        #"output": "/home/xalmal/standard_o_and_e/{wildcards.sample}_out.txt",
-        #"error": "/home/xalmal/standard_o_and_e/{wildcards.sample}_err.txt"
+        "n": "1",
+        "name": "{rule}_{wildcards.sample}",
+        "stdout": "{wildcards.sample}_out.txt",
+        "stderr": "{wildcards.sample}_err.txt"
     },
     #"fastqc": {"time": "3:00:00"},
     #"cartool": {"time": "2:00:00"}, #15 min?
+    "multiqcBatch": {"name": "{rule}", "stdout": "run_out.txt", "stderr": "run_err.txt"},
     "cutadapt": {"n": "20"},  #15 min w 8 cores
     "bwa_mem": {"n": "20"},
     "pindel": {"n": "8"},
