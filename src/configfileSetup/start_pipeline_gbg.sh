@@ -5,6 +5,7 @@ shopt -s extglob
 
 rawdatafolder=$1  #Always with the last /
 sequencerun=$2
+sspath=$3
 #Stand in folder where you want to run and get the results.
 #somaticFolder=/gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline
 somaticFolder=/apps/bio/repos/somatic-twist
@@ -31,15 +32,22 @@ echo "SGE_CELL: $SGE_CELL"
 set +u;  PATH=$PATH:/apps/bio/software/singularity/bin; set -u
 echo "PATH: $PATH"
 unset LD_PRELOAD # förhindrar spam i singularities
+
+mkdir -p ./fastq
+mkdir -p ./logs/stdlogs
+cp $sspath ./fastq/SampleSheetUsed.csv
+my_cwd=$(pwd)
+
 #unset PETASUITE_REFPATH
 #Actually starting the pipeline with snakemake
 #snakemake -p -j 999 --cluster "qsub -V -S /bin/bash -q {cluster.queue} -pe mpi {cluster.n} -e ./logs/stderr.log -o ./logs/stderr.log " \
-snakemake -p -j 999 --drmaa " -V -q {cluster.queue} -pe mpi {cluster.n} -l excl=1 " \
+snakemake -p -j 999 --drmaa " -V -q {cluster.queue} -pe mpi {cluster.n} -l excl=1 -o ${my_cwd}/logs/stdlogs/{cluster.stdout} -e ${my_cwd}/logs/stdlogs/{cluster.stderr}" \
+--jobname "{cluster.name}_{jobid}" \
 -s ${somaticFolder}/src/somaticPipeline.smk \
 --configfile ${today}.config.yaml \
 --use-singularity --singularity-prefix ${singularityFolder} \
 --singularity-args "--bind /medstore --bind /seqstore --bind /apps " --latency-wait 60 \
---cluster-config ${somaticFolder}/cluster-config.json \
+--cluster-config ${somaticFolder}/cluster-config-gbg.json \
 --rerun-incomplete # \ # Uncomment this if running for DAG
 #--dag | dot -Tsvg > dag.svg
 
