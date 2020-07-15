@@ -46,7 +46,7 @@ rule multiqcBatch:
     output:
         "Results/batchQC_{seqID}/{seqID}_MultiQC.html"
     params:
-        extra = "-c "+config["configCache"]["multiqc"]+" --ignore *_{seqID}_stats_mqc.csv --ignore *HsMetrics.txt --ignore *samtools-stats.txt",
+        extra = "-c "+config["configCache"]["multiqc"]+" --ignore *_{seqID}_stats_mqc.csv", # --ignore *HsMetrics.txt --ignore *samtools-stats.txt",
         output_dir = "Results/batchQC_{seqID}",
         output_name = "{seqID}_MultiQC.html"
     log:
