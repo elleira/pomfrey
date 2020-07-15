@@ -337,7 +337,7 @@ for record in vcf_snv.fetch():
             sys.exit() ##Fix!!
 
 
-        if af >= 0.03:
+        if af >= 0.01:
             csq = record.info["CSQ"][0]
             gene = csq.split("|")[3]
             clinical = csq.split("|")[58] #[59]
