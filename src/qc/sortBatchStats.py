@@ -20,7 +20,7 @@ with open(SampleSheetUsed, 'r') as file:
     for line in lines:
         if startReading == 1: ##Once reached [Data]
             samples.append(line.split(',')[1])
-        if line == "[Data]":
+        if line.startswith("[Data]"):
             startReading = 1
 # samples.pop() #Remove any empty are there empty line at end?!
 samples = samples[1:] #Remove header from SampleSheetUsed
