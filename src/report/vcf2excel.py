@@ -52,6 +52,7 @@ sample = list(vcf_snv.header.samples)[0]
 today=date.today()
 emptyList=['','','','','','']
 
+<<<<<<< HEAD
 trusightGenes=['ABL1','ANKRD26','ASXL1','ATRX','BCOR','BCORL1','BRAF','CALR','CBL','CBLB','CBLC','CDKN2A','CEBPA','CSF3R','CUX1','DDX41','DNMT3A','ETV6','TEL','EZH2','FBXW7','FLT3','GATA1','GATA2','GNAS','HRAS','IDH1','IDH2','IKZF1','JAK2','JAK3','KDM6A','KIT','KRAS','KMT2A','MPL','MYD88','NF1','NOTCH1','NPM1','NRAS','PDGFRA','PHF6','PPM1D','PTEN','PTPN11','RAD21','RUNX1','SETBP1','SF3B1','SMC1A','SMC3','SRP72','SRSF2','STAG2','TET2','TP53','U2AF1','WT1','ZRSR2']
 intronDict={'GATA2':['chr3',128201827,  128202419], 'ANKRD26':['chr10',27389007, 27389433] }
 introns={}
@@ -61,6 +62,9 @@ for key in intronDict:
         introns[chr].append(intronDict[key][1:])
     else:
         introns[chr]=[intronDict[key][1:]]
+=======
+trusightGenes=['ABL1','ANKRD26','ASXL1','ATRX','BCOR','BCORL1','BRAF','CALR','CBL','CBLB','CBLC','CDKN2A','CEBPA','CSF3R','CUX1','DDX41','DNMT3A','ETV6','EZH2','FBXW7','FLT3','GATA1','GATA2','GNAS','HRAS','IDH1','IDH2','IKZF1','JAK2','JAK3','KDM6A','KIT','KRAS','KMT2A','MPL','MYD88','NF1','NOTCH1','NPM1','NRAS','PDGFRA','PHF6','PPM1D','PTEN','PTPN11','RAD21','RUNX1','SETBP1','SF3B1','SMC1A','SMC3','SRP72','SRSF2','STAG2','TET2','TP53','U2AF1','WT1','ZRSR2']
+>>>>>>> d57599dcfa3d2d6f7f7a2651128270780314f2f7
 
 
 ######### Prog Version sheet (9)###########
@@ -336,7 +340,11 @@ for indel in vcf_indel.fetch():
         maxPopIndel = csqIndel.split("|")[57] #[61]
 
         indelTranscript = csqIndel.split("|")[10].split(":")[0]
+<<<<<<< HEAD
         if len(csqIndel.split("|")[10].split(":")) > 1:
+=======
+        if len(csqIndel.split("|")[10].split(":"))>1:
+>>>>>>> d57599dcfa3d2d6f7f7a2651128270780314f2f7
             indelCodingName = csqIndel.split("|")[10].split(":")[1]
         else:
             indelCodingName = ''
@@ -643,12 +651,21 @@ worksheetOver.write_row(19,0,['RunID', 'DNAnr', 'Avg. coverage [x]','Duplication
 worksheetOver.write_row(20,0,[runID, sample, avgCov, str(round(float(duplicateLevel)*100,2))]+breadth.split(','))
 
 if lowPos == 0: #From Hotspot sheet
+<<<<<<< HEAD
     worksheetOver.write(23,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
     worksheetOver.write(24,0, str(lowPos))
 else:
     worksheetOver.write(23,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
     worksheetOver.write(24,0, str(lowPos), redFormat)
     worksheetOver.write_url(25,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
+=======
+    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
+    worksheetOver.write(23,0, str(lowPos))
+else:
+    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
+    worksheetOver.write(23,0, str(lowPos), redFormat)
+    worksheetOver.write_url(24,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
+>>>>>>> d57599dcfa3d2d6f7f7a2651128270780314f2f7
 
 
 worksheetOver.write(26,0,'Number of regions not covered by at least '+str(minCov)+'x: ') #From Cov sheet
