@@ -20,7 +20,7 @@ with open(SampleSheetUsed, 'r') as file:
     for line in lines:
         if startReading == 1: ##Once reached [Data]
             samples.append(line.split(',')[0])
-        if line == "[Data]":
+        if line.startswith("[Data]"):
             startReading = 1
 # samples.pop() #Remove any empty are there empty line at end?!
 samples = samples[1:] #Remove header from SampleSheetUsed
@@ -50,7 +50,7 @@ with open(outFile, 'w') as file:
     file.write("      \"description\": \"Avg cov of bedfile from CARTool\"\n")
     file.write("    },\n")
     file.write("    \"Average quality\": {\n")
-    file.write("      \"title\": \"Averge quality\",\n")
+    file.write("      \"title\": \"Average quality\",\n")
     file.write("      \"description\": \"Average mapping quality from Samtools\",\n")
     file.write("      \"min\": 0,\n")
     file.write("      \"max\": 60,\n")
