@@ -28,6 +28,7 @@ worksheetOver = workbook.add_worksheet('Overview')
 worksheetTruSight = workbook.add_worksheet('TruSight')
 worksheetSNV = workbook.add_worksheet('SNVs')
 worksheetIndel = workbook.add_worksheet('InDel') #.... sys.argv[2]
+worksheetIntron = workbook.add_worksheet('Intron')
 worksheetLowCov = workbook.add_worksheet('Low Coverage') #... sys.argv[3]
 worksheetHotspot = workbook.add_worksheet('Hotspot')
 worksheetCov = workbook.add_worksheet('Coverage')
@@ -52,9 +53,17 @@ today=date.today()
 emptyList=['','','','','','']
 
 trusightGenes=['ABL1','ANKRD26','ASXL1','ATRX','BCOR','BCORL1','BRAF','CALR','CBL','CBLB','CBLC','CDKN2A','CEBPA','CSF3R','CUX1','DDX41','DNMT3A','ETV6','TEL','EZH2','FBXW7','FLT3','GATA1','GATA2','GNAS','HRAS','IDH1','IDH2','IKZF1','JAK2','JAK3','KDM6A','KIT','KRAS','KMT2A','MPL','MYD88','NF1','NOTCH1','NPM1','NRAS','PDGFRA','PHF6','PPM1D','PTEN','PTPN11','RAD21','RUNX1','SETBP1','SF3B1','SMC1A','SMC3','SRP72','SRSF2','STAG2','TET2','TP53','U2AF1','WT1','ZRSR2']
+intronDict={'GATA2':['chr3',128201827,  128202419], 'ANKRD26':['chr10',27389007, 27389433] }
+introns={}
+for key in intronDict:
+    chr=intronDict[key][0]
+    if chr in introns: #If chr in dict already
+        introns[chr].append(intronDict[key][1:])
+    else:
+        introns[chr]=[intronDict[key][1:]]
 
 
-######### Prog Version sheet (7)###########
+######### Prog Version sheet (9)###########
 worksheetVersions.write('A1', 'Version Log', headingFormat)
 worksheetVersions.write_row(1,0,emptyList,lineFormat)
 worksheetVersions.write('A3','Sample: '+str(sample))
@@ -73,7 +82,7 @@ with open('containers.txt') as file:
         row += 1
 ########################################
 
-######### IVA sheet (6)#################
+######### IVA sheet (8)#################
 worksheetIVA.set_column('C:C',10)
 worksheetIVA.write('A1', 'Results from Variant Analysis ', headingFormat)
 worksheetIVA.write_row('A2',emptyList,lineFormat)
@@ -86,7 +95,7 @@ worksheetIVA.write_row(9,0, iva, tableHeadFormat)
 
 #########################################
 
-########### Coverage ####################
+########### Coverage (7) ####################
 ##Lägga till hela MeanFullCoverage... som filtrerbar lista
 #Number of lines in MeanFullCoverage
 covFullFile = cartool.replace("_MeanCoverageShortList.csv", "_MeanCoverageFullList.csv")
@@ -127,7 +136,7 @@ worksheetCov.add_table(tableArea, {'data':tableLines,'columns':headerListDict,'s
 
 #########################################
 
-########## Hotspot sheet (5)#############
+########## Hotspot sheet (6)#############
 worksheetHotspot.write('A1', 'Hotspot Coverage', headingFormat)  #headerFormat)
 worksheetHotspot.write('A3', 'Sample: '+str(sample))
 worksheetHotspot.set_column(1,2,10)
@@ -164,7 +173,7 @@ for hotLine in hotspotTable:
 
 ############################################
 
-######### Low Coverage sheet (4)################
+######### Low Coverage sheet (5)################
 worksheetLowCov.set_column(1,3,10)
 worksheetLowCov.set_column(1,4,10)
 ## Heading in sheet
@@ -201,6 +210,76 @@ with open(cartool) as csvfile:
         # covLines
 # Number of low cov regions for the Overview sheet.
 lowRegions = row - 6
+
+###########################################
+
+############## Intron (4)##################
+worksheetIntron.set_column('D:E',10)
+worksheetIntron.write('A1', 'Intron variants', headingFormat)
+worksheetIntron.write_row(1,0,emptyList,lineFormat)
+worksheetIntron.write('A3', 'Sample: '+str(sample))
+
+worksheetIntron.write('A6', 'The following filters were applied: ')
+worksheetIntron.write('B7','Coverage >= 100x')
+worksheetIntron.write('B8','PopAF <= 2 %')
+worksheetIntron.write('B9','Allele Frequency >= 20%')
+# worksheetIntron.write('B9','Biotype is protein coding') #Nej
+# worksheetIntron.write('B10','Consequence not deemed relevant') #nej
+
+worksheetIntron.write('A11','Regions: ')
+row = 11
+col = 0
+for gene in intronDict:
+    worksheetIntron.write_row('B'+str(row), [gene]+intronDict[gene])
+    row += 1
+
+row += 1
+worksheetIntron.write('A'+str(row),'Coverage below '+str(medCov)+'x', italicFormat)
+row += 1
+tableheading = ['RunID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Transcript','Mutation cds', 'ENSP' ,'Consequence','Max popAF','Max Pop','Callers']
+worksheetIntron.write_row('A'+str(row),tableheading, tableHeadFormat) #1 index
+
+for snv in vcf_snv.fetch():
+    if "PopAF" not in snv.filter.keys():
+        if snv.contig in introns:
+            for pair in introns[snv.contig]:
+                if snv.pos >= pair[0] and snv.pos <= pair[1] and snv.info["AF"][0] >= 0.2:
+                    # import pdb; pdb.set_trace()
+                    csq = snv.info["CSQ"][0]
+                    gene = csq.split("|")[3]
+                    transcript = csq.split("|")[10].split(":")[0]
+                    if len(csq.split("|")[10].split(":")) > 1:
+                        codingName = csq.split("|")[10].split(":")[1]
+                    else:
+                        codingName = ''
+                    ensp = csq.split("|")[11]
+                    consequence = csq.split("|")[1]
+                    popFreqsPop=['AF', 'AFR_AF','AMR_AF','EAS_AF', 'EUR_AF', 'SAS_AF', 'gnomAD_AF', 'gnomAD_AFR_AF', 'gnomAD_AMR_AF', 'gnomAD_ASJ_AF', 'gnomAD_EAS_AF', 'gnomAD_FIN_AF', 'gnomAD_NFE_AF', 'gnomAD_OTH_AF', 'gnomAD_SAS_AF']
+                    popFreqAllRaw=snv.info["CSQ"][0].split("|")[41:56] #[42:57]
+                    if any(popFreqAllRaw) and max([float(x) if x else 0 for x  in popFreqAllRaw]) != 0: #if all not empty
+                        popFreqAll=[float(x) if x else 0 for x  in popFreqAllRaw]
+                        maxPopAf=max(popFreqAll)
+                        maxIndex=[i for i, j in enumerate(popFreqAll) if j == maxPopAf]
+                        if len(maxIndex) == 1:
+                            maxPop=popFreqsPop[maxIndex[0]]
+                        else:
+                            popFreqPops=[popFreqsPop[x] for x in maxIndex]
+                            maxPop="&".join(popFreqPops)
+                    else:
+                        maxPopAf=''
+                        maxPop=''
+                    try:
+                        if snv.info["CALLERS"]:
+                            callers = ' & '.join(snv.info["CALLERS"])
+                    except KeyError:
+                        callers = 'Pisces-multi'
+
+                    line=[runID, sample, gene, snv.contig, str(snv.pos), snv.ref, snv.alts[0], str(snv.info["AF"][0]), str(snv.info["DP"]), transcript, codingName, ensp, consequence, maxPopAf, maxPop, callers]
+                    if snv.info["DP"] < medCov:
+                        worksheetSNV.write_row(row,col,line, italicFormat)
+                    else:
+                        worksheetSNV.write_row(row,col,line)
+                    row += 1
 
 ###########################################
 
@@ -257,7 +336,10 @@ for indel in vcf_indel.fetch():
         maxPopIndel = csqIndel.split("|")[57] #[61]
 
         indelTranscript = csqIndel.split("|")[10].split(":")[0]
-        indelCodingName = csqIndel.split("|")[10].split(":")[1]
+        if len(csqIndel.split("|")[10].split(":")) > 1:
+            indelCodingName = csqIndel.split("|")[10].split(":")[1]
+        else:
+            indelCodingName = ''
         indelEnsp = csqIndel.split("|")[11]
         indelIgv="external:IGV/"+indelGene+"-"+indel.contig+"_"+str(int(indel.pos)-1)+"_"+str(int(indel.pos)-1+len(alt))+".svg"
 
@@ -291,7 +373,7 @@ worksheetSNV.write('B10','Population freq (KGP, gnomAD, NHLBI_ESP ) <= 2%')
 worksheetSNV.write('B11','Biotype is protein coding')
 worksheetSNV.write('B12','Consequence not deemed relevant')
 
-worksheetSNV.write('A14','Coverage below 500x', italicFormat)
+worksheetSNV.write('A14','Coverage below '+str(medCov)+'x', italicFormat)
 worksheetSNV.write('A15','Variant in artefact list ', orangeFormat)
 worksheetSNV.write('A16','Variant likely germline', greenFormat)
 
@@ -311,6 +393,7 @@ trusightSNVigv=[] #trusight genes only
 
 for record in vcf_snv.fetch():
     synoCosmicN = 0
+
     if   record.filter.keys()==["Syno"]: #Only if Syno not and popAF.   any(x in "Syno" for x in record.filter.keys()):
         csq = record.info["CSQ"][0]
         synoCosmicVepList = [cosmic for cosmic in csq.split("|")[17].split("&") if cosmic.startswith('CO')] #Get all cosmicID in list
@@ -370,7 +453,10 @@ for record in vcf_snv.fetch():
                     cosmicN += int(cosmicNew)
 
             transcript = csq.split("|")[10].split(":")[0]
-            codingName = csq.split("|")[10].split(":")[1]
+            if len(csq.split("|")[10].split(":")) > 1:
+                codingName = csq.split("|")[10].split(":")[1]
+            else:
+                codingName = ''
             consequence = csq.split("|")[1]
             ensp = csq.split("|")[11]
 
@@ -436,7 +522,7 @@ for record in vcf_snv.fetch():
 ### Actually writing to the excelsheet
 i=0
 for line in white:
-    if line[8] < 500:
+    if line[8] < medCov:
         worksheetSNV.write_row(row,col,line, italicFormat)
         worksheetSNV.write_url('T'+str(row+1), whiteIGV[i],string = "IGV image")
     else:
@@ -446,14 +532,14 @@ for line in white:
     i+=1
 
 for line in green:
-    if line[8] < 500:
+    if line[8] < medCov:
         worksheetSNV.write_row(row,col,line, green_italicFormat)
     else:
         worksheetSNV.write_row(row,col,line, greenFormat)
     row +=1
 
 for line in orange:
-    if line[8] < 500:
+    if line[8] < medCov:
         worksheetSNV.write_row(row,col,line, orange_italicFormat)
     else:
         worksheetSNV.write_row(row,col,line, orangeFormat)
@@ -461,7 +547,7 @@ for line in orange:
 
 i=0
 for line in underFive:
-    if line[8] < 500:
+    if line[8] < medCov:
         worksheetSNV.write_row(row,col,line, italicFormat)
         worksheetSNV.write_url('T'+str(row+1), underFiveIGV[i],string = "IGV image")
     else:
@@ -477,8 +563,6 @@ worksheetTruSight.set_column('E:E',10)
 # Variants or snv rows from SNV sheet.
 worksheetTruSight.write('A1', 'TruSight variants found', headingFormat)
 worksheetTruSight.write('A3', 'Sample: '+str(sample))
-worksheetTruSight.write('A4', 'Reference used: '+str(refV))
-# worksheetTruSight.write('A4', 'Callers used: VardictJava v.1,6 ? Dubbelkolla!, Pisces 5.2.11, Freebayes v1.1.0, LoFreq v.2.1.3.1, TruSighter v.2.1.3.1')
 worksheetTruSight.write('A6', 'VEP: '+vepline ) #, textwrapFormat)
 worksheetTruSight.write('A8', 'The following filters were applied: ')
 worksheetTruSight.write('B9','Coverage >= 100x')
@@ -492,12 +576,12 @@ worksheetTruSight.write_row(14,0,trusightGenes)
 worksheetTruSight.write('A16','For all variants see: ')
 worksheetTruSight.write_url('B16', "internal:'SNVs'!A1",string='SNVs')
 
-worksheetTruSight.write('A18','Coverage below 500x', italicFormat)
+worksheetTruSight.write('A18','Coverage below '+str(medCov)+'x', italicFormat)
 worksheetTruSight.write_row('A20', tableheading, tableHeadFormat) #1 index
 row=20 # 0 index
 i=0
 for line in trusightSNV:
-    if line[8] < 500:
+    if line[8] < medCov:
         worksheetTruSight.write_row(row,col,line, italicFormat)
         worksheetTruSight.write_url('T'+str(row+1), trusightSNVigv[i],string = "IGV image")
     else:
@@ -528,10 +612,11 @@ worksheetOver.write(7,0,"Sheets:", tableHeadFormat)
 worksheetOver.write_url(8,0,"internal:'TruSight'!A1", string='TruSight Variants')
 worksheetOver.write_url(9,0,"internal:'SNVs'!A1", string='Variants analysis')
 worksheetOver.write_url(10,0,"internal:'Indel'!A1", string = 'Indel variants')
-worksheetOver.write_url(11,0,"internal:'Low Coverage'!A1", string = 'Positions with coverage lower than 100x')
-worksheetOver.write_url(12,0,"internal:'Hotspot'!A1", string = 'Coverage of hotspot positions')
-worksheetOver.write_url(13,0,"internal: 'Coverage'!A1", string = 'Average coverage of all regions in bed')
-worksheetOver.write_url(14,0,"internal:'Version'!A1", string = 'Version Log')
+worksheetOver.write_url(11,0,"internal:'Intron'!A1", string = 'Intron variants')
+worksheetOver.write_url(12,0,"internal:'Low Coverage'!A1", string = 'Positions with coverage lower than 100x')
+worksheetOver.write_url(13,0,"internal:'Hotspot'!A1", string = 'Coverage of hotspot positions')
+worksheetOver.write_url(14,0,"internal: 'Coverage'!A1", string = 'Average coverage of all regions in bed')
+worksheetOver.write_url(15,0,"internal:'Version'!A1", string = 'Version Log')
 worksheetOver.write_row(16,0,emptyList,lineFormat)
 
 
@@ -548,27 +633,27 @@ breadthCmd = 'grep "Mean Coverage Breadth:" '+cartoolLog + ' | cut -f2- -d"," '
 breadth = subprocess.run(breadthCmd, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
 
 
-worksheetOver.write_row(18,0,['RunID', 'DNAnr', 'Avg. coverage [x]','Duplicationlevel [%]',str(minCov)+'x',str(medCov)+'x',str(maxCov)+'x'],tableHeadFormat)
-worksheetOver.write_row(19,0,[runID, sample, avgCov, str(round(float(duplicateLevel)*100,2))]+breadth.split(','))
+worksheetOver.write_row(19,0,['RunID', 'DNAnr', 'Avg. coverage [x]','Duplicationlevel [%]',str(minCov)+'x',str(medCov)+'x',str(maxCov)+'x'],tableHeadFormat)
+worksheetOver.write_row(20,0,[runID, sample, avgCov, str(round(float(duplicateLevel)*100,2))]+breadth.split(','))
 
 if lowPos == 0: #From Hotspot sheet
-    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least 500x: ')
-    worksheetOver.write(23,0, str(lowPos))
+    worksheetOver.write(23,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
+    worksheetOver.write(24,0, str(lowPos))
 else:
-    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least 500x: ')
-    worksheetOver.write(23,0, str(lowPos), redFormat)
-    worksheetOver.write_url(24,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
+    worksheetOver.write(23,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
+    worksheetOver.write(24,0, str(lowPos), redFormat)
+    worksheetOver.write_url(25,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
 
 
-worksheetOver.write(25,0,'Number of regions not covered by at least 100x: ') #From Cov sheet
-worksheetOver.write(26,0, str(lowRegions)) #From Cov sheet
-worksheetOver.write(27,0,'Hotspotlist: '+hotspotFile)
-worksheetOver.write(30,0,'Artefact file: '+artefactFile)
-worksheetOver.write(31,0,'Germline file: '+germlineFile)
+worksheetOver.write(26,0,'Number of regions not covered by at least '+str(minCov)+'x: ') #From Cov sheet
+worksheetOver.write(27,0, str(lowRegions)) #From Cov sheet
+worksheetOver.write(30,0,'Hotspotlist: '+hotspotFile)
+worksheetOver.write(31,0,'Artefact file: '+artefactFile)
+worksheetOver.write(32,0,'Germline file: '+germlineFile)
 
 ######################################
 
-####### Prog Version sheet (7), added last #######
+####### Prog Version sheet (8), added last #######
 worksheetVersions.write('A5', 'Variant calling reference used: '+str(refV))
 worksheetVersions.write('A6', 'Pindel reference used: '+str(refI))
 
