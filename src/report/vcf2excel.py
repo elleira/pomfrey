@@ -378,7 +378,7 @@ worksheetSNV.write('A15','Variant in artefact list ', orangeFormat)
 worksheetSNV.write('A16','Variant likely germline', greenFormat)
 
 ## Variant table
-tableheading = ['RunID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Transcript','Mutation cds', 'ENSP' ,'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop','IGV image']
+tableheading = ['RunID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Transcript','Mutation cds', 'ENSP' ,'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop','IGV image','Callers']
 worksheetSNV.write_row('A18', tableheading, tableHeadFormat) #1 index
 row = 18 #0 index
 col=0
@@ -421,6 +421,11 @@ for record in vcf_snv.fetch():
 
 
         if af >= 0.03:
+            try:
+                if record.info["CALLERS"]:
+                    callers = ' & '.join(record.info["CALLERS"])
+            except KeyError:
+                callers = 'Pisces-multi'
             csq = record.info["CSQ"][0]
             gene = csq.split("|")[3]
             clinical = csq.split("|")[58] #[59]
@@ -483,7 +488,8 @@ for record in vcf_snv.fetch():
             ##IGV image path for each SNV
             igv="external:IGV/"+gene+"-"+record.contig+"_"+str(int(record.pos)-1)+"_"+str(int(record.pos)-1+len(alt))+".svg"
 
-            snv = [runID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, ensp, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
+            snv = [runID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, ensp, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop,'' ,callers]
+
             #Append line with sample and rundate to rolling list of artefacts..
             with open(variantLog, "a") as appendfile:
                 variants = snv+["\n"]

@@ -12,7 +12,7 @@ new_header = vcf_in.header
 if method == "freebayes" or method == "pisces": #Byta description on AF for freebayes?
     sample = vcf_in.header.samples[0]
 
-if method == "pisces":
+if method == "pisces" or method == "mutect2":
     new_header.info.add("AF","A","Float","DescriptionDescription")
 
 if  method == "snver":
@@ -31,6 +31,8 @@ for record in vcf_in.fetch():
                 af.append(item/sum(ad))
     if method == "pisces":
         af = record.samples[sample].get("VF")
+    if method == "mutect2":
+        af = record.samples[0].get("AF")
     if method == "snver":
         dp=record.info["DP"]
         ac=record.info["AC"]

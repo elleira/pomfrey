@@ -325,7 +325,7 @@ worksheetSNV.write('A15','Variant in artefact list ', orangeFormat)
 worksheetSNV.write('A16','Variant likely germline', greenFormat)
 
 ## Variant table
-tableheading = ['RunID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Transcript','Mutation cds', 'ENSP' ,'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop']
+tableheading = ['RunID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Transcript','Mutation cds', 'ENSP' ,'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop','Callers']
 worksheetSNV.write_row('A18', tableheading, tableHeadFormat) #1 index
 row = 18 #0 index
 col=0
@@ -371,6 +371,11 @@ for record in vcf_snv.fetch():
                 knownFoundTemp.append(knownLine+[af, record.info["DP"], record.ref, alt])
 
         if af >= 0.03:
+            try:
+                if record.info["CALLERS"]:
+                    callers = ' & '.join(record.info["CALLERS"])
+            except KeyError:
+                callers = 'Pisces-multi'
             csq = record.info["CSQ"][0]
             gene = csq.split("|")[3]
             clinical = csq.split("|")[58] #[59]
@@ -430,7 +435,7 @@ for record in vcf_snv.fetch():
             ##IGV image path for each SNV
             # igv="external:IGV/"+gene+"-"+record.contig+"_"+str(int(record.pos)-1)+"_"+str(int(record.pos)-1+len(alt))+".svg"
 
-            snv = [runID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, ensp, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop]
+            snv = [runID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, ensp, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop, callers]
             #Append line with sample and rundate to rolling list of artefacts..
             with open(variantLog, "a") as appendfile:
                 variants = snv+["\n"]
@@ -525,7 +530,6 @@ worksheetKnown.set_column('E:E',10)
 worksheetKnown.write('A1', 'Known variants ', headingFormat)
 worksheetKnown.write('A3', 'Sample: '+str(sample))
 worksheetKnown.write('A4', 'Reference used: '+str(refV))
-# worksheetKnown.write('A4', 'Callers used: VardictJava v.1,6 ? Dubbelkolla!, Pisces 5.2.11, Freebayes v1.1.0, LoFreq v.2.1.3.1, TruSighter v.2.1.3.1')
 worksheetKnown.write('A6', 'VEP: '+vepline ) #, textwrapFormat)
 worksheetKnown.write('A8', 'The following filters were applied: ')
 worksheetKnown.write('B9','Coverage >= 100x')
@@ -599,15 +603,15 @@ worksheetOver.write_row(20,0,['RunID', 'DNAnr', 'Avg. coverage [x]','Duplication
 worksheetOver.write_row(21,0,[runID, sample, avgCov, str(round(float(duplicateLevel)*100,2))]+breadth.split(','))
 
 if lowPos == 0: #From Hotspot sheet
-    worksheetOver.write(24,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(24,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
     worksheetOver.write(25,0, str(lowPos))
 else:
-    worksheetOver.write(24,0,'Number of positions from the hotspot list not covered by at least 500x: ')
+    worksheetOver.write(24,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
     worksheetOver.write(25,0, str(lowPos), redFormat)
     worksheetOver.write_url(26,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
 
 
-worksheetOver.write(27,0,'Number of regions not covered by at least 100x: ') #From Cov sheet
+worksheetOver.write(27,0,'Number of regions not covered by at least '+str(minCov)+'x: ') #From Cov sheet
 worksheetOver.write(28,0, str(lowRegions)) #From Cov sheet
 worksheetOver.write(30,0,'Hotspotlist: '+hotspotFile)
 worksheetOver.write(31,0,'Artefact file: '+artefactFile)
