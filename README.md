@@ -29,10 +29,9 @@ To run the pipeline you need Snakemake and Singularitys installed. At Uppsala it
 | Cutadapt | 2.5 |	docker://quay.io/biocontainers/cutadapt:2.5--py37h516909a_0 |
 | Fastqc | 0.11.8 | docker://quay.io/biocontainers/fastqc:0.11.8--1	|
 | Freebayes | 1.3.1 |docker://quay.io/biocontainers/freebayes:1.3.1--py37h56106d0_0 |
-| Lofreq | 2.1.3.1 |	docker://quay.io/biocontainers/lofreq:2.1.3.1--py36_0	|
+| GATK4 | 4.1.7.0 | docker://broadinstitute/gatk:4.1.7.0 |
 | MultiQC| 1.7 |	docker://quay.io/biocontainers/multiqc:1.7--py_3	|
 | Pindel | 0.2.58	| docker://shuangbroad/pindel:v0.2.5b8 |
-| Snver | 0.5.3 | docker://quay.io/biocontainers/snver:0.5.3--0	|
 | Vardict-java | 1.7.0 | docker://quay.io/biocontainers/vardict-java:1.7.0--0	|
 | Vep | 99 |docker://ensemblorg/ensembl-vep:release_99.0	|
 | Vt | 0.57721 | docker://quay.io/biocontainers/vt:0.57721--hdf88d34_2	|
@@ -113,5 +112,5 @@ samples:
 Json file with config for submission on HPC. Need to be specified to suit you HPC. See cluster-config.json for example.
 ### Snakemake command
 `
-snakemake -p -j ${max_nr_jobs_submitted} --drmaa "-A ${project} -s -p core -t {cluster.time} -n {cluster.n} " --use-singularity --cluster-config ${cluster_config} -s ${PATH_TO_POMFREY}/src/somaticPipeline.smk --singularity-args "--bind /data/ --bind /projects/ " --configfile ${sample_config}
+snakemake -p -j ${max_nr_jobs_submitted} --drmaa "-A ${project} -s -p core -t {cluster.time} -n {cluster.n} " --use-singularity --cluster-config ${cluster_config} -s ${PATH_TO_POMFREY}/src/somaticPipeline.smk --singularity-args " --cleanenv --bind /data/ --bind /projects/ " --configfile ${sample_config}
 `
