@@ -19,11 +19,7 @@ with open(SampleSheetUsed, 'r') as file:
     lines = [line.strip() for line in file]
     for line in lines:
         if startReading == 1: ##Once reached [Data]
-<<<<<<< HEAD
-            samples.append(line.split(',')[0])
-=======
             samples.append(line.split(',')[1])
->>>>>>> d57599dcfa3d2d6f7f7a2651128270780314f2f7
         if line.startswith("[Data]"):
             startReading = 1
 # samples.pop() #Remove any empty are there empty line at end?!
