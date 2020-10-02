@@ -1,4 +1,4 @@
-localrules: fixContig, sort_recall,createMultiVcf
+localrules: sort_recall,createMultiVcf
 
 rule recall:
     input:
@@ -35,7 +35,7 @@ rule sort_recall:
     input:
         "variantCalls/recall/{sample}_{seqID}.unsorted.vcf.gz" #multiAllelic.vcf"
     output:
-        tbiUnSorted = temp("variantCalls/recall/{sample}_{seqID}.unsorted.vcf.tbi")
+        tbiUnSorted = temp("variantCalls/recall/{sample}_{seqID}.unsorted.vcf.tbi"),
         vcf = temp("variantCalls/recall/{sample}_{seqID}.notMulti.all.vcf.gz"),
         tbi = temp("variantCalls/recall/{sample}_{seqID}.notMulti.all.vcf.gz.tbi")
     log:
