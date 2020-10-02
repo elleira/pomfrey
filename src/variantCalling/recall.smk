@@ -43,7 +43,7 @@ rule sort_recall:
     singularity:
         config["singularitys"]["bcftools"]
     shell:
-        "( tabix {input} && \
+        "( tabix -f {input} && \
         bcftools sort -o {output.vcf} -O z {input} && \
         tabix {output.vcf} ) &> {log}"
 

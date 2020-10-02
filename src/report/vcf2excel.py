@@ -332,16 +332,13 @@ for indel in vcf_indel.fetch():
         indelGene = csqIndel.split("|")[3]
 
         maxPopAfIndel = csqIndel.split("|")[56] #[57]
+
         if len(maxPopAfIndel) > 1:
             maxPopAfIndel = round(float(maxPopAfIndel),4)
         maxPopIndel = csqIndel.split("|")[57] #[61]
 
         indelTranscript = csqIndel.split("|")[10].split(":")[0]
-<<<<<<< HEAD
         if len(csqIndel.split("|")[10].split(":")) > 1:
-=======
-        if len(csqIndel.split("|")[10].split(":"))>1:
->>>>>>> d57599dcfa3d2d6f7f7a2651128270780314f2f7
             indelCodingName = csqIndel.split("|")[10].split(":")[1]
         else:
             indelCodingName = ''
@@ -648,22 +645,12 @@ worksheetOver.write_row(19,0,['RunID', 'DNAnr', 'Avg. coverage [x]','Duplication
 worksheetOver.write_row(20,0,[runID, sample, avgCov, str(round(float(duplicateLevel)*100,2))]+breadth.split(','))
 
 if lowPos == 0: #From Hotspot sheet
-<<<<<<< HEAD
     worksheetOver.write(23,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
     worksheetOver.write(24,0, str(lowPos))
 else:
     worksheetOver.write(23,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
     worksheetOver.write(24,0, str(lowPos), redFormat)
     worksheetOver.write_url(25,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
-=======
-    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
-    worksheetOver.write(23,0, str(lowPos))
-else:
-    worksheetOver.write(22,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
-    worksheetOver.write(23,0, str(lowPos), redFormat)
-    worksheetOver.write_url(24,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
->>>>>>> d57599dcfa3d2d6f7f7a2651128270780314f2f7
-
 
 worksheetOver.write(26,0,'Number of regions not covered by at least '+str(minCov)+'x: ') #From Cov sheet
 worksheetOver.write(27,0, str(lowRegions)) #From Cov sheet
