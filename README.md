@@ -16,7 +16,7 @@ To run the pipeline you need Snakemake and Singularitys installed. At Uppsala it
 - **Reference**: Fasta refernce index both with bwa index and .fai.
 - **Artefact file**:
 - **Germline file**:
-- **COSMIC hemato counts**:
+- **COSMIC hemato counts**: COSMIC file with number of hemato hits. Columns (tab seperated): GENE_NAME, ACCESSION_NUMBER, GENE_CDS_LENGTH, HGNC_ID PRIMARY_SITE, PRIMARY_HISTOLOGY,  GENOMIC_MUTATION_ID, LEGACY_MUTATION_ID, MUTATION_ID, MUTATION_CDS, MUTATION_AA, MUTATION_GENOME_POSITION, MUTATION_STRAND, SNP, MUTATION_SOMATIC_STATUS, N_observations, Chromosome, chr, Start, End, Build
 - **Hotspot list**: List of regions where higher coverage is important. Each region and its coverage is listed in the sheet "HotSpot" in the xlsx-file
 - **VEP cache**: Need to download cache for vep to run. Read more on the different versions of [vep-cache](https://m.ensembl.org/info/docs/tools/vep/script/vep_cache.html).
     `singularity exec --bind $PWD vep-container.simg perl /opt/vep/src/ensembl-vep/INSTALL.pl -s homo_sapiens_refseq --CACHEDIR vep-data-99.0/ -a c --ASSEMBLY GRCh37`
@@ -59,8 +59,8 @@ reference:
 configCache:
     multiqc: "${PATH_TO_POMFREY}/src/report/multiqc_config.yaml"
     vep: "" #Path to downloaded VEP cache
-    hemato: "/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt" #Path to COSMIC hemato count file
-    variantlist: "/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt" #Path to file where all variants are written to to create artefact and germlinefilter files.
+    hemato: "" #Path to COSMIC file for number of hematology hits. Downloaded from COSMIC site..
+    variantlist: "" #Path to file where all variants are written to later create artefact and germlinefilter files.
 
 bed:
     bedfile: "" #Path to main bedfile
@@ -71,7 +71,6 @@ bed:
     artefact: "" #Path to artefact filter file
     germline: "" #Path to germline filter file
 
-
 singularitys:
     cutadapt: ""
     bwa: ""
@@ -79,10 +78,9 @@ singularitys:
     cartool: ""
     bcftools: ""
     freebayes: ""
-    lofreq: ""
     pisces: ""
-    snver: ""
     vardict: ""
+    gatk4: ""
     pindel: ""
     vep: ""
     recall: ""
@@ -94,12 +92,12 @@ singularitys:
 cartool:
     cov: "100 200 1000" #Coverage limits, first number minCov, second for hotspotlist, third wishful
 
-methods:   # Order of vcfs into ensemble recall
+methods:   # The (trust) order of vcfs into ensemble recall 
     vardict: "vardict"
+    mutect2: "mutect2"
     pisces: "pisces"
     freebayes: "freebayes"
-    snver: "snver"
-
+    
 seqID:
     sequencerun: ""  
 
