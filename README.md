@@ -16,7 +16,7 @@ To run the pipeline you need Snakemake and Singularitys installed. At Uppsala it
 - **Reference**: Fasta refernce index both with bwa index and .fai.
 - **Artefact file**:
 - **Germline file**:
-- **COSMIC hemato counts**:
+- **COSMIC hemato counts**: COSMIC file with number of hemato hits. Columns (tab seperated): GENE_NAME, ACCESSION_NUMBER, GENE_CDS_LENGTH, HGNC_ID PRIMARY_SITE, PRIMARY_HISTOLOGY,  GENOMIC_MUTATION_ID, LEGACY_MUTATION_ID, MUTATION_ID, MUTATION_CDS, MUTATION_AA, MUTATION_GENOME_POSITION, MUTATION_STRAND, SNP, MUTATION_SOMATIC_STATUS, N_observations, Chromosome, chr, Start, End, Build
 - **Hotspot list**: List of regions where higher coverage is important. Each region and its coverage is listed in the sheet "HotSpot" in the xlsx-file
 - **VEP cache**: Need to download cache for vep to run. Read more on the different versions of [vep-cache](https://m.ensembl.org/info/docs/tools/vep/script/vep_cache.html).
     `singularity exec --bind $PWD vep-container.simg perl /opt/vep/src/ensembl-vep/INSTALL.pl -s homo_sapiens_refseq --CACHEDIR vep-data-99.0/ -a c --ASSEMBLY GRCh37`
@@ -29,10 +29,9 @@ To run the pipeline you need Snakemake and Singularitys installed. At Uppsala it
 | Cutadapt | 2.5 |	docker://quay.io/biocontainers/cutadapt:2.5--py37h516909a_0 |
 | Fastqc | 0.11.8 | docker://quay.io/biocontainers/fastqc:0.11.8--1	|
 | Freebayes | 1.3.1 |docker://quay.io/biocontainers/freebayes:1.3.1--py37h56106d0_0 |
-| Lofreq | 2.1.3.1 |	docker://quay.io/biocontainers/lofreq:2.1.3.1--py36_0	|
+| GATK4 | 4.1.7.0 | docker://broadinstitute/gatk:4.1.7.0 |
 | MultiQC| 1.7 |	docker://quay.io/biocontainers/multiqc:1.7--py_3	|
 | Pindel | 0.2.58	| docker://shuangbroad/pindel:v0.2.5b8 |
-| Snver | 0.5.3 | docker://quay.io/biocontainers/snver:0.5.3--0	|
 | Vardict-java | 1.7.0 | docker://quay.io/biocontainers/vardict-java:1.7.0--0	|
 | Vep | 99 |docker://ensemblorg/ensembl-vep:release_99.0	|
 | Vt | 0.57721 | docker://quay.io/biocontainers/vt:0.57721--hdf88d34_2	|
@@ -60,8 +59,8 @@ reference:
 configCache:
     multiqc: "${PATH_TO_POMFREY}/src/report/multiqc_config.yaml"
     vep: "" #Path to downloaded VEP cache
-    hemato: "/data/ref_data/COSMIC/COSMIC_v90_hemato_counts.txt" #Path to COSMIC hemato count file
-    variantlist: "/projects/wp4/nobackup/workspace/arielle_test/twist/twistVariants.txt" #Path to file where all variants are written to to create artefact and germlinefilter files.
+    hemato: "" #Path to COSMIC file for number of hematology hits. Downloaded from COSMIC site..
+    variantlist: "" #Path to file where all variants are written to later create artefact and germlinefilter files.
 
 bed:
     bedfile: "" #Path to main bedfile
@@ -72,7 +71,6 @@ bed:
     artefact: "" #Path to artefact filter file
     germline: "" #Path to germline filter file
 
-
 singularitys:
     cutadapt: ""
     bwa: ""
@@ -80,10 +78,9 @@ singularitys:
     cartool: ""
     bcftools: ""
     freebayes: ""
-    lofreq: ""
     pisces: ""
-    snver: ""
     vardict: ""
+    gatk4: ""
     pindel: ""
     vep: ""
     recall: ""
@@ -95,12 +92,12 @@ singularitys:
 cartool:
     cov: "100 200 1000" #Coverage limits, first number minCov, second for hotspotlist, third wishful
 
-methods:   # Order of vcfs into ensemble recall
+methods:   # The (trust) order of vcfs into ensemble recall 
     vardict: "vardict"
+    mutect2: "mutect2"
     pisces: "pisces"
     freebayes: "freebayes"
-    snver: "snver"
-
+    
 seqID:
     sequencerun: ""  
 
@@ -113,5 +110,5 @@ samples:
 Json file with config for submission on HPC. Need to be specified to suit you HPC. See cluster-config.json for example.
 ### Snakemake command
 `
-snakemake -p -j ${max_nr_jobs_submitted} --drmaa "-A ${project} -s -p core -t {cluster.time} -n {cluster.n} " --use-singularity --cluster-config ${cluster_config} -s ${PATH_TO_POMFREY}/src/somaticPipeline.smk --singularity-args "--bind /data/ --bind /projects/ " --configfile ${sample_config}
+snakemake -p -j ${max_nr_jobs_submitted} --drmaa "-A ${project} -s -p core -t {cluster.time} -n {cluster.n} " --use-singularity --cluster-config ${cluster_config} -s ${PATH_TO_POMFREY}/src/somaticPipeline.smk --singularity-args " --cleanenv --bind /data/ --bind /projects/ " --configfile ${sample_config}
 `
