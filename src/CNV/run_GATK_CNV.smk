@@ -4,6 +4,7 @@
 rule collectReadCounts:
     input:
         bam = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam", #lambda wildcards: config["samples"][wildcards.sample], #"Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam"
+        bai = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam.bai",
         interval = config["CNV"]["interval"] #"/projects/wp4/nobackup/workspace/arielle_test/CNV/bedFiles/TM_TE-annotated_closest-noduplicates.preprocessed.interval_list" #Better version? Should be same as other intervallist. Also should be in config. config["CNV"]["intervals"]
     output:
         "CNV/{sample}_{seqID}/{sample}_{seqID}.counts.hdf5" #"CNV/{sample}_{seqID}/{sample}_{seqID}.counts.hdf5"
@@ -38,6 +39,7 @@ rule collectAllelicCounts:
     input:
         intervalList = config["CNV"]["interval"], #Better version? Should be same as other intervallist. Also should be in config. config["CNV"]["intervals"]
         bam = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam", #lambda wildcards: config["samples"][wildcards.sample],
+        bai = "Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam.bai",
         ref = config["reference"]["ref"]
     output:
         "CNV/{sample}_{seqID}/{sample}_{seqID}_clean.allelicCounts.tsv"
