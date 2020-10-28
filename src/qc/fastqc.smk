@@ -11,7 +11,7 @@ rule fastqcR1:
     singularity:
         config["singularitys"]["fastqc"]
     shell:
-        "(fastqc --quiet --outdir {params.outdir} {input}) &> {log}"
+        "(fastqc -t 4 --quiet --outdir {params.outdir} {input}) &> {log}"
     # wrapper:
     #     "0.38.0/bio/fastqc"
 

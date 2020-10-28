@@ -3,23 +3,16 @@
         "queue": "production.q",
         "n": "1",
         "name": "{rule}_{wildcards.sample}",
-        "stdout": "{wildcards.sample}_out.txt",
-        "stderr": "{wildcards.sample}_err.txt"
+        "stdout": "{rule}_{wildcards.sample}_out.txt",
+        "stderr": "{rule}_{wildcards.sample}_err.txt"
     },
-    #"fastqc": {"time": "3:00:00"},
-    #"cartool": {"time": "2:00:00"}, #15 min?
+    "fastqcR1": {"n": "4"},
     "multiqcBatch": {"name": "{rule}", "stdout": "run_out.txt", "stderr": "run_err.txt"},
     "cutadapt": {"n": "20"},  #15 min w 8 cores
     "bwa_mem": {"n": "20"},
     "pindel": {"n": "8"},
     "lofreq": {"n": "20"},
     "vardict": {"n": "8"},
-    #"freebayes": {"time": "8:00:00"},
-    #"snver": {"time": "8:00:00"},
-    #"normalizeAll": {"time":"5:00:00"},
-    #"pisces": {"time":"8:00:00"},
-    #"manta_exec": {"time":"3:00:00"},
-    #"strelka_exec": {"time":"8:00:00"},
     "vep": {"n": "20"},
-    "igv": {"n": "2"}
+    "igv": {"n": "1"}
 }

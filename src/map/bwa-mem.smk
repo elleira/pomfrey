@@ -12,7 +12,7 @@ rule bwa_mem:
         # sort = "samtools",             # Can be 'none', 'samtools' or 'picard'.
         sort_order = "coordinate"  # Can be 'queryname' or 'coordinate'.
         # sort_extra = ""            # Extra args for samtools/picard.
-    threads: 8
+    threads: 20 #{cluster.n}
     singularity:
         config["singularitys"]["bwa"] #bwa 0.7.17, samtools 1.9, picard 2.20.11
     shell:

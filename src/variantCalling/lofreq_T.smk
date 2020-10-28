@@ -11,7 +11,7 @@ rule lofreq:
         extra = "-l "+ config["bed"]["bedfile"]
     singularity:
         config["singularitys"]["lofreq"]
-    threads: 8
+    threads: 20
     shell:
         "(lofreq call-parallel --pp-threads {threads} -f {input.ref} {input.bam} -o {output} {params.extra} ) &> {log}"
     # wrapper:

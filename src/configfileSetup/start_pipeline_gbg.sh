@@ -1,6 +1,4 @@
 #!/bin/bash -l
-#module load slurm-drmaa/1.0.7
-#module load singularity
 shopt -s extglob
 
 rawdatafolder=$1  #Always with the last /
@@ -23,8 +21,8 @@ echo -e "  sequencerun: \"${sequencerun}\"">> ${today}.config.yaml
 
 export DRMAA_LIBRARY_PATH=/apps/univa-gridengine/lib/lx-amd64/libdrmaa.so.1.0
 echo "DRMAA_LIBRARY_PATH: $DRMAA_LIBRARY_PATH"
-export SINGULARITY_BIND="/medstore,/seqstore,/apps"
-echo "SINGULARITY_BIND: $SINGULARITY_BIND"
+#export SINGULARITY_BIND="/medstore,/seqstore,/apps"
+#echo "SINGULARITY_BIND: $SINGULARITY_BIND"
 export SGE_ROOT=/apps/univa-gridengine
 echo "SGE_ROOT: $SGE_ROOT"
 export SGE_CELL=default
@@ -46,10 +44,17 @@ snakemake -p -j 999 --drmaa " -V -q {cluster.queue} -pe mpi {cluster.n} -l excl=
 -s ${somaticFolder}/src/somaticPipeline.smk \
 --configfile ${today}.config.yaml \
 --use-singularity --singularity-prefix ${singularityFolder} \
---singularity-args "--bind /medstore --bind /seqstore --bind /apps " --latency-wait 60 \
+--singularity-args "-e --bind /medstore --bind /seqstore --bind /apps " \
+--latency-wait 60 \
 --cluster-config ${somaticFolder}/cluster-config-gbg.json \
---rerun-incomplete # \ # Uncomment this if running for DAG
+--rerun-incomplete # \ # Uncomment this backslash if running for DAG
 #--dag | dot -Tsvg > dag.svg
+
+#use this -e flag is for clean env in singularity
+#--singularity-args "-e --bind /medstore --bind /seqstore --bind /apps " \
+
+#not this
+# --singularity-args "--bind /medstore --bind /seqstore --bind /apps " --latency-wait 60 \
 
 #--director /gluster-storage-volume/projects/wp4/nobackup/workspace/arielle_test/somaticpipeline/ \  #Working dir
  #Configfile just created.

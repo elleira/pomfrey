@@ -14,7 +14,7 @@ rule multiqc:
     singularity:
         config["singularitys"]["multiqc"]
     shell:
-        "( multiqc {params.extra} --force -o {params.output_dir} -n {params.output_name} {input} ) &> {log}"
+        "export LC_ALL=en_US.UTF-8; export LANG=en_US.UTF-8; ( multiqc {params.extra} --force -o {params.output_dir} -n {params.output_name} {input} ) &> {log}"
     # run: #directly copied from 0.38 wrapper
     #     from os import path
     #     from snakemake.shell import shell
@@ -43,10 +43,11 @@ rule multiqcBatch:
         expand("data_processing/{sample}_{seqID}/{sample}_{seqID}.qc.txt", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         "Results/batchQC_{seqID}/{seqID}_stats_mqc.json",
         expand("qc/{sample}_{seqID}/{sample}_batchStats.done", sample=config["samples"], seqID=config["seqID"]["sequencerun"]) #Wait until all in table
+        #lägg till en axpand för hsmetrics/samtoolsstats.txt borde finnas i typ /medstore/Development/gms_hematology/test_outputs/200820_ITDTEST_demuxadapterfix_ssumi/qc/T3_200820_NB501037_0464_AHGMMJAFX2
     output:
         "Results/batchQC_{seqID}/{seqID}_MultiQC.html"
     params:
-        extra = "-c "+config["configCache"]["multiqc"]+" --ignore *_{seqID}_stats_mqc.csv", # --ignore *HsMetrics.txt --ignore *samtools-stats.txt",
+        extra = "-c "+config["configCache"]["multiqc"]+"", ### --ignore *_{seqID}_stats_mqc.csv",  --ignore *HsMetrics.txt --ignore *samtools-stats.txt",
         output_dir = "Results/batchQC_{seqID}",
         output_name = "{seqID}_MultiQC.html"
     log:
@@ -63,4 +64,4 @@ rule multiqcBatch:
     #     log = snakemake.log_fmt_shell(stdout=True, stderr=True)
 
     shell:
-        "( multiqc {params.extra} --force -o {params.output_dir} -n {params.output_name} {input} ) &> {log}"
+        "export LC_ALL=en_US.UTF-8; export LANG=en_US.UTF-8; ( multiqc {params.extra} --force -o {params.output_dir} -n {params.output_name} {input} ) &> {log}"

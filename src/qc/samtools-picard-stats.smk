@@ -34,7 +34,7 @@ rule touchBatch:
     input:
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}-dedup.bam", sample = config["samples"], seqID=config["seqID"]["sequencerun"])
     output:
-         temp("Results/batchQC_{seqID}/{seqID}_stats_unsorted.csv")
+         "Results/batchQC_{seqID}/{seqID}_stats_unsorted.csv"
     log:
         "logs/touch_{seqID}.log"
     shell:
