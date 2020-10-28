@@ -1,11 +1,11 @@
-localrules: decompose, normalizeAll, indexDecomp
+localrules: indexDecomp
 
 rule decompose: #Do we need decompose as well, maybe for all but vardict??
     input:
         vcf = "variantCalls/callers/{method}/{sample}_{seqID}.{method}.vcf.gz",  #[m+"/{sample}_{seqID}."+m+".normalized.vcf.gz" for m in config["methods"]] ##inte normalized.vcf filer! Hur?!
         tbi = "variantCalls/callers/{method}/{sample}_{seqID}.{method}.vcf.gz.tbi"
     output:
-        "variantCalls/callers/{method}/{sample}_{seqID}.{method}.decomposed.vcf.gz"
+        temp("variantCalls/callers/{method}/{sample}_{seqID}.{method}.decomposed.vcf.gz")
     log:
         "logs/variantCalling/vt/{sample}_{seqID}.{method}.decomposed.log"
     singularity:

@@ -3,12 +3,13 @@ include:    "freebayes.smk"
 
 include:    "lofreq_T.smk"
 
-include:    "snver.smk" #since based on samtools cannot handle high base qualities, everything becomes N
+# include:    "snver.smk" #since based on samtools cannot handle high base qualities, everything becomes N
 
 include:    "vardict_T.smk"
 
 include:    "pisces.smk"
 
+include:    "mutect2.smk"
 #include:    "manta_T.smk"
 rule fixAF:
     input:

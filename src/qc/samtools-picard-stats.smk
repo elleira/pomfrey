@@ -1,4 +1,4 @@
-localrules: touchBatch, getStatsforMqc, sortBatchStats
+localrules: touchBatch
 
 rule samtools_stats:
     input:
