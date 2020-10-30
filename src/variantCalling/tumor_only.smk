@@ -1,7 +1,7 @@
 localrules: fixAF
 include:    "freebayes.smk"
 
-include:    "lofreq_T.smk"
+# include:    "lofreq_T.smk"
 
 # include:    "snver.smk" #since based on samtools cannot handle high base qualities, everything becomes N
 
