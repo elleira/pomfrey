@@ -32,7 +32,7 @@ worksheetIntron = workbook.add_worksheet('Intron')
 worksheetLowCov = workbook.add_worksheet('Low Coverage') #... sys.argv[3]
 worksheetHotspot = workbook.add_worksheet('Hotspot')
 worksheetCov = workbook.add_worksheet('Coverage')
-worksheetIVA = workbook.add_worksheet('IVA')
+worksheetQCI = workbook.add_worksheet('QCI')
 worksheetVersions = workbook.add_worksheet('Version')
 ## Define formats to be used.
 headingFormat = workbook.add_format({'bold': True, 'font_size': 18})
@@ -83,15 +83,15 @@ with open('containers.txt') as file:
         row += 1
 ########################################
 
-######### IVA sheet (8)#################
-worksheetIVA.set_column('C:C',10)
-worksheetIVA.write('A1', 'Results from Variant Analysis ', headingFormat)
-worksheetIVA.write_row('A2',emptyList,lineFormat)
+######### QCI sheet (8)#################
+worksheetQCI.set_column('C:C',10)
+worksheetQCI.write('A1', 'Results from QCI ', headingFormat)
+worksheetQCI.write_row('A2',emptyList,lineFormat)
 
-worksheetIVA.write('A5', "Analysen utfördes i enlighet med dokumentationen.")
-worksheetIVA.write('A6', "Eventuella avikelser:")
+worksheetQCI.write('A5', "Analysen utfördes i enlighet med dokumentationen.")
+worksheetQCI.write('A6', "Eventuella avikelser:")
 iva = ['DNA nr', 'Chromosome', 'Position', 'Gene Region', 'Gene Symbol', 'Transcript ID', 'Transcript Variant', 'Protein Variant', 'Variant Findings', 'Sample Genotype Quality', 'Read Depth', 'Allele Fraction', 'Translation Impact', 'dbSNP ID','1000 Genomes Frequency', 'ExAC Frequency', 'HGMD', 'COSMIC ID', 'Artefacts_without_ASXL1','ASXL1_variant_filter']
-worksheetIVA.write_row(9,0, iva, tableHeadFormat)
+worksheetQCI.write_row(9,0, iva, tableHeadFormat)
 
 
 #########################################
