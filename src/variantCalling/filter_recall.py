@@ -17,7 +17,7 @@ for record in vcf_in.fetch():
                 svtype_out.write(str(record))
     except KeyError:
         if len(record.ref) != len(record.alts[0]): #if InDel
-            if "Mutect2" in record.info["CALLERS"] or "Vardict" in record.info["CALLERS"]: #Support by either Vardict or Manta, ok.
+            if "Mutect2".lower() in [i.lower() for i in record.info["CALLERS"]] or "Vardict".lower() in [i.lower() for i in record.info["CALLERS"]]: #Support by either Vardict or Manta, ok.
                 ##Check if indel artefact
                 # import pdb; pdb.set_trace()
                 write = 1
