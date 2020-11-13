@@ -20,9 +20,13 @@ rule vcf2excel:
     input:
         snv =  "variantCalls/annotation/{sample}_{seqID}.filt.vcf.gz",
         indel = "variantCalls/pindel/{sample}_{seqID}.pindel.filt.vcf.gz",
+        gatkSeg = "CNV/{sample}_{seqID}/{sample}_{seqID}_clean.calledCNVs.seg",
+        png = "CNV/{sample}_{seqID}_clean.calledCNVs.modeled.png",
         cart =  "qc/{sample}_{seqID}/{sample}_{seqID}_MeanCoverageShortList.csv",
         sing = "containers.txt",
         bed = config["bed"]["pindel"],
+        cnvbed = config["CNV"]["bedPoN"],
+        cytoCoord = config["CNV"]["cyto"],
         hotspot = config["bed"]["hotspot"],
         artefact = config["bed"]["artefact"],
         germline = config["bed"]["germline"],
@@ -43,7 +47,8 @@ rule vcf2excel:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 {params.dir}/src/report/vcf2excel.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {input.hematoCount} {input.variantsLog} {output}) &> {log}"
+        "(python3.6 {params.dir}/src/report/vcf2excel.py {input.snv} {input.indel} {input.gatkSeg} {input.png} {params.seqID} {input.cart} {params.coverage} \
+        {input.bed} {input.cnvbed} {input.cytoCoord} {input.hotspot} {input.artefact} {input.germline} {input.hematoCount} {input.variantsLog} {output}) &> {log}"
 
 rule vcf2excelHD829:
     input:

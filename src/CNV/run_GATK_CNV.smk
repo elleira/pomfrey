@@ -114,21 +114,21 @@ rule plotModeledSegments:
         --sequence-dictionary {input.refDict} \
         --point-size-allele-fraction {params.pointSize} --point-size-copy-ratio {params.pointSize} \
         --output {params.outDir} --output-prefix {params.outPrefix} ) &> {log} "
-
-rule Filter_cnv:
-    input:
-        gatkSeg = "CNV/{sample}_{seqID}/{sample}_{seqID}_clean.calledCNVs.seg",
-        bedfile = config["CNV"]["bedPoN"],
-        png = "CNV/{sample}_{seqID}_clean.calledCNVs.modeled.png", #"Results/{sample}_{seqID}/Reports/{sample}_{seqID}_clean.calledCNVs.modeled.png",
-        cytoCoord = config["CNV"]["cyto"]
-    output:
-        relevant_cnvs = "CNV/{sample}_{seqID}_clean.calledCNV-relevant_cnv-GATK4.xlsx" #"Results/{sample}_{seqID}/Reports/{sample}_{seqID}_clean.calledCNV-relevant_cnv-GATK4.xlsx"
-        # cnv_done = "Tumor/{sample}_cnv_done.txt"
-    params:
-        outdir = "CNV/"#"Results/{sample}_{seqID}/Reports",
-    singularity:
-        config["singularitys"]["python"]
-    log:
-        "logs/Tumor/{sample}_{seqID}_relevant_cnvs-gatk4.log"
-    shell:
-        "( python3 /projects/wp4/nobackup/workspace/arielle_test/CNV/bin/filter_gatkCalls.py {input.gatkSeg} {input.bedfile} {input.png} {params.outdir} {input.cytoCoord} ) &> {log}"
+#
+# rule Filter_cnv:
+#     input:
+#         gatkSeg = "CNV/{sample}_{seqID}/{sample}_{seqID}_clean.calledCNVs.seg",
+#         bedfile = config["CNV"]["bedPoN"],
+#         png = "CNV/{sample}_{seqID}_clean.calledCNVs.modeled.png", #"Results/{sample}_{seqID}/Reports/{sample}_{seqID}_clean.calledCNVs.modeled.png",
+#         cytoCoord = config["CNV"]["cyto"]
+#     output:
+#         relevant_cnvs = "CNV/{sample}_{seqID}_clean.calledCNV-relevant_cnv-GATK4.xlsx" #"Results/{sample}_{seqID}/Reports/{sample}_{seqID}_clean.calledCNV-relevant_cnv-GATK4.xlsx"
+#         # cnv_done = "Tumor/{sample}_cnv_done.txt"
+#     params:
+#         outdir = "CNV/"#"Results/{sample}_{seqID}/Reports",
+#     singularity:
+#         config["singularitys"]["python"]
+#     log:
+#         "logs/Tumor/{sample}_{seqID}_relevant_cnvs-gatk4.log"
+#     shell:
+#         "( python3 /projects/wp4/nobackup/workspace/arielle_test/CNV/bin/filter_gatkCalls.py {input.gatkSeg} {input.bedfile} {input.png} {params.outdir} {input.cytoCoord} ) &> {log}"
