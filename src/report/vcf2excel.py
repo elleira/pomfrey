@@ -25,6 +25,7 @@ germlineFile = sys.argv[15]
 hematoCountFile = sys.argv[16]
 variantLog = sys.argv[17]
 output = sys.argv[18]
+sample_purity=0.8
 
  ## Create execl file and sheets.
 workbook = xlsxwriter.Workbook(output)
