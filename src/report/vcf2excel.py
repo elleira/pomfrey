@@ -221,95 +221,95 @@ lowRegions = row - 6
 ###########################################
 
 ############## CNV (5)##################
-''' Import genomic pos to cytoCoord translation to list '''
-chrBands=[]
-with open(chrBandFilePath,'r') as chrBandFile:
-    for line in chrBandFile:
-        chrBands.append(line.split("\t"))
-
-''' Load in bedfile with generegions condensed '''
-gene_regions = {}
-cnv_bed_file = open(cnv_bed_file_path,'r')
-for line in cnv_bed_file :
-    lline = line.strip().split("\t")
-    chrom = lline[0]
-    start = lline[1]
-    end = lline[2]
-    name = lline[3]
-    gene = name.split("_")[0]
-
-    if gene in gene_regions : #gene lengths
-        gene_regions[gene][2] = end
-    else :
-        gene_regions[gene] = [chrom, start, end]
-cnv_bed_file.close()
-
-''' Process GATK4 CNV File '''
-outLines = []
-with open(cnv_file, 'r') as GATK_file:
-    header = True
-    for line in GATK_file : #Skip ahead until data
-        genes=[]
-        if header :
-            if line [0:3] == 'chr':
-                header = False
-            else:
-                continue
-        lline = line.strip().split("\t")
-        start_pos = int(lline[1])
-        end_pos = int(lline[2])
-        chrom = lline[0]
-        ''' Translate genomic coordinate to cytogen coordinates '''
-        cytoCoord=['','']
-        for chrBand in chrBands:
-            if chrBand[0] == chrom:
-                if (start_pos >= int(chrBand[1]) and start_pos <= int(chrBand[2])):
-                    cytoCoord[0] = chrBand[3]
-                if (end_pos >= int(chrBand[1]) and end_pos <= int(chrBand[2])):
-                            cytoCoord[1] = chrBand[3]
-        if cytoCoord[0] == cytoCoord[1]:
-            cytoCoordString=chrom[3:]+cytoCoord[0]
-        else:
-            cytoCoordString=chrom[3:]+cytoCoord[0]+'-'+cytoCoord[1]
-        ''' Only look at cnv that gatk marked as not neutral ''' #Borde vi lista alla istallet?
-        if lline[5] != '0':
-            for gene,coordinates in gene_regions.items():
-                if coordinates[0] == chrom:
-                    if (start_pos >= int(coordinates[1]) and start_pos <= int(coordinates[2])) or (end_pos >= int(coordinates[1]) and end_pos <= int(coordinates[2])) or (start_pos < int(coordinates[1]) and end_pos > int(coordinates[2])):
-                        genes.append(gene)
-            geneString = ', '.join([x for x in genes if not x.startswith('CNV')])
-            logRatio = float(lline[4])
-            copyNumberTumor = round(2*pow(2,logRatio),2)
-
-            outLines.append([sample,geneString,chrom,str(start_pos)+'-'+str(end_pos),cytoCoordString,str(sample_purity),'','',str(round(logRatio,4)),str(copyNumberTumor)]) #,str(sample_purity)]) #,str(copyNumberAdapted)
-
-''' Output results in xlsx worksheet together with the plot '''
-worksheetCNV.conditional_format('G43:G70', {'type': 'cell', 'criteria': 'between','minimum':  -0.25,'maximum':  0.2,'format':   redFormat})
-worksheetCNV.conditional_format('I43:I70', {'type': 'cell', 'criteria': 'between','minimum':  -0.25,'maximum':  0.2,'format':   redFormat})
-worksheetCNV.set_column('D:D',23)
-worksheetCNV.set_column('E:E',15)
-
-worksheetCNV.write('A1', 'CNVs found', headingFormat)
-worksheetCNV.write_row(1,0,emptyList,lineFormat)
-worksheetCNV.write('A3', 'Sample: '+str(sample))
-worksheetCNV.write('A5', 'Log2 ratio between -0.25<=x<=0.2 are marked red since they are very weak signals, and should be interpret with care. ', redFormat)
-## Insert png picture to sheets
-worksheetCNV.insert_image('A7', cnv_image_path)
-
-header = ['Sample','Genes','Chr','Region','CytoCoordinates','Purity','Adapted log2CopyRatio', 'Adapted CopyNumber','log2CopyRatio','CopyNumber'] #,'SamplePurity']
-worksheetCNV.write_row('A42', header, tableHeadFormat)
-col = 0
-row = 42
-for line in outLines:
-    formula = '= 2 + (J'+str(row+1)+'-2)*(1/F'+str(row+1)+')' #To get adapted CN
-
-    worksheetCNV.write_row(row,col, line[0:5]) #Must divide to get numbers correct.
-    worksheetCNV.write_number(row,5,float(line[5])) #purity
-    worksheetCNV.write_formula(row,6, '= LOG(J'+str(row+1)+'/2, 2)') #Adapted log2CR
-    worksheetCNV.write_formula(row,7, formula) #Adapted CN
-    worksheetCNV.write_number(row,8,float(line[8])) #log2CR
-    worksheetCNV.write_number(row,9,float(line[9])) #CN
-    row += 1
+# ''' Import genomic pos to cytoCoord translation to list '''
+# chrBands=[]
+# with open(chrBandFilePath,'r') as chrBandFile:
+#     for line in chrBandFile:
+#         chrBands.append(line.split("\t"))
+#
+# ''' Load in bedfile with generegions condensed '''
+# gene_regions = {}
+# cnv_bed_file = open(cnv_bed_file_path,'r')
+# for line in cnv_bed_file :
+#     lline = line.strip().split("\t")
+#     chrom = lline[0]
+#     start = lline[1]
+#     end = lline[2]
+#     name = lline[3]
+#     gene = name.split("_")[0]
+#
+#     if gene in gene_regions : #gene lengths
+#         gene_regions[gene][2] = end
+#     else :
+#         gene_regions[gene] = [chrom, start, end]
+# cnv_bed_file.close()
+#
+# ''' Process GATK4 CNV File '''
+# outLines = []
+# with open(cnv_file, 'r') as GATK_file:
+#     header = True
+#     for line in GATK_file : #Skip ahead until data
+#         genes=[]
+#         if header :
+#             if line [0:3] == 'chr':
+#                 header = False
+#             else:
+#                 continue
+#         lline = line.strip().split("\t")
+#         start_pos = int(lline[1])
+#         end_pos = int(lline[2])
+#         chrom = lline[0]
+#         ''' Translate genomic coordinate to cytogen coordinates '''
+#         cytoCoord=['','']
+#         for chrBand in chrBands:
+#             if chrBand[0] == chrom:
+#                 if (start_pos >= int(chrBand[1]) and start_pos <= int(chrBand[2])):
+#                     cytoCoord[0] = chrBand[3]
+#                 if (end_pos >= int(chrBand[1]) and end_pos <= int(chrBand[2])):
+#                             cytoCoord[1] = chrBand[3]
+#         if cytoCoord[0] == cytoCoord[1]:
+#             cytoCoordString=chrom[3:]+cytoCoord[0]
+#         else:
+#             cytoCoordString=chrom[3:]+cytoCoord[0]+'-'+cytoCoord[1]
+#         ''' Only look at cnv that gatk marked as not neutral ''' #Borde vi lista alla istallet?
+#         if lline[5] != '0':
+#             for gene,coordinates in gene_regions.items():
+#                 if coordinates[0] == chrom:
+#                     if (start_pos >= int(coordinates[1]) and start_pos <= int(coordinates[2])) or (end_pos >= int(coordinates[1]) and end_pos <= int(coordinates[2])) or (start_pos < int(coordinates[1]) and end_pos > int(coordinates[2])):
+#                         genes.append(gene)
+#             geneString = ', '.join([x for x in genes if not x.startswith('CNV')])
+#             logRatio = float(lline[4])
+#             copyNumberTumor = round(2*pow(2,logRatio),2)
+#
+#             outLines.append([sample,geneString,chrom,str(start_pos)+'-'+str(end_pos),cytoCoordString,str(sample_purity),'','',str(round(logRatio,4)),str(copyNumberTumor)]) #,str(sample_purity)]) #,str(copyNumberAdapted)
+#
+# ''' Output results in xlsx worksheet together with the plot '''
+# worksheetCNV.conditional_format('G43:G70', {'type': 'cell', 'criteria': 'between','minimum':  -0.25,'maximum':  0.2,'format':   redFormat})
+# worksheetCNV.conditional_format('I43:I70', {'type': 'cell', 'criteria': 'between','minimum':  -0.25,'maximum':  0.2,'format':   redFormat})
+# worksheetCNV.set_column('D:D',23)
+# worksheetCNV.set_column('E:E',15)
+#
+# worksheetCNV.write('A1', 'CNVs found', headingFormat)
+# worksheetCNV.write_row(1,0,emptyList,lineFormat)
+# worksheetCNV.write('A3', 'Sample: '+str(sample))
+# worksheetCNV.write('A5', 'Log2 ratio between -0.25<=x<=0.2 are marked red since they are very weak signals, and should be interpret with care. ', redFormat)
+# ## Insert png picture to sheets
+# worksheetCNV.insert_image('A7', cnv_image_path)
+#
+# header = ['Sample','Genes','Chr','Region','CytoCoordinates','Purity','Adapted log2CopyRatio', 'Adapted CopyNumber','log2CopyRatio','CopyNumber'] #,'SamplePurity']
+# worksheetCNV.write_row('A42', header, tableHeadFormat)
+# col = 0
+# row = 42
+# for line in outLines:
+#     formula = '= 2 + (J'+str(row+1)+'-2)*(1/F'+str(row+1)+')' #To get adapted CN
+#
+#     worksheetCNV.write_row(row,col, line[0:5]) #Must divide to get numbers correct.
+#     worksheetCNV.write_number(row,5,float(line[5])) #purity
+#     worksheetCNV.write_formula(row,6, '= LOG(J'+str(row+1)+'/2, 2)') #Adapted log2CR
+#     worksheetCNV.write_formula(row,7, formula) #Adapted CN
+#     worksheetCNV.write_number(row,8,float(line[8])) #log2CR
+#     worksheetCNV.write_number(row,9,float(line[9])) #CN
+#     row += 1
 ###########################################
 
 ############## Intron (4)##################
