@@ -9,18 +9,23 @@ import subprocess
 ## Define sys.argvs
 vcf_snv = VariantFile(sys.argv[1])
 vcf_indel = VariantFile(sys.argv[2])
-runID = sys.argv[3]
-cartool = sys.argv[4]
-minCov = int(sys.argv[5])  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
-medCov = int(sys.argv[6])
-maxCov = int(sys.argv[7])
-bedfile = sys.argv[8]
-hotspotFile = sys.argv[9]
-artefactFile = sys.argv[10]
-germlineFile = sys.argv[11]
-hematoCountFile = sys.argv[12]
-variantLog = sys.argv[13]
-output = sys.argv[14]
+cnv_file = sys.argv[3]
+cnv_image_path = sys.argv[4]
+runID = sys.argv[5]
+cartool = sys.argv[6]
+minCov = int(sys.argv[7])  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
+medCov = int(sys.argv[8])
+maxCov = int(sys.argv[9])
+bedfile = sys.argv[10]
+cnv_bed_file_path = sys.argv[11] #bedfile with - annotated as CNV and exon nummers but exon number not really used right now
+chrBandFilePath = sys.argv[12]
+hotspotFile = sys.argv[13]
+artefactFile = sys.argv[14]
+germlineFile = sys.argv[15]
+hematoCountFile = sys.argv[16]
+variantLog = sys.argv[17]
+output = sys.argv[18]
+sample_purity=0.8
 
  ## Create execl file and sheets.
 workbook = xlsxwriter.Workbook(output)
@@ -29,10 +34,11 @@ worksheetTruSight = workbook.add_worksheet('TruSight')
 worksheetSNV = workbook.add_worksheet('SNVs')
 worksheetIndel = workbook.add_worksheet('InDel') #.... sys.argv[2]
 worksheetIntron = workbook.add_worksheet('Intron')
+worksheetCNV = workbook.add_worksheet('CNV')
 worksheetLowCov = workbook.add_worksheet('Low Coverage') #... sys.argv[3]
 worksheetHotspot = workbook.add_worksheet('Hotspot')
 worksheetCov = workbook.add_worksheet('Coverage')
-worksheetIVA = workbook.add_worksheet('IVA')
+worksheetQCI = workbook.add_worksheet('QCI')
 worksheetVersions = workbook.add_worksheet('Version')
 ## Define formats to be used.
 headingFormat = workbook.add_format({'bold': True, 'font_size': 18})
@@ -52,7 +58,7 @@ sample = list(vcf_snv.header.samples)[0]
 today=date.today()
 emptyList=['','','','','','']
 
-trusightGenes=['ABL1','ANKRD26','ASXL1','ATRX','BCOR','BCORL1','BRAF','CALR','CBL','CBLB','CBLC','CDKN2A','CEBPA','CSF3R','CUX1','DDX41','DNMT3A','ETV6','TEL','EZH2','FBXW7','FLT3','GATA1','GATA2','GNAS','HRAS','IDH1','IDH2','IKZF1','JAK2','JAK3','KDM6A','KIT','KRAS','KMT2A','MPL','MYD88','NF1','NOTCH1','NPM1','NRAS','PDGFRA','PHF6','PPM1D','PTEN','PTPN11','RAD21','RUNX1','SETBP1','SF3B1','SMC1A','SMC3','SRP72','SRSF2','STAG2','TET2','TP53','U2AF1','WT1','ZRSR2']
+trusightGenes=['ABL1','ANKRD26','ASXL1','ATRX','BCOR','BCORL1','BRAF','CALR','CBL','CBLB','CBLC','CDKN2A','CEBPA','CSF3R','CUX1','DDX41','DNMT3A','ETV6','TEL','EZH2','FBXW7','FLT3','GATA1','GATA2','GNAS','HRAS','IDH1','IDH2','IKZF1','JAK2','JAK3','KDM6A','KIT','KRAS','KMT2A','MPL','MYD88','NF1','NOTCH1','NPM1','NRAS','PDGFRA','PHF6','PPM1D','PTEN','PTPN11','RAD21','RUNX1','SAMD9','SAMD9L','SETBP1','SF3B1','SMC1A','SMC3','SRP72','SRSF2','STAG2','TET2','TP53','U2AF1','WT1','ZRSR2']
 intronDict={'GATA2':['chr3',128201827,  128202419], 'ANKRD26':['chr10',27389007, 27389433] }
 introns={}
 for key in intronDict:
@@ -83,15 +89,15 @@ with open('containers.txt') as file:
         row += 1
 ########################################
 
-######### IVA sheet (8)#################
-worksheetIVA.set_column('C:C',10)
-worksheetIVA.write('A1', 'Results from Variant Analysis ', headingFormat)
-worksheetIVA.write_row('A2',emptyList,lineFormat)
+######### QCI sheet (8)#################
+worksheetQCI.set_column('C:C',10)
+worksheetQCI.write('A1', 'Results from QCI ', headingFormat)
+worksheetQCI.write_row('A2',emptyList,lineFormat)
 
-worksheetIVA.write('A5', "Analysen utfördes i enlighet med dokumentationen.")
-worksheetIVA.write('A6', "Eventuella avikelser:")
+worksheetQCI.write('A5', "Analysen utfördes i enlighet med dokumentationen.")
+worksheetQCI.write('A6', "Eventuella avikelser:")
 iva = ['DNA nr', 'Chromosome', 'Position', 'Gene Region', 'Gene Symbol', 'Transcript ID', 'Transcript Variant', 'Protein Variant', 'Variant Findings', 'Sample Genotype Quality', 'Read Depth', 'Allele Fraction', 'Translation Impact', 'dbSNP ID','1000 Genomes Frequency', 'ExAC Frequency', 'HGMD', 'COSMIC ID', 'Artefacts_without_ASXL1','ASXL1_variant_filter']
-worksheetIVA.write_row(9,0, iva, tableHeadFormat)
+worksheetQCI.write_row(9,0, iva, tableHeadFormat)
 
 
 #########################################
@@ -212,6 +218,98 @@ with open(cartool) as csvfile:
 # Number of low cov regions for the Overview sheet.
 lowRegions = row - 6
 
+###########################################
+
+############## CNV (5)##################
+''' Import genomic pos to cytoCoord translation to list '''
+chrBands=[]
+with open(chrBandFilePath,'r') as chrBandFile:
+    for line in chrBandFile:
+        chrBands.append(line.split("\t"))
+
+''' Load in bedfile with generegions condensed '''
+gene_regions = {}
+cnv_bed_file = open(cnv_bed_file_path,'r')
+for line in cnv_bed_file :
+    lline = line.strip().split("\t")
+    chrom = lline[0]
+    start = lline[1]
+    end = lline[2]
+    name = lline[3]
+    gene = name.split("_")[0]
+
+    if gene in gene_regions : #gene lengths
+        gene_regions[gene][2] = end
+    else :
+        gene_regions[gene] = [chrom, start, end]
+cnv_bed_file.close()
+
+''' Process GATK4 CNV File '''
+outLines = []
+with open(cnv_file, 'r') as GATK_file:
+    header = True
+    for line in GATK_file : #Skip ahead until data
+        genes=[]
+        if header :
+            if line [0:3] == 'chr':
+                header = False
+            else:
+                continue
+        lline = line.strip().split("\t")
+        start_pos = int(lline[1])
+        end_pos = int(lline[2])
+        chrom = lline[0]
+        ''' Translate genomic coordinate to cytogen coordinates '''
+        cytoCoord=['','']
+        for chrBand in chrBands:
+            if chrBand[0] == chrom:
+                if (start_pos >= int(chrBand[1]) and start_pos <= int(chrBand[2])):
+                    cytoCoord[0] = chrBand[3]
+                if (end_pos >= int(chrBand[1]) and end_pos <= int(chrBand[2])):
+                            cytoCoord[1] = chrBand[3]
+        if cytoCoord[0] == cytoCoord[1]:
+            cytoCoordString=chrom[3:]+cytoCoord[0]
+        else:
+            cytoCoordString=chrom[3:]+cytoCoord[0]+'-'+cytoCoord[1]
+        ''' Only look at cnv that gatk marked as not neutral ''' #Borde vi lista alla istallet?
+        if lline[5] != '0':
+            for gene,coordinates in gene_regions.items():
+                if coordinates[0] == chrom:
+                    if (start_pos >= int(coordinates[1]) and start_pos <= int(coordinates[2])) or (end_pos >= int(coordinates[1]) and end_pos <= int(coordinates[2])) or (start_pos < int(coordinates[1]) and end_pos > int(coordinates[2])):
+                        genes.append(gene)
+            geneString = ', '.join([x for x in genes if not x.startswith('CNV')])
+            logRatio = float(lline[4])
+            copyNumberTumor = round(2*pow(2,logRatio),2)
+
+            outLines.append([sample,geneString,chrom,str(start_pos)+'-'+str(end_pos),cytoCoordString,str(sample_purity),'','',str(round(logRatio,4)),str(copyNumberTumor)]) #,str(sample_purity)]) #,str(copyNumberAdapted)
+
+''' Output results in xlsx worksheet together with the plot '''
+worksheetCNV.conditional_format('G43:G70', {'type': 'cell', 'criteria': 'between','minimum':  -0.25,'maximum':  0.2,'format':   redFormat})
+worksheetCNV.conditional_format('I43:I70', {'type': 'cell', 'criteria': 'between','minimum':  -0.25,'maximum':  0.2,'format':   redFormat})
+worksheetCNV.set_column('D:D',23)
+worksheetCNV.set_column('E:E',15)
+
+worksheetCNV.write('A1', 'CNVs found', headingFormat)
+worksheetCNV.write_row(1,0,emptyList,lineFormat)
+worksheetCNV.write('A3', 'Sample: '+str(sample))
+worksheetCNV.write('A5', 'Log2 ratio between -0.25<=x<=0.2 are marked red since they are very weak signals, and should be interpret with care. ', redFormat)
+## Insert png picture to sheets
+worksheetCNV.insert_image('A7', cnv_image_path)
+
+header = ['Sample','Genes','Chr','Region','CytoCoordinates','Purity','Adapted log2CopyRatio', 'Adapted CopyNumber','log2CopyRatio','CopyNumber'] #,'SamplePurity']
+worksheetCNV.write_row('A42', header, tableHeadFormat)
+col = 0
+row = 42
+for line in outLines:
+    formula = '= 2 + (J'+str(row+1)+'-2)*(1/F'+str(row+1)+')' #To get adapted CN
+
+    worksheetCNV.write_row(row,col, line[0:5]) #Must divide to get numbers correct.
+    worksheetCNV.write_number(row,5,float(line[5])) #purity
+    worksheetCNV.write_formula(row,6, '= LOG(J'+str(row+1)+'/2, 2)') #Adapted log2CR
+    worksheetCNV.write_formula(row,7, formula) #Adapted CN
+    worksheetCNV.write_number(row,8,float(line[8])) #log2CR
+    worksheetCNV.write_number(row,9,float(line[9])) #CN
+    row += 1
 ###########################################
 
 ############## Intron (4)##################
@@ -621,11 +719,12 @@ worksheetOver.write_url(8,0,"internal:'TruSight'!A1", string='TruSight Variants'
 worksheetOver.write_url(9,0,"internal:'SNVs'!A1", string='Variants analysis')
 worksheetOver.write_url(10,0,"internal:'Indel'!A1", string = 'Indel variants')
 worksheetOver.write_url(11,0,"internal:'Intron'!A1", string = 'Intron variants')
-worksheetOver.write_url(12,0,"internal:'Low Coverage'!A1", string = 'Positions with coverage lower than 100x')
-worksheetOver.write_url(13,0,"internal:'Hotspot'!A1", string = 'Coverage of hotspot positions')
-worksheetOver.write_url(14,0,"internal: 'Coverage'!A1", string = 'Average coverage of all regions in bed')
-worksheetOver.write_url(15,0,"internal:'Version'!A1", string = 'Version Log')
-worksheetOver.write_row(16,0,emptyList,lineFormat)
+worksheetOver.write_url(12,0,"internal:'CNV'!A1", string = 'CNVs found with GATK4')
+worksheetOver.write_url(13,0,"internal:'Low Coverage'!A1", string = 'Positions with coverage lower than 100x')
+worksheetOver.write_url(14,0,"internal:'Hotspot'!A1", string = 'Coverage of hotspot positions')
+worksheetOver.write_url(15,0,"internal: 'Coverage'!A1", string = 'Average coverage of all regions in bed')
+worksheetOver.write_url(16,0,"internal:'Version'!A1", string = 'Version Log')
+worksheetOver.write_row(17,0,emptyList,lineFormat)
 
 
 ##Add avg. cov and clonalisy
@@ -641,22 +740,22 @@ breadthCmd = 'grep "Mean Coverage Breadth:" '+cartoolLog + ' | cut -f2- -d"," '
 breadth = subprocess.run(breadthCmd, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
 
 
-worksheetOver.write_row(19,0,['RunID', 'DNAnr', 'Avg. coverage [x]','Duplicationlevel [%]',str(minCov)+'x',str(medCov)+'x',str(maxCov)+'x'],tableHeadFormat)
-worksheetOver.write_row(20,0,[runID, sample, avgCov, str(round(float(duplicateLevel)*100,2))]+breadth.split(','))
+worksheetOver.write_row(20,0,['RunID', 'DNAnr', 'Avg. coverage [x]','Duplicationlevel [%]',str(minCov)+'x',str(medCov)+'x',str(maxCov)+'x'],tableHeadFormat)
+worksheetOver.write_row(21,0,[runID, sample, avgCov, str(round(float(duplicateLevel)*100,2))]+breadth.split(','))
 
 if lowPos == 0: #From Hotspot sheet
-    worksheetOver.write(23,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
-    worksheetOver.write(24,0, str(lowPos))
+    worksheetOver.write(24,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
+    worksheetOver.write(25,0, str(lowPos))
 else:
-    worksheetOver.write(23,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
-    worksheetOver.write(24,0, str(lowPos), redFormat)
-    worksheetOver.write_url(25,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
+    worksheetOver.write(24,0,'Number of positions from the hotspot list not covered by at least '+str(medCov)+'x: ')
+    worksheetOver.write(25,0, str(lowPos), redFormat)
+    worksheetOver.write_url(26,0,"internal:'Hotspot'!A1" ,string = 'For more detailed list see hotspotsheet ')
 
-worksheetOver.write(26,0,'Number of regions not covered by at least '+str(minCov)+'x: ') #From Cov sheet
-worksheetOver.write(27,0, str(lowRegions)) #From Cov sheet
-worksheetOver.write(30,0,'Hotspotlist: '+hotspotFile)
-worksheetOver.write(31,0,'Artefact file: '+artefactFile)
-worksheetOver.write(32,0,'Germline file: '+germlineFile)
+worksheetOver.write(27,0,'Number of regions not covered by at least '+str(minCov)+'x: ') #From Cov sheet
+worksheetOver.write(28,0, str(lowRegions)) #From Cov sheet
+worksheetOver.write(31,0,'Hotspotlist: '+hotspotFile)
+worksheetOver.write(32,0,'Artefact file: '+artefactFile)
+worksheetOver.write(33,0,'Germline file: '+germlineFile)
 
 ######################################
 
