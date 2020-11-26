@@ -29,6 +29,7 @@ rule vcf2excel:
         cytoCoord = config["CNV"]["cyto"],
         hotspot = config["bed"]["hotspot"],
         artefact = config["bed"]["artefact"],
+        pindelArtefact = config["bed"]["pindelArtefact"],
         germline = config["bed"]["germline"],
         hematoCount = config["configCache"]["hemato"],
         variantsLog = config["configCache"]["variantlist"],
@@ -48,7 +49,7 @@ rule vcf2excel:
         config["singularitys"]["python"]
     shell:
         "(python3.6 {params.dir}/src/report/vcf2excel.py {input.snv} {input.indel} {input.gatkSeg} {input.png} {params.seqID} {input.cart} {params.coverage} \
-        {input.bed} {input.cnvbed} {input.cytoCoord} {input.hotspot} {input.artefact} {input.germline} {input.hematoCount} {input.variantsLog} {output}) &> {log}"
+        {input.bed} {input.cnvbed} {input.cytoCoord} {input.hotspot} {input.artefact} {input.pindelArtefact} {input.germline} {input.hematoCount} {input.variantsLog} {output}) &> {log}"
 
 rule vcf2excelHD829:
     input:

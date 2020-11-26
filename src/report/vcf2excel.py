@@ -21,10 +21,11 @@ cnv_bed_file_path = sys.argv[11] #bedfile with - annotated as CNV and exon numme
 chrBandFilePath = sys.argv[12]
 hotspotFile = sys.argv[13]
 artefactFile = sys.argv[14]
-germlineFile = sys.argv[15]
-hematoCountFile = sys.argv[16]
-variantLog = sys.argv[17]
-output = sys.argv[18]
+pindelArtefactFile = sys.argv[15]
+germlineFile = sys.argv[16]
+hematoCountFile = sys.argv[17]
+variantLog = sys.argv[18]
+output = sys.argv[19]
 sample_purity=0.8
 
  ## Create execl file and sheets.
@@ -399,22 +400,28 @@ for x in vcf_indel.header.records:
         refI = x.value
 worksheetIndel.write('A3', 'Sample: '+str(sample))
 worksheetIndel.write('A4', 'Reference used: '+str(refI))
-worksheetIndel.write('A5','Genes included: ')
-row=5
+worksheetIndel.write('A6','Genes included: ')
+row=6
 for gene in genes:
     worksheetIndel.write('B'+str(row),gene)
     row+=1
-
-row+=1
+worksheetIndel.write(row,0,'Coverage below '+str(medCov)+'x', italicFormat)
+worksheetIndel.write(row+1,0,'Variant in artefact list ', orangeFormat)
+worksheetIndel.write(row+2,0,'Variants with frequency 0.03 <= AF < 0.05 are located below artefact and germline variants.')
+row+=5
 tableheading = ['RunID','DNAnr','Gene','Chr','Start','End','SV length','Af','Ref','Alt','Dp','Transcript','Mutation cds','ENSP','Max popAF','Max Pop','IGV']
 worksheetIndel.write_row('A'+str(row),tableheading, tableHeadFormat) #1 index
-# row = 7 #0 index
+
+orangeIndel = []
+whiteIndel = []
+whiteIGVIndel = []
+underFiveIndel = []
+underFiveIGVIndel = []
 col=0
 
 for indel in vcf_indel.fetch():
     if indel.filter.keys()==["PASS"]:
         svlen = indel.info["SVLEN"]
-
         ads = indel.samples[sample]["AD"]
         af = int(ads[1])/(int(ads[0]) + int(ads[1]))
         # ad = ', '.join([str(i) for i in ads])
@@ -423,12 +430,10 @@ for indel in vcf_indel.fetch():
             alt=indel.alts[0]
         else:
             print(indel.alts)
-            sys.exit() ##Fix!!
+            sys.exit() ##
 
         csqIndel = indel.info["CSQ"][0] #VEP annotation
-
         indelGene = csqIndel.split("|")[3]
-
         maxPopAfIndel = csqIndel.split("|")[56] #[57]
 
         if len(maxPopAfIndel) > 1:
@@ -441,12 +446,53 @@ for indel in vcf_indel.fetch():
         else:
             indelCodingName = ''
         indelEnsp = csqIndel.split("|")[11]
-        indelIgv="external:IGV/"+indelGene+"-"+indel.contig+"_"+str(int(indel.pos)-1)+"_"+str(int(indel.pos)-1+len(alt))+".svg"
 
         indelRow = [runID,sample,indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt, indel.info["DP"], indelTranscript, indelCodingName,indelEnsp ,maxPopAfIndel, maxPopIndel]
-        worksheetIndel.write_row(row,col,indelRow)
-        worksheetIndel.write_url('Q'+str(row+1), indelIgv,string = "IGV image")
-        row += 1
+
+        ''' Mark artefact based on artefactfile '''
+        cmdArt = 'grep -w '+str(indel.pos)+' '+pindelArtefactFile + '| grep -w '+str(indel.contig)
+        artLines = subprocess.run(cmdArt, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
+
+        if len(artLines) > 0 : #if pos exists and match in artefact file.
+            orangeIndel.append(indelRow)
+        else:
+            indelIgv="external:IGV/"+indelGene+"-"+indel.contig+"_"+str(int(indel.pos)-1)+"_"+str(int(indel.pos)-1+len(alt))+".svg"
+            if float(af) < 0.05:
+                underFiveIndel.append(indelRow)
+                underFiveIGVIndel.append(indelIgv)
+            else:
+                whiteIndel.append(indelRow)
+                whiteIGVIndel.append(indelIgv)
+
+''' Write to xlsx file '''
+i = 0
+for line in whiteIndel:
+    if line[10] < medCov:
+        worksheetIndel.write_row(row,col,line, italicFormat)
+        worksheetIndel.write_url('Q'+str(row+1), whiteIGVIndel[i],string = "IGV image")
+    else:
+        worksheetIndel.write_row(row,col,line)
+        worksheetIndel.write_url('Q'+str(row+1), whiteIGVIndel[i],string = "IGV image")
+    row += 1
+    i += 1
+
+for line in orangeIndel:
+    if line[10] < medCov:
+        worksheetIndel.write_row(row,col,line,orange_italicFormat)
+    else:
+        worksheetIndel.write_row(row,col,line,orangeFormat)
+    row += 1
+
+i = 0
+for line in underFiveIndel:
+    if line[10] < medCov:
+        worksheetIndel.write_row(row,col,line, italicFormat)
+        worksheetIndel.write_url('Q'+str(row+1),underFiveIGVIndel[i],string = "IGV image")
+    else:
+        worksheetIndel.write_row(row,col,line)
+        worksheetIndel.write_url('Q'+str(row+1),underFiveIGVIndel[i],string = "IGV image")
+    row += 1
+    i += 1
 
 ##########################################
 
@@ -476,11 +522,12 @@ worksheetSNV.write('B12','Consequence not deemed relevant')
 worksheetSNV.write('A14','Coverage below '+str(medCov)+'x', italicFormat)
 worksheetSNV.write('A15','Variant in artefact list ', orangeFormat)
 worksheetSNV.write('A16','Variant likely germline', greenFormat)
+worksheetSNV.write('A17','Variants with frequency 0.03 <= AF < 0.05 are located below artefact and germline variants.')
 
 ## Variant table
 tableheading = ['RunID','DNAnr','Gene','Chr','Pos','Ref','Alt', 'AF', 'DP', 'Transcript','Mutation cds', 'ENSP' ,'Consequence','COSMIC ids on position','N COSMIC Hemato hits on position','Clinical significance', 'dbSNP','Max popAF','Max Pop','IGV image','Callers']
-worksheetSNV.write_row('A18', tableheading, tableHeadFormat) #1 index
-row = 18 #0 index
+worksheetSNV.write_row('A19', tableheading, tableHeadFormat) #1 index
+row = 19 #0 index
 col=0
 white=[]
 green=[]
@@ -625,7 +672,7 @@ for record in vcf_snv.fetch():
                     if gene in trusightGenes:
                         trusightSNV.append(snv)
                         trusightSNVigv.append(igv)
-### Actually writing to the excelsheet
+''' Write to xlsx file '''
 i=0
 for line in white:
     if line[8] < medCov:
@@ -696,9 +743,6 @@ for line in trusightSNV:
     row +=1
     i+=1
 
-
-
-
 #############################################
 
 ######### Overview sheet (1) ################
@@ -756,6 +800,7 @@ worksheetOver.write(28,0, str(lowRegions)) #From Cov sheet
 worksheetOver.write(31,0,'Hotspotlist: '+hotspotFile)
 worksheetOver.write(32,0,'Artefact file: '+artefactFile)
 worksheetOver.write(33,0,'Germline file: '+germlineFile)
+worksheetOver.write(34,0,'Pindel artefact file: '+pindelArtefactFile)
 
 ######################################
 
