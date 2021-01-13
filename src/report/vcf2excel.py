@@ -315,7 +315,7 @@ for line in outLines:
 
 ############## Intron (4)##################
 worksheetIntron.set_column('D:E',10)
-worksheetIntron.write('A1', 'Intron variants', headingFormat)
+worksheetIntron.write('A1', 'Intron and non-coding variants', headingFormat)
 worksheetIntron.write_row(1,0,emptyList,lineFormat)
 worksheetIntron.write('A3', 'Sample: '+str(sample))
 
@@ -376,9 +376,9 @@ for snv in vcf_snv.fetch():
 
                     line=[runID, sample, gene, snv.contig, str(snv.pos), snv.ref, snv.alts[0], str(snv.info["AF"][0]), str(snv.info["DP"]), transcript, codingName, ensp, consequence, maxPopAf, maxPop, callers]
                     if snv.info["DP"] < medCov:
-                        worksheetSNV.write_row(row,col,line, italicFormat)
+                        worksheetIntron.write_row(row,col,line, italicFormat)
                     else:
-                        worksheetSNV.write_row(row,col,line)
+                        worksheetIntron.write_row(row,col,line)
                     row += 1
 
 ###########################################
@@ -420,10 +420,10 @@ underFiveIGVIndel = []
 col=0
 
 for indel in vcf_indel.fetch():
-    if indel.filter.keys()==["PASS"]:
+    if indel.filter.keys()==["PASS"]: #Borde man ta med alla och ist'llet lagga till en filterkolumn? Hur blir det med icke proteincoding och konsekvens som kanske inte blir samma sak.
         svlen = indel.info["SVLEN"]
         ads = indel.samples[sample]["AD"]
-        af = int(ads[1])/(int(ads[0]) + int(ads[1]))
+        af = indel.info["AF"] # int(ads[1])/(int(ads[0]) + int(ads[1])) # Finns val redan
         # ad = ', '.join([str(i) for i in ads])
 
         if len(indel.alts) == 1:
