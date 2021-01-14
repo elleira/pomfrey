@@ -6,6 +6,7 @@ import xlsxwriter ## need to download? Can I use same as pysam singularity?
 from datetime import date
 import subprocess
 from operator import itemgetter
+import yaml
 ##Known variation in HD829: gene,variat, pos, type, cosmic, af
 known = [['ABL1','T315I','133748283','SNP','COSM12560','0.050'],
 ['ASXL1','G646fs*12','31022441','INS','COSM1411076','0.400'],
@@ -38,18 +39,23 @@ knownFound = []
 ## Define sys.argvs
 vcf_snv = VariantFile(sys.argv[1])
 vcf_indel = VariantFile(sys.argv[2])
-runID = sys.argv[3]
-cartool = sys.argv[4]
-minCov = int(sys.argv[5])  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
-medCov = int(sys.argv[6])
-maxCov = int(sys.argv[7])
-bedfile = sys.argv[8]
-hotspotFile = sys.argv[9]
-artefactFile = sys.argv[10]
-germlineFile = sys.argv[11]
-hematoCountFile = sys.argv[12]
-variantLog = sys.argv[13]
-output = sys.argv[14]
+cartool = sys.argv[3]
+output = sys.argv[4]
+configfile = sys.argv[5]
+
+with open(configfile, 'r') as file:
+    config_list = yaml.load(file, Loader=yaml.FullLoader)
+
+runID = config_list['seqID']['sequencerun'] #sys.argv[3]
+minCov = int(config_list['cartool']['cov'].split(' ')[0]) #int(sys.argv[5])  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
+medCov = int(config_list['cartool']['cov'].split(' ')[1]) #int(sys.argv[6])
+maxCov = int(config_list['cartool']['cov'].split(' ')[2]) #int(sys.argv[7])
+bedfile = config_list["bed"]["pindel"] #sys.argv[8]
+hotspotFile = config_list["bed"]["hotspot"] #sys.argv[9]
+artefactFile = config_list["bed"]["artefact"] #sys.argv[10]
+germlineFile = config_list["bed"]["germline"] #sys.argv[11]
+hematoCountFile = config_list["configCache"]["hemato"] #sys.argv[12]
+variantLog = config_list["configCache"]["variantlist"] #sys.argv[13]
 
  ## Create execl file and sheets.
 workbook = xlsxwriter.Workbook(output)
@@ -60,7 +66,7 @@ worksheetIndel = workbook.add_worksheet('InDel') #.... sys.argv[2]
 worksheetLowCov = workbook.add_worksheet('Low Coverage') #... sys.argv[3]
 worksheetHotspot = workbook.add_worksheet('Hotspot')
 worksheetCov = workbook.add_worksheet('Coverage')
-worksheetIVA = workbook.add_worksheet('IVA')
+worksheetQCI = workbook.add_worksheet('QCI')
 worksheetVersions = workbook.add_worksheet('Version')
 ## Define formats to be used.
 headingFormat = workbook.add_format({'bold': True, 'font_size': 18})
@@ -102,15 +108,15 @@ with open('containers.txt') as file:
         row += 1
 ########################################
 
-######### IVA sheet (6)#################
-worksheetIVA.set_column('C:C',10)
-worksheetIVA.write('A1', 'Results from Variant Analysis ', headingFormat)
-worksheetIVA.write_row('A2',emptyList,lineFormat)
+######### QCI sheet (6)#################
+worksheetQCI.set_column('C:C',10)
+worksheetQCI.write('A1', 'Results from QCI ', headingFormat)
+worksheetQCI.write_row('A2',emptyList,lineFormat)
 
-worksheetIVA.write('A5', "Analysen utfördes i enlighet med dokumentationen.")
-worksheetIVA.write('A6', "Eventuella avikelser:")
-iva = ['DNA nr', 'Chromosome', 'Position', 'Gene Region', 'Gene Symbol', 'Transcript ID', 'Transcript Variant', 'Protein Variant', 'Variant Findings', 'Sample Genotype Quality', 'Read Depth', 'Allele Fraction', 'Translation Impact', 'dbSNP ID','1000 Genomes Frequency', 'ExAC Frequency', 'HGMD', 'COSMIC ID', 'Artefacts_without_ASXL1','ASXL1_variant_filter']
-worksheetIVA.write_row(9,0, iva, tableHeadFormat)
+worksheetQCI.write('A5', "Analysen utfördes i enlighet med dokumentationen.")
+worksheetQCI.write('A6', "Eventuella avikelser:")
+qci = ['DNA nr', 'Chromosome', 'Position', 'Gene Region', 'Gene Symbol', 'Transcript ID', 'Transcript Variant', 'Protein Variant', 'Variant Findings', 'Sample Genotype Quality', 'Read Depth', 'Allele Fraction', 'Translation Impact', 'dbSNP ID','1000 Genomes Frequency', 'ExAC Frequency', 'HGMD', 'COSMIC ID', 'Artefacts_without_ASXL1','ASXL1_variant_filter']
+worksheetQCI.write_row(9,0, qci, tableHeadFormat)
 
 
 #########################################

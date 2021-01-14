@@ -2,30 +2,37 @@
 import sys
 import csv
 from pysam import VariantFile
-import xlsxwriter 
+import xlsxwriter
 from datetime import date
 import subprocess
+import yaml
 
 ## Define sys.argvs
 vcf_snv = VariantFile(sys.argv[1])
 vcf_indel = VariantFile(sys.argv[2])
 cnv_file = sys.argv[3]
 cnv_image_path = sys.argv[4]
-runID = sys.argv[5]
-cartool = sys.argv[6]
-minCov = int(sys.argv[7])  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
-medCov = int(sys.argv[8])
-maxCov = int(sys.argv[9])
-bedfile = sys.argv[10]
-cnv_bed_file_path = sys.argv[11] #bedfile with - annotated as CNV and exon nummers but exon number not really used right now
-chrBandFilePath = sys.argv[12]
-hotspotFile = sys.argv[13]
-artefactFile = sys.argv[14]
-pindelArtefactFile = sys.argv[15]
-germlineFile = sys.argv[16]
-hematoCountFile = sys.argv[17]
-variantLog = sys.argv[18]
-output = sys.argv[19]
+cartool = sys.argv[5] #sys.argv[6]
+output = sys.argv[6] #sys.argv[19]
+configfile = sys.argv[7]
+
+with open(configfile, 'r') as file:
+    config_list = yaml.load(file, Loader=yaml.FullLoader)
+
+runID = config_list['seqID']['sequencerun'] #sys.argv[5]
+minCov = int(config_list['cartool']['cov'].split(' ')[0]) #int(sys.argv[7])  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
+medCov = int(config_list['cartool']['cov'].split(' ')[1]) #int(sys.argv[8])
+maxCov = int(config_list['cartool']['cov'].split(' ')[2]) #int(sys.argv[9])
+bedfile = config_list["bed"]["pindel"] #sys.argv[10]
+cnv_bed_file_path = config_list["CNV"]["bedPoN"] #sys.argv[11] #bedfile with - annotated as CNV and exon nummers but exon number not really used right now
+chrBandFilePath = config_list["CNV"]["cyto"] #sys.argv[12]
+hotspotFile = config_list["bed"]["hotspot"] #sys.argv[13]
+artefactFile = config_list["bed"]["artefact"] #sys.argv[14]
+pindelArtefactFile = config_list["bed"]["pindelArtefact"] #sys.argv[15]
+germlineFile = config_list["bed"]["germline"] #sys.argv[16]
+hematoCountFile = config_list["configCache"]["hemato"] #sys.argv[17]
+variantLog = config_list["configCache"]["variantlist"] #sys.argv[18]
+
 sample_purity=0.8
 
  ## Create execl file and sheets.
@@ -78,16 +85,21 @@ worksheetVersions.write('A3','Sample: '+str(sample))
 # worksheetVersions.write('A5', 'Variant calling reference used: '+str(refV))
 # worksheetVersions.write('A6', 'Pindel reference used: '+str(refI))
 worksheetVersions.write('A7', 'Containers used: ', tableHeadFormat)
-
-
-with open('containers.txt') as file:
-    singularitys = [line.strip() for line in file]
-    # singularitys.pop() ##Last slurm is always the makeContainersList rule.
-    row = 7
-    col = 0
-    for singularity in singularitys:
-        worksheetVersions.write_row(row,col,[singularity])
-        row += 1
+containers = [clist for clist in config_list['singularitys'].items()]
+row = 8
+col = 0
+for containerTuple in containers:
+    container=list(containerTuple)
+    worksheetVersions.write_row('A'+str(row),container)
+    row += 1
+# with open('containers.txt') as file:
+#     singularitys = [line.strip() for line in file]
+#     # singularitys.pop() ##Last slurm is always the makeContainersList rule.
+#     row = 7
+#     col = 0
+#     for singularity in singularitys:
+#         worksheetVersions.write_row(row,col,[singularity])
+#         row += 1
 ########################################
 
 ######### QCI sheet (8)#################

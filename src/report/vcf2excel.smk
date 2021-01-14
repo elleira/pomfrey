@@ -1,8 +1,4 @@
 localrules: fixCoverageHotspot
-# def get_minCov(wildcards):
-#     allCov = config["cartool"]["cov"]
-#     minCov = allCov.split(' ')[0]
-#     return minCov
 
 rule fixCoverageHotspot:
     input:
@@ -23,7 +19,7 @@ rule vcf2excel:
         gatkSeg = "CNV/{sample}_{seqID}/{sample}_{seqID}_clean.calledCNVs.seg",
         png = "CNV/{sample}_{seqID}_clean.calledCNVs.modeled.png",
         cart =  "qc/{sample}_{seqID}/{sample}_{seqID}_MeanCoverageShortList.csv",
-        sing = "containers.txt",
+        # In configfile
         bed = config["bed"]["pindel"],
         cnvbed = config["CNV"]["bedPoN"],
         cytoCoord = config["CNV"]["cyto"],
@@ -38,8 +34,7 @@ rule vcf2excel:
     output:
         "Results/{sample}_{seqID}/Reports/{sample}_{seqID}.xlsx"
     params:
-        coverage = config["cartool"]["cov"], #All coverage, goes in as three sys.argv[], get_minCov,
-        seqID = config["seqID"]["sequencerun"],
+        configfile = config["seqID"]["sequencerun"]+"_config.yaml",
         dir = config["programdir"]["dir"]
     log:
         "logs/report/{sample}_{seqID}.vcf2excel.log"
@@ -48,8 +43,7 @@ rule vcf2excel:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 {params.dir}/src/report/vcf2excel.py {input.snv} {input.indel} {input.gatkSeg} {input.png} {params.seqID} {input.cart} {params.coverage} \
-        {input.bed} {input.cnvbed} {input.cytoCoord} {input.hotspot} {input.artefact} {input.pindelArtefact} {input.germline} {input.hematoCount} {input.variantsLog} {output}) &> {log}"
+        "(python3.6 {params.dir}/src/report/vcf2excel.py {input.snv} {input.indel} {input.gatkSeg} {input.png} {input.cart} {output} {params.configfile}) &> {log}"
 
 rule vcf2excelHD829:
     input:
@@ -67,8 +61,7 @@ rule vcf2excelHD829:
     output:
         "Results/{sample}_{seqID}/Reports/{sample}_{seqID}.xlsx"
     params:
-        coverage = config["cartool"]["cov"], #All coverage, goes in as three sys.argv[], get_minCov,
-        seqID = config["seqID"]["sequencerun"],
+        configfile = config["seqID"]["sequencerun"]+"_config.yaml",
         dir = config["programdir"]["dir"]
     wildcard_constraints:
         sample = "(HD829).*"
@@ -77,4 +70,4 @@ rule vcf2excelHD829:
     singularity:
         config["singularitys"]["python"]
     shell:
-        "(python3.6 {params.dir}/src/report/vcf2excelHD829.py {input.snv} {input.indel} {params.seqID} {input.cart} {params.coverage} {input.bed} {input.hotspot} {input.artefact} {input.germline} {input.hematoCount} {input.variantsLog} {output}) &> {log}"
+        "(python3.6 {params.dir}/src/report/vcf2excelHD829.py {input.snv} {input.indel} {input.cart} {output} {params.configfile}) &> {log}"
