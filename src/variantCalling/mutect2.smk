@@ -10,7 +10,7 @@ rule Split_bam:
         bam = temp("variantCalls/callers/mutect2/infiles/{sample,[A-Za-z0-9_-]+}_{seqID}.{chr}.bam"),
         bai = temp("variantCalls/callers/mutect2/infiles/{sample}_{seqID}.{chr}.bam.bai")
     log:
-        "logs/split_bam_{sample}_{seqID}-{chr}.log"
+        "logs/variantCalling/mutect2/split_bam_{sample}_{seqID}-{chr}.log"
     singularity:
         config["singularitys"]["bwa"]
     shell:
@@ -22,7 +22,7 @@ rule split_bedfile:
     output:
         temp("variantCalls/callers/mutect2/infiles/bedfile_{seqID}.{chr}.bed")
     log:
-        "logs/variantCalling/split_bed_{seqID}.{chr}.log"
+        "logs/variantCalling/mutect2/split_bed_{seqID}.{chr}.log"
     shell:
         "(grep -w {wildcards.chr} {input} > {output}) &> {log}"
 
@@ -39,7 +39,7 @@ rule Mutect2:
         stats = temp("variantCalls/callers/mutect2/perChr/{sample}_{seqID}.{chr}.mutect2.unfilt.vcf.gz.stats"),
         vcf = temp("variantCalls/callers/mutect2/perChr/{sample}_{seqID}.{chr}.mutect2.unfilt.vcf.gz")
     log:
-        "logs/variantCalling/mutect2_{sample}_{seqID}.{chr}.log"
+        "logs/variantCalling/mutect2/mutect2_{sample}_{seqID}.{chr}.log"
     singularity:
         config["singularitys"]["gatk4"]
     shell:
@@ -105,7 +105,7 @@ rule Merge_bam:
         bam = "Results/{sample,[A-Za-z0-9_-]+}_{seqID}/Data/{sample}_{seqID}.indel.bam",
         bai = "Results/{sample}_{seqID}/Data/{sample}_{seqID}.indel.bam.bai"
     log:
-        "logs/variantCalling/merge_bam_{sample}_{seqID}.log"
+        "logs/variantCalling/mutect2/merge_bam_{sample}_{seqID}.log"
     singularity:
         config["singularitys"]["bwa"]
     shell:
