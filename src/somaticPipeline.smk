@@ -7,7 +7,6 @@ rule all:
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.indel.bam", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         expand("Results/{sample}_{seqID}/Reports/{sample}_{seqID}_MultiQC.html", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         expand("Results/{sample}_{seqID}/Reports/{sample}_{seqID}.xlsx", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
-        #expand("Results/{sample}_{seqID}/Reports/IGV/done-igv.txt", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),  ## For the igv images
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.SNV-pindel.vcf", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.normalized.genome.vcf.gz", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
         expand("Results/{sample}_{seqID}/Data/{sample}_{seqID}.normalized.genome.vcf.gz.tbi", sample=config["samples"], seqID=config["seqID"]["sequencerun"]),
@@ -42,7 +41,6 @@ include:    "map/bwa-mem.smk" #fastq R1 R2 from trimming in, bam out.
 include:    "map/markDuplicates.smk"
 
 ## Variant callers
-##bamfiles in! then a annotation/{sample}.3.filt.vcf.gz and indel/{sample}.pindel.vcf.gz
 include:    "variantCalling/tumor_only.smk"
 include:    "variantCalling/pindel.smk"
 
@@ -50,18 +48,6 @@ include:    "variantCalling/pindel.smk"
 include:    "CNV/run_GATK_CNV.smk"
 
 ## Rapportering
-rule makeContainersList:  ##From bedfile, not really dependent on sample
-    input:
-        expand("data_processing/{sample}_{seqID}/{sample}_{seqID}_R1_trimmed.fastq.gz", sample=config["samples"], seqID=config["seqID"]["sequencerun"])
-    output:
-        "containers.txt"
-    log:
-        "logs/report/containersLog.log"
-    run:
-        for k,v in config["singularitys"].items():
-            shell("echo {v} >> containers.txt")
-        # "(cat slurm-*out | grep singularity | sort | uniq | cut -d' ' -f4 > {output}) &> {log}"
-
 include:    "report/multiqc.smk" # per sample, add per batch as well but only certain results?
 include:    "report/vcf2excel.smk"
 include:    "report/igv-images.smk" #per sample

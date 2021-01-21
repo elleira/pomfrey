@@ -20,7 +20,7 @@ with open(configfile, 'r') as file:
     config_list = yaml.load(file, Loader=yaml.FullLoader)
 
 runID = config_list['seqID']['sequencerun'] #sys.argv[5]
-minCov = int(config_list['cartool']['cov'].split(' ')[0]) #int(sys.argv[7])  ##grep thresholds ../somaticpipeline/qc/cartool/10855-17_Log.csv | cut -d ',' -f2
+minCov = int(config_list['cartool']['cov'].split(' ')[0]) #int(sys.argv[7])
 medCov = int(config_list['cartool']['cov'].split(' ')[1]) #int(sys.argv[8])
 maxCov = int(config_list['cartool']['cov'].split(' ')[2]) #int(sys.argv[9])
 bedfile = config_list["bed"]["pindel"] #sys.argv[10]

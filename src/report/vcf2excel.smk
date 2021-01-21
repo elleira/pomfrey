@@ -50,7 +50,7 @@ rule vcf2excelHD829:
         snv =  "variantCalls/annotation/{sample}_{seqID}.filt.vcf.gz",
         indel = "variantCalls/pindel/{sample}_{seqID}.pindel.filt.vcf.gz",
         cart =  "qc/{sample}_{seqID}/{sample}_{seqID}_MeanCoverageShortList.csv",
-        sing = "containers.txt",
+        # In configfile
         bed = config["bed"]["pindel"],
         hotspot = config["bed"]["hotspot"],
         artefact = config["bed"]["artefact"],

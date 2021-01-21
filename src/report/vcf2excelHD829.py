@@ -86,8 +86,6 @@ sample = list(vcf_snv.header.samples)[0]
 today=date.today()
 emptyList=['','','','','','']
 
-# trusightGenes=['ABL1','ANKRD26','ASXL1','ATRX','BCOR','BCORL1','BRAF','CALR','CBL','CBLB','CBLC','CDKN2A','CEBPA','CSF3R','CUX1','DDX41','DNMT3A','ETV6','TEL','EZH2','FBXW7','FLT3','GATA1','GATA2','GNAS','HRAS','IDH1','IDH2','IKZF1','JAK2','JAK3','KDM6A','KIT','KRAS','KMT2A','MPL','MYD88','NF1','NOTCH1','NPM1','NRAS','PDGFRA','PHF6','PPM1D','PTEN','PTPN11','RAD21','RUNX1','SETBP1','SF3B1','SMC1A','SMC3','SRP72','SRSF2','STAG2','TET2','TP53','U2AF1','WT1','ZRSR2']
-
 
 ######### Prog Version sheet (7)###########
 worksheetVersions.write('A1', 'Version Log', headingFormat)
@@ -96,16 +94,14 @@ worksheetVersions.write('A3','Sample: '+str(sample))
 # worksheetVersions.write('A5', 'Variant calling reference used: '+str(refV))
 # worksheetVersions.write('A6', 'Pindel reference used: '+str(refI))
 worksheetVersions.write('A7', 'Containers used: ', tableHeadFormat)
+containers = [clist for clist in config_list['singularitys'].items()]
+row = 8
+col = 0
+for containerTuple in containers:
+    container=list(containerTuple)
+    worksheetVersions.write_row('A'+str(row),container)
+    row += 1
 
-
-with open('containers.txt') as file:
-    singularitys = [line.strip() for line in file]
-    # singularitys.pop() ##Last slurm is always the makeContainersList rule.
-    row = 7
-    col = 0
-    for singularity in singularitys:
-        worksheetVersions.write_row(row,col,[singularity])
-        row += 1
 ########################################
 
 ######### QCI sheet (6)#################
@@ -118,11 +114,9 @@ worksheetQCI.write('A6', "Eventuella avikelser:")
 qci = ['DNA nr', 'Chromosome', 'Position', 'Gene Region', 'Gene Symbol', 'Transcript ID', 'Transcript Variant', 'Protein Variant', 'Variant Findings', 'Sample Genotype Quality', 'Read Depth', 'Allele Fraction', 'Translation Impact', 'dbSNP ID','1000 Genomes Frequency', 'ExAC Frequency', 'HGMD', 'COSMIC ID', 'Artefacts_without_ASXL1','ASXL1_variant_filter']
 worksheetQCI.write_row(9,0, qci, tableHeadFormat)
 
-
 #########################################
 
 ########### Coverage ####################
-##Lägga till hela MeanFullCoverage... som filtrerbar lista
 #Number of lines in MeanFullCoverage
 covFullFile = cartool.replace("_MeanCoverageShortList.csv", "_MeanCoverageFullList.csv")
 def file_lengthy(fname):
@@ -171,7 +165,7 @@ worksheetHotspot.write_row('A5',['Chr', 'Pos', 'Depth', 'Gene'], tableHeadFormat
 lowPos = 0
 row=5
 hotspotTable=[]
-with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShortHotspot.tsv"),'r') as hotFile: #Always the same as bedfile just without region
+with open(cartool.replace("_MeanCoverageShortList.csv", "_coverageShortHotspot.tsv"),'r') as hotFile:
     for dpLine in hotFile:
         cov = dpLine.split("\t")
         chrCov = cov[0]
@@ -199,7 +193,7 @@ for hotLine in hotspotTable:
 
 ############################################
 
-######### Low Coverage sheet (4)################
+######### Low Coverage sheet (4)############
 worksheetLowCov.set_column(1,3,10)
 worksheetLowCov.set_column(1,4,10)
 ## Heading in sheet
@@ -226,25 +220,23 @@ with open(cartool) as csvfile:
             end = 1+5*i
             covRow = [line[0]]+line[start:end]
             covLines.append(covRow)
-            # worksheetLowCov.write_row(row,col,[line[0]]+line[start:end])
-            # row += 1
+
     #sort based on Coverage
     covLines.sort(key=lambda x: x[4])
     for line in covLines:
         worksheetLowCov.write_row(row,col,line)
         row += 1
-        # covLines
+
 # Number of low cov regions for the Overview sheet.
 lowRegions = row - 6
 
 ###########################################
 
 ######### Indel sheet (3)##################
-# Add genes as info before the actual table. Just use bed table as input? Sort uniq
 worksheetIndel.set_column('E:F',10) #pos
-# worksheetIndel.set_column(1,3,10)
 worksheetIndel.write('A1', 'Pindel results', headingFormat)
 worksheetIndel.write_row(1,0,emptyList,lineFormat)
+# Add genes as info before the actual table.
 with open(bedfile) as bed:
     genesDup = [line.split("\t")[3].strip() for line in bed]
     genes = set(genesDup)
@@ -280,7 +272,7 @@ for indel in vcf_indel.fetch():
             alt=indel.alts[0]
         else:
             print(indel.alts)
-            sys.exit() ##Fix!!
+            sys.exit()
 
         csqIndel = indel.info["CSQ"][0] #VEP annotation
 
@@ -294,19 +286,15 @@ for indel in vcf_indel.fetch():
         indelTranscript = csqIndel.split("|")[10].split(":")[0]
         indelCodingName = csqIndel.split("|")[10].split(":")[1]
         indelEnsp = csqIndel.split("|")[11]
-        # indelIgv="external:IGV/"+indelGene+"-"+indel.contig+"_"+str(int(indel.pos)-1)+"_"+str(int(indel.pos)-1+len(alt))+".svg"
 
         indelRow = [runID,sample,indelGene,indel.contig,indel.pos, indel.stop, svlen, af, indel.ref, alt, indel.info["DP"], indelTranscript, indelCodingName,indelEnsp ,maxPopAfIndel, maxPopIndel]
         worksheetIndel.write_row(row,col,indelRow)
-        # worksheetIndel.write_url('Q'+str(row+1), indelIgv,string = "IGV image")
         row += 1
 
 ##########################################
 
 ######### SNV sheet (2) ##################
-
 worksheetSNV.set_column('E:E',10) #Width for position column
-# worksheetSNV.set_column(1,11,9) #Width for MaxPopAf column.
 
 for x in vcf_snv.header.records:
     if (x.key=='reference'):
@@ -318,7 +306,6 @@ for x in vcf_snv.header.records:
 worksheetSNV.write('A1', 'Variants found', headingFormat)
 worksheetSNV.write('A3', 'Sample: '+str(sample))
 worksheetSNV.write('A4', 'Reference used: '+str(refV))
-# worksheetSNV.write('A4', 'Callers used: VardictJava v.1,6 ? Dubbelkolla!, Pisces 5.2.11, Freebayes v1.1.0, LoFreq v.2.1.3.1, SNVer v.2.1.3.1')
 worksheetSNV.write('A6', 'VEP: '+vepline ) #, textwrapFormat)
 worksheetSNV.write('A8', 'The following filters were applied: ')
 worksheetSNV.write('B9','Coverage >= 100x')
@@ -338,15 +325,13 @@ col=0
 white=[]
 green=[]
 orange=[]
-# whiteIGV=[]
 underFive=[] #put after green and orange but still white
-# underFiveIGV=[] #put after green and orange but still white
 trusightSNV=[] #trusight genes only
-# trusightSNVigv=[] #trusight genes only
 
 for record in vcf_snv.fetch():
     synoCosmicN = 0
     csq = record.info["CSQ"][0]
+    # Add variants if syno and in cosmic hemto list
     if   record.filter.keys()==["Syno"]: #Only if Syno not and popAF.   any(x in "Syno" for x in record.filter.keys()):
         synoCosmicVepList = [cosmic for cosmic in csq.split("|")[17].split("&") if cosmic.startswith('CO')] #Get all cosmicID in list
         if len(synoCosmicVepList) != 0:
@@ -358,21 +343,21 @@ for record in vcf_snv.fetch():
                 synoCosmicN += int(synoCosmicNew)
 
     if record.filter.keys()==["PASS"] or synoCosmicN != 0 :
-
+        # Crash if vt decomp has not worked
         if len(record.info["AF"]) == 1:
             af=record.info["AF"][0]
         else:
             print(record.info["AF"])
-            sys.exit() ##Fix!!
+            sys.exit()
 
         if len(record.alts) == 1:
             alt=record.alts[0]
         else:
             print(record.alts)
-            sys.exit() ##Fix!!
+            sys.exit()
 
         for knownLine in known:
-            if  csq.split("|")[3] == knownLine[0] and str(record.pos) == knownLine[2]: ##is record.pos en string or int??
+            if  csq.split("|")[3] == knownLine[0] and str(record.pos) == knownLine[2]:
                 numKnown += 1
                 knownFoundTemp.append(knownLine+[af, record.info["DP"], record.ref, alt])
 
@@ -418,11 +403,6 @@ for record in vcf_snv.fetch():
             consequence = csq.split("|")[1]
             ensp = csq.split("|")[11]
 
-            #Population allel freq
-            # maxPopAf = record.info["CSQ"][0].split("|")[57] #[60]
-            # if len(maxPopAf) > 1:
-            #     maxPopAf = round(float(maxPopAf),4)
-            # maxPop = record.info["CSQ"][0].split("|")[58] #[61]
 
             popFreqsPop=['AF', 'AFR_AF','AMR_AF','EAS_AF', 'EUR_AF', 'SAS_AF', 'gnomAD_AF', 'gnomAD_AFR_AF', 'gnomAD_AMR_AF', 'gnomAD_ASJ_AF', 'gnomAD_EAS_AF', 'gnomAD_FIN_AF', 'gnomAD_NFE_AF', 'gnomAD_OTH_AF', 'gnomAD_SAS_AF']
             popFreqAllRaw=record.info["CSQ"][0].split("|")[41:56] #[42:57]
@@ -438,16 +418,15 @@ for record in vcf_snv.fetch():
             else:
                 maxPopAf=''
                 maxPop=''
-            ##IGV image path for each SNV
-            # igv="external:IGV/"+gene+"-"+record.contig+"_"+str(int(record.pos)-1)+"_"+str(int(record.pos)-1+len(alt))+".svg"
 
             snv = [runID,sample,gene, record.contig, record.pos, record.ref, alt, af, record.info["DP"], transcript, codingName, ensp, consequence, cosmicVep, cosmicN, clinical, rs, maxPopAf, maxPop, callers]
-            #Append line with sample and rundate to rolling list of artefacts..
+
+            # Append line with sample and rundate to rolling list of artefacts..
             with open(variantLog, "a") as appendfile:
                 variants = snv+["\n"]
                 appendfile.write('\t'.join(str(e) for e in variants))
 
-            #Artefact_file
+            # Check if position exists in Aretefact or Germline file.
             cmdArt = 'grep -w '+str(record.pos)+' '+artefactFile
             artLines = subprocess.run(cmdArt, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip() ##What happens if two hits?!!!
             artefact_variant = 0
@@ -458,7 +437,6 @@ for record in vcf_snv.fetch():
                     artefact_variant = 1
                     break
             if artefact_variant == 0:
-                # Germline /gluster-storage-volume/projects/wp2/nobackup/Twist_Myeloid/Artefact_files/Low_VAF_SNVs.txt
                 cmdGerm = 'grep -w '+str(record.pos)+' '+germlineFile
                 germLines = subprocess.run(cmdGerm, stdout=subprocess.PIPE,shell = 'TRUE').stdout.decode('utf-8').strip()
                 germline_variant = 0
@@ -470,22 +448,16 @@ for record in vcf_snv.fetch():
                 if germline_variant == 0:
                     if float(af) < 0.05:
                         underFive.append(snv)
-                        # underFiveIGV.append(igv)
                     else:
                         white.append(snv)
-                        # whiteIGV.append(igv)
-                    # if gene in trusightGenes:
-                    #     trusightSNV.append(snv)
-                    #     trusightSNVigv.append(igv)
+
 ### Actually writing to the excelsheet
 i=0
 for line in white:
     if line[8] < 500:
         worksheetSNV.write_row(row,col,line, italicFormat)
-        # worksheetSNV.write_url('T'+str(row+1), whiteIGV[i],string = "IGV image")
     else:
         worksheetSNV.write_row(row,col,line)
-        # worksheetSNV.write_url('T'+str(row+1), whiteIGV[i],string = "IGV image")
     row +=1
     i+=1
 
@@ -507,10 +479,8 @@ i=0
 for line in underFive:
     if line[8] < 500:
         worksheetSNV.write_row(row,col,line, italicFormat)
-        # worksheetSNV.write_url('T'+str(row+1), underFiveIGV[i],string = "IGV image")
     else:
         worksheetSNV.write_row(row,col,line)
-        # worksheetSNV.write_url('T'+str(row+1), underFiveIGV[i],string = "IGV image")
     row +=1
     i+=1
 
