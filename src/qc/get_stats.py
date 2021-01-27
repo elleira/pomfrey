@@ -6,11 +6,11 @@ import csv
 picardDup = sys.argv[1]
 picardMet = sys.argv[2]
 samtools = sys.argv[3]
-multiQCheader = sys.argv[4]
-cartoolLog = sys.argv[5]
-sample = sys.argv[6]
-outFile = sys.argv[7]
-batchFile = sys.argv[8]
+# multiQCheader = sys.argv[4]
+cartoolLog = sys.argv[4]
+sample = sys.argv[5]
+# outFile = sys.argv[7]
+batchFile = sys.argv[6]
 
 # sample = samtools.split('/')[1]
 
@@ -63,10 +63,10 @@ with open(batchFile, 'a') as file:
     writer.writerow(line)
 
 # Print multiQCheader
-with open(multiQCheader, 'r') as f:
-    with open(outFile, "w") as file:
-        for mqcline in f:
-            file.write(mqcline)
-        writer = csv.writer(file, delimiter=',', lineterminator='\n')
-        writer.writerow(header)
-        writer.writerow(line)
+# with open(multiQCheader, 'r') as f:
+#     with open(outFile, "w") as file:
+#         for mqcline in f:
+#             file.write(mqcline)
+#         writer = csv.writer(file, delimiter=',', lineterminator='\n')
+#         writer.writerow(header)
+#         writer.writerow(line)
