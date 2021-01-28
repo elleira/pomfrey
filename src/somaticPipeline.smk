@@ -56,7 +56,6 @@ rule all:
         expand(
             "CNV/{sample}_{seqID}_clean.calledCNVs.modeled.png", sample=config["samples"], seqID=config["seqID"]["sequencerun"]
         ),
-        # expand("variantCalls/recall/{sample}_{seqID}.3.vcf.gz", sample=config["samples"]) ## Reports, final vcf, bam, fastqs..
 
 
 wildcard_constraints:
